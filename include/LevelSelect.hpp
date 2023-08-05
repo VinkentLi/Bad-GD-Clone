@@ -2,7 +2,7 @@
 #include "GameStates.hpp"
 #include "Global.hpp"
 
-inline constexpr int LEVEL_COUNT = 7;
+inline constexpr int LEVEL_COUNT = 1;
 
 class LevelSelect
 {

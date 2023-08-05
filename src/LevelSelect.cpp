@@ -20,7 +20,50 @@ LevelSelect::LevelSelect(SDL_Rect cornerSRC, SDL_Rect topSRC, SDL_Rect levelArro
 
 void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
 {
+    if (this->mouseHeld && !mouseHeld)
+    {  
+        float wScale = SCREEN_WIDTH / (float) WIDTH;
+        float hScale = SCREEN_HEIGHT / (float) HEIGHT;
+        SDL_Rect scaledTitleArrow = titleArrowDST, scaledLeft = leftLevelArrowDST, scaledRight = rightLevelArrowDST;
+        scaledTitleArrow.x *= wScale;
+        scaledTitleArrow.y *= hScale;
+        scaledTitleArrow.w *= wScale;
+        scaledTitleArrow.h *= hScale;
+        scaledLeft.x *= wScale;
+        scaledLeft.y *= hScale;
+        scaledLeft.w *= wScale;
+        scaledLeft.h *= hScale;
+        scaledRight.x *= wScale;
+        scaledRight.y *= hScale;
+        scaledRight.w *= wScale;
+        scaledRight.h *= hScale;
 
+        if (SDL_PointInRect(mousePos, &scaledTitleArrow))
+        {
+            gameState = TITLE_SCREEN;
+        }
+        else if (SDL_PointInRect(mousePos, &scaledLeft))
+        {
+            levelSelected--;
+            
+            if (levelSelected < 0)
+            {
+                levelSelected = LEVEL_COUNT - 1;
+            }
+        }
+        else if (SDL_PointInRect(mousePos, &scaledRight))
+        {
+            levelSelected++;
+
+            if (levelSelected == LEVEL_COUNT)
+            {
+                levelSelected = 0;
+            }
+        }
+    }
+
+    this->mouseHeld = mouseHeld;
+    this->mousePos = *mousePos;
 }
 
 void LevelSelect::render()

@@ -79,6 +79,7 @@ void update(float delta)
         ground.setPos({0, HEIGHT - 200});
         bg.setMoving(false);
         ground.resetPos();
+        levelSelect.update(gameState, &mousePos, mouseHeld);
         break;
     }
 }

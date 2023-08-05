@@ -32,6 +32,7 @@ void TitleScreen::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
         scaledTitlePlay.y = titlePlayDST.y * hScale;
         scaledTitlePlay.w = titlePlayDST.w * wScale;
         scaledTitlePlay.h = titlePlayDST.h * hScale;
+        
         if (SDL_PointInRect(mousePos, &scaledTitlePlay))
         {
             gameState = LEVEL_SELECT;
