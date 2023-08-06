@@ -18,6 +18,7 @@ SDL_Texture *tileSheet;
 Mix_Chunk *menuLoop;
 SDL_Point mousePos;
 TTF_Font *font;
+TTF_Font *fontOutline;
 Background bg;
 Ground ground;
 TitleScreen titleScreen;
@@ -215,8 +216,8 @@ int init()
     bg = Background(0, 0, 255);
     bg.setMoving(true);
     ground = Ground(0, 0, 255);
-    titleScreen = TitleScreen({0, 0, 1699, 206}, {0, 0, 415, 415});
-    levelSelect = LevelSelect({0, 0, 285, 282}, {0, 0, 1226, 144}, {0, 0, 106, 238}, {0, 0, 124, 150});
+    titleScreen = TitleScreen();
+    levelSelect = LevelSelect();
     menuLoop = Mix_LoadWAV("res/sfx/menuLoop.wav");
 
     return 0;

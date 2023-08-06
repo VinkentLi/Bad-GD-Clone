@@ -5,14 +5,13 @@
 class TitleScreen
 {
 private:
-    SDL_Rect titleSRC, titlePlaySRC, titleDST, titlePlayDST;
+    SDL_Rect titleDST, titlePlayDST;
     SDL_Texture *titleTexture, *titlePlay;
     SDL_Point mousePos;
     bool mouseHeld;
 
 public:
-    TitleScreen() = default;
-    TitleScreen(SDL_Rect titleSRC, SDL_Rect titlePlaySRC);
+    TitleScreen();
     void update(int &gameState, SDL_Point *mousePos, bool mouseHeld);
     void render();
 };

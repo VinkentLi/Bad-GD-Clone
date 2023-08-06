@@ -1,6 +1,6 @@
 #include "TitleScreen.hpp"
 
-TitleScreen::TitleScreen(SDL_Rect titleSRC, SDL_Rect titlePlaySRC) : titleSRC(titleSRC), titlePlaySRC(titlePlaySRC)
+TitleScreen::TitleScreen()
 {
     titleTexture = IMG_LoadTexture(renderer, "res/gfx/title.png");
 
@@ -45,6 +45,6 @@ void TitleScreen::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
 
 void TitleScreen::render()
 {
-    SDL_RenderCopy(renderer, titleTexture, &titleSRC, &titleDST);
-    SDL_RenderCopy(renderer, titlePlay, &titlePlaySRC, &titlePlayDST);
+    SDL_RenderCopy(renderer, titleTexture, NULL, &titleDST);
+    SDL_RenderCopy(renderer, titlePlay, NULL, &titlePlayDST);
 }

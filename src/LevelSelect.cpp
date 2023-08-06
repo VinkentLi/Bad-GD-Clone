@@ -1,7 +1,6 @@
 #include "LevelSelect.hpp"
 
-LevelSelect::LevelSelect(SDL_Rect cornerSRC, SDL_Rect topSRC, SDL_Rect levelArrowSRC, SDL_Rect titleArrowSRC)
-    : cornerSRC(cornerSRC), topSRC(topSRC), levelArrowSRC(levelArrowSRC), titleArrowSRC(titleArrowSRC)
+LevelSelect::LevelSelect()
 {
     leftCornerDST = {0, HEIGHT - 282, 285, 282};
     rightCornerDST = {WIDTH - 285, HEIGHT - 282, 285, 282};
@@ -16,6 +15,11 @@ LevelSelect::LevelSelect(SDL_Rect cornerSRC, SDL_Rect topSRC, SDL_Rect levelArro
     mousePos = {0, 0};
     mouseHeld = false;
     levelSelected = 0;
+    levelStrings.push_back("Test level1");
+    levelStrings.push_back("Test Level2");
+    font = TTF_OpenFont("res/fonts/pusab.ttf", 100);
+    fontOutline = TTF_OpenFont("res/fonts/pusab.ttf", 100);
+    TTF_SetFontOutline(fontOutline, 4);
 }
 
 void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
@@ -68,10 +72,40 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
 
 void LevelSelect::render()
 {
-    SDL_RenderCopyEx(renderer, corner, &cornerSRC, &leftCornerDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(renderer, corner, &cornerSRC, &rightCornerDST, 0, NULL, SDL_FLIP_HORIZONTAL);
-    SDL_RenderCopyEx(renderer, top, &topSRC, &topDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(renderer, levelArrow, &levelArrowSRC, &leftLevelArrowDST, 0, NULL, SDL_FLIP_HORIZONTAL);
-    SDL_RenderCopyEx(renderer, levelArrow, &levelArrowSRC, &rightLevelArrowDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(renderer, titleArrow, &titleArrowSRC, &titleArrowDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, corner, NULL, &leftCornerDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, corner, NULL, &rightCornerDST, 0, NULL, SDL_FLIP_HORIZONTAL);
+    SDL_RenderCopyEx(renderer, top, NULL, &topDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, levelArrow, NULL, &leftLevelArrowDST, 0, NULL, SDL_FLIP_HORIZONTAL);
+    SDL_RenderCopyEx(renderer, levelArrow, NULL, &rightLevelArrowDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, titleArrow, NULL, &titleArrowDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_Rect rectWithLevelName;
+    rectWithLevelName.w = 1000;
+    rectWithLevelName.h = 300;
+    rectWithLevelName.x = WIDTH / 2 - 1000/2;
+    rectWithLevelName.y = HEIGHT / 2 - 350;
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderFillRect(renderer, &rectWithLevelName);
+
+    // render level name
+
+    SDL_Surface *levelShadowSurface = TTF_RenderText_Blended(font, levelStrings[levelSelected].c_str(), {0, 0, 0, 100});
+    SDL_Surface *levelStringSurface = TTF_RenderText_Blended(font, levelStrings[levelSelected].c_str(), {255, 255, 255});
+    SDL_Surface *levelStringOutline = TTF_RenderText_Blended(fontOutline, levelStrings[levelSelected].c_str(), {0, 0, 0});
+    SDL_SetSurfaceBlendMode(levelStringSurface, SDL_BLENDMODE_BLEND);
+    SDL_Rect rect = {4, 4, levelStringSurface->w, levelStringSurface->h};
+    SDL_BlitSurface(levelStringSurface, NULL, levelStringOutline, &rect);
+    SDL_FreeSurface(levelStringSurface);
+    SDL_Texture *levelShadowTexture = SDL_CreateTextureFromSurface(renderer, levelShadowSurface);
+    SDL_Texture *levelStringTexture = SDL_CreateTextureFromSurface(renderer, levelStringOutline);
+    SDL_Rect stringDST = {WIDTH/2 - levelStringOutline->w/2, rectWithLevelName.y + rectWithLevelName.h/2 - levelStringOutline->h/2, levelStringOutline->w, levelStringOutline->h};
+    SDL_Rect shadowDST = stringDST;
+    shadowDST.x += 5;
+    shadowDST.y += 5;
+    SDL_RenderCopy(renderer, levelShadowTexture, NULL, &shadowDST);
+    SDL_RenderCopy(renderer, levelStringTexture, NULL, &stringDST);
+    SDL_FreeSurface(levelShadowSurface);
+    SDL_DestroyTexture(levelShadowTexture);
+    SDL_FreeSurface(levelStringOutline);
+    SDL_DestroyTexture(levelStringTexture);
 }
