@@ -15,6 +15,7 @@ void quit();
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Texture *tileSheet;
+Mix_Chunk *menuLoop;
 SDL_Point mousePos;
 TTF_Font *font;
 Background bg;
@@ -32,6 +33,8 @@ int main(int argc, char **argv)
     {
         quit();
     }
+
+    Mix_PlayChannel(0, menuLoop, -1);
 
     float interval = 1000.0f / 60.0f;
     uint64_t currentTime = SDL_GetTicks64();
@@ -214,6 +217,7 @@ int init()
     ground = Ground(0, 0, 255);
     titleScreen = TitleScreen({0, 0, 1699, 206}, {0, 0, 415, 415});
     levelSelect = LevelSelect({0, 0, 285, 282}, {0, 0, 1226, 144}, {0, 0, 106, 238}, {0, 0, 124, 150});
+    menuLoop = Mix_LoadWAV("res/sfx/menuLoop.wav");
 
     return 0;
 }
