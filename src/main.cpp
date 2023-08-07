@@ -79,7 +79,7 @@ void update(float delta)
         bg.setMoving(true);
         bg.update(delta);
         ground.update();
-        ground.move(-21.1182f, delta);
+        ground.move(-17.31f, delta);
         titleScreen.update(gameState, &mousePos, mouseHeld);
         break;
     case LEVEL_SELECT:
@@ -90,6 +90,7 @@ void update(float delta)
         break;
     case PLAYING:
         ground.setPos({ground.getPos().x, HEIGHT - 300});
+        bg.update(delta);
         playingState.update(delta, mouseHeld);
 
         if (cameraPos.x != 0)

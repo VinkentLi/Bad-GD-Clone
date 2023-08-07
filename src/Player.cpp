@@ -4,10 +4,10 @@ Player::Player()
 {
     playerTexture = IMG_LoadTexture(renderer, "res/gfx/icon.png");
     pos = {-TILE_SIZE, HEIGHT - 300 - TILE_SIZE};
-    xVelocity = 21.1182;
+    xVelocity = 17.31;
     yVelocity = 0;
-    jumpStrength = -45.465659;
-    gravity = 3.507012;
+    jumpStrength = -37.2671;
+    gravity = 2.874767;
     rotationAdder = 6.92308;
     rotation = 0;
     targetRotation = 0;
