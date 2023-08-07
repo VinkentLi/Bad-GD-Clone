@@ -5,6 +5,7 @@
 #include "TitleScreen.hpp"
 #include "LevelSelect.hpp"
 #include "GameStates.hpp"
+#include "PlayingState.hpp"
 
 int init();
 void update(float delta);
@@ -17,12 +18,14 @@ SDL_Renderer *renderer;
 SDL_Texture *tileSheet;
 Mix_Chunk *menuLoop;
 SDL_Point mousePos;
+SDL_FPoint cameraPos;
 TTF_Font *font;
 TTF_Font *fontOutline;
 Background bg;
 Ground ground;
 TitleScreen titleScreen;
 LevelSelect levelSelect;
+PlayingState playingState;
 
 int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN;
 
@@ -87,6 +90,7 @@ void update(float delta)
         break;
     case PLAYING:
         ground.setPos({ground.getPos().x, HEIGHT - 300});
+        playingState.update(delta, mouseHeld);
         break;
     }
 }
@@ -104,6 +108,9 @@ void render()
         break;
     case LEVEL_SELECT:
         levelSelect.render();
+        break;
+    case PLAYING:
+        playingState.render();
         break;
     }
 
@@ -221,7 +228,9 @@ int init()
     ground = Ground(0, 0, 255);
     titleScreen = TitleScreen();
     levelSelect = LevelSelect();
+    playingState = PlayingState();
     menuLoop = Mix_LoadWAV("res/sfx/menuLoop.wav");
+    cameraPos = {0, 0};
 
     return 0;
 }

@@ -15,6 +15,7 @@ extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 extern int WIDTH;
 inline constexpr int HEIGHT = 1080;
-inline constexpr int TILE_SIZE = 122;
+inline constexpr int TILE_SIZE = 100;
+inline constexpr int CAMERA_SCROLL = TILE_SIZE * 6;
 inline constexpr int CAMERA_UP_SCROLL = HEIGHT / 4;
 inline constexpr int CAMERA_DOWN_SCROLL = 3 * CAMERA_UP_SCROLL;
