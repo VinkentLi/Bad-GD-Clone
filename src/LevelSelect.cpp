@@ -20,6 +20,11 @@ LevelSelect::LevelSelect()
     font = TTF_OpenFont("res/fonts/pusab.ttf", 100);
     fontOutline = TTF_OpenFont("res/fonts/pusab.ttf", 100);
     TTF_SetFontOutline(fontOutline, 4);
+    rectWithLevelName.w = 1000;
+    rectWithLevelName.h = 300;
+    rectWithLevelName.x = WIDTH / 2 - 1000/2;
+    rectWithLevelName.y = HEIGHT / 2 - 350;
+    playSound = Mix_LoadWAV("res/sfx/playSound.ogg");
 }
 
 void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
@@ -28,7 +33,7 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
     {  
         float wScale = SCREEN_WIDTH / (float) WIDTH;
         float hScale = SCREEN_HEIGHT / (float) HEIGHT;
-        SDL_Rect scaledTitleArrow = titleArrowDST, scaledLeft = leftLevelArrowDST, scaledRight = rightLevelArrowDST;
+        SDL_Rect scaledTitleArrow = titleArrowDST, scaledLeft = leftLevelArrowDST, scaledRight = rightLevelArrowDST, scaledLevelRect = rectWithLevelName;
         scaledTitleArrow.x *= wScale;
         scaledTitleArrow.y *= hScale;
         scaledTitleArrow.w *= wScale;
@@ -41,6 +46,10 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
         scaledRight.y *= hScale;
         scaledRight.w *= wScale;
         scaledRight.h *= hScale;
+        scaledLevelRect.x *= wScale;
+        scaledLevelRect.y *= hScale;
+        scaledLevelRect.w *= wScale;
+        scaledLevelRect.h *= hScale;
 
         if (SDL_PointInRect(mousePos, &scaledTitleArrow))
         {
@@ -64,6 +73,12 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
                 levelSelected = 0;
             }
         }
+        else if (SDL_PointInRect(mousePos, &scaledLevelRect))
+        {
+            gameState = PLAYING;
+            Mix_HaltChannel(0);
+            Mix_PlayChannel(0, playSound, 0);
+        }
     }
 
     this->mouseHeld = mouseHeld;
@@ -72,17 +87,17 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
 
 void LevelSelect::render()
 {
+    // render textures
+
     SDL_RenderCopyEx(renderer, corner, NULL, &leftCornerDST, 0, NULL, SDL_FLIP_NONE);
     SDL_RenderCopyEx(renderer, corner, NULL, &rightCornerDST, 0, NULL, SDL_FLIP_HORIZONTAL);
     SDL_RenderCopyEx(renderer, top, NULL, &topDST, 0, NULL, SDL_FLIP_NONE);
     SDL_RenderCopyEx(renderer, levelArrow, NULL, &leftLevelArrowDST, 0, NULL, SDL_FLIP_HORIZONTAL);
     SDL_RenderCopyEx(renderer, levelArrow, NULL, &rightLevelArrowDST, 0, NULL, SDL_FLIP_NONE);
     SDL_RenderCopyEx(renderer, titleArrow, NULL, &titleArrowDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_Rect rectWithLevelName;
-    rectWithLevelName.w = 1000;
-    rectWithLevelName.h = 300;
-    rectWithLevelName.x = WIDTH / 2 - 1000/2;
-    rectWithLevelName.y = HEIGHT / 2 - 350;
+
+    // render the rectangle with the level name
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderFillRect(renderer, &rectWithLevelName);

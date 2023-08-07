@@ -15,7 +15,6 @@ private:
     int id, type;
     SDL_FPoint pos;
     SDL_FRect hitbox;
-    SDL_Rect src;
 
 public:
     GameObject(int id, int type, SDL_FPoint pos, SDL_FRect hitbox);

@@ -82,8 +82,11 @@ void update(float delta)
     case LEVEL_SELECT:
         ground.setPos({0, HEIGHT - 200});
         bg.setMoving(false);
-        ground.resetPos();
+        // ground.resetPos();
         levelSelect.update(gameState, &mousePos, mouseHeld);
+        break;
+    case PLAYING:
+        ground.setPos({ground.getPos().x, HEIGHT - 300});
         break;
     }
 }

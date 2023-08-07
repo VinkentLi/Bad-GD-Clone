@@ -6,11 +6,12 @@ class LevelSelect
 {
 private:
     constexpr static int LEVEL_COUNT = 2;
-    SDL_Rect leftCornerDST, rightCornerDST, topDST, leftLevelArrowDST, rightLevelArrowDST, titleArrowDST;
+    SDL_Rect leftCornerDST, rightCornerDST, topDST, leftLevelArrowDST, rightLevelArrowDST, titleArrowDST, rectWithLevelName;
     TTF_Font *font;
     TTF_Font *fontOutline;
     SDL_Texture *corner, *top, *levelArrow, *titleArrow;
     SDL_Point mousePos;
+    Mix_Chunk *playSound;
     bool mouseHeld;
     int levelSelected;
     std::vector<std::string> levelStrings;
