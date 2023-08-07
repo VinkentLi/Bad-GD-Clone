@@ -7,7 +7,8 @@ class PlayingState
 private:
     Player player;
     float timer;
-    bool timerFinished;
+    bool timerFinished, songPlaying;
+    std::vector<Mix_Chunk *> songs;
     
 public:
     PlayingState();

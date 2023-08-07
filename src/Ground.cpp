@@ -41,7 +41,12 @@ void Ground::render()
 {
     for (int i = 0; i < squareCount; i++)
     {
-        SDL_FRect dst = {pos.x + i * GROUND_SIZE, pos.y, GROUND_SIZE, GROUND_SIZE};
+        SDL_FRect dst = {pos.x + i * GROUND_SIZE - cameraPos.x, pos.y, GROUND_SIZE, GROUND_SIZE};
+
+        while (dst.x + GROUND_SIZE < 0)
+        {
+            dst.x += squareCount * GROUND_SIZE;
+        }
 
         if (SDL_RenderCopyF(renderer, groundTexture, &src, &dst) != 0)
         {

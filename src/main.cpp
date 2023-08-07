@@ -27,7 +27,7 @@ TitleScreen titleScreen;
 LevelSelect levelSelect;
 PlayingState playingState;
 
-int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN;
+int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN, levelSelected = 0;
 
 bool gameRunning = true, mouseHeld = false;
 
@@ -91,6 +91,12 @@ void update(float delta)
     case PLAYING:
         ground.setPos({ground.getPos().x, HEIGHT - 300});
         playingState.update(delta, mouseHeld);
+
+        if (cameraPos.x != 0)
+        {
+            bg.setMoving(true);
+        }
+
         break;
     }
 }

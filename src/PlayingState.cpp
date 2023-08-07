@@ -5,6 +5,13 @@ PlayingState::PlayingState()
     player = Player();
     timer = 60;
     timerFinished = false;
+    songPlaying = false;
+    songs.clear();
+
+    for (int i = 0; i < LEVEL_COUNT; i++)
+    {
+        songs.push_back(Mix_LoadWAV(("res/sfx/" + std::to_string(i) + ".mp3").c_str()));
+    }
 }
 
 void PlayingState::update(float delta, bool mouseHeld)
@@ -16,6 +23,13 @@ void PlayingState::update(float delta, bool mouseHeld)
     }
 
     timerFinished = true;
+
+    if (!songPlaying)
+    {
+        Mix_PlayChannel(1, songs[levelSelected], 0);
+        songPlaying = true;
+    }
+
     player.update(delta, mouseHeld);
 }
 

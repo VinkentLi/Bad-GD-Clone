@@ -57,10 +57,15 @@ void Player::update(float delta, bool mouseHeld)
     
     pos.x = hazardHitbox.x;
     pos.y = hazardHitbox.y;
+
+    if (pos.x - cameraPos.x > CAMERA_SCROLL)
+    {
+        cameraPos.x = pos.x - CAMERA_SCROLL;
+    }
 }
 
 void Player::render()
 {
-    SDL_FRect dst = {pos.x, pos.y, TILE_SIZE, TILE_SIZE};
+    SDL_FRect dst = {pos.x - cameraPos.x, pos.y, TILE_SIZE, TILE_SIZE};
     SDL_RenderCopyExF(renderer, playerTexture, NULL, &dst, rotation, NULL, SDL_FLIP_NONE);
 }
