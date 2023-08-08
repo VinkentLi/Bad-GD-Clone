@@ -1,7 +1,7 @@
 #include "GameObject.hpp"
 
-GameObject::GameObject(int id, int type, SDL_FPoint pos, SDL_FRect hitbox)
-    : id(id), type(type), pos(pos), hitbox(hitbox)
+GameObject::GameObject(SDL_Rect src, int type, SDL_FPoint pos, SDL_FRect hitbox)
+    : src(src), type(type), pos(pos), hitbox(hitbox)
 {
 }
 
@@ -13,7 +13,7 @@ void GameObject::render()
     dst.w = TILE_SIZE;
     dst.h = TILE_SIZE;
 
-    if (SDL_RenderCopy(renderer, tileSheet, NULL, &dst) != 0)
+    if (SDL_RenderCopy(renderer, tileSheet, &src, &dst) != 0)
     {
         std::cerr << "GameObject failed to render texture! " << SDL_GetError() << std::endl;
     }

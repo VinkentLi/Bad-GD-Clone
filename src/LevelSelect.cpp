@@ -76,7 +76,7 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
         else if (SDL_PointInRect(mousePos, &scaledLevelRect))
         {
             gameState = PLAYING;
-            Mix_HaltChannel(0);
+            Mix_HaltMusic();
             Mix_PlayChannel(0, playSound, 0);
         }
     }

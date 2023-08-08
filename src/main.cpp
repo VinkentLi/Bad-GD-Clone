@@ -16,7 +16,7 @@ void quit();
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Texture *tileSheet;
-Mix_Chunk *menuLoop;
+Mix_Music *menuLoop;
 SDL_Point mousePos;
 SDL_FPoint cameraPos;
 TTF_Font *font;
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
         quit();
     }
 
-    Mix_PlayChannel(0, menuLoop, -1);
+    Mix_PlayMusic(menuLoop, -1);
 
     float interval = 1000.0f / 60.0f;
     uint64_t currentTime = SDL_GetTicks64();
@@ -91,13 +91,16 @@ void update(float delta)
     case PLAYING:
         ground.setPos({ground.getPos().x, HEIGHT - 300});
         bg.update(delta);
-        playingState.update(delta, mouseHeld);
+        playingState.update(gameState, delta, mouseHeld);
 
         if (cameraPos.x != 0)
         {
             bg.setMoving(true);
         }
 
+        break;
+    case PAUSED:
+        playingState.update(gameState, delta, mouseHeld);
         break;
     }
 }
@@ -117,6 +120,9 @@ void render()
         levelSelect.render();
         break;
     case PLAYING:
+        playingState.render();
+        break;
+    case PAUSED:
         playingState.render();
         break;
     }
@@ -152,9 +158,32 @@ void handleEvents()
                 gameRunning = false;
                 break;
             case SDLK_ESCAPE:
-                if (gameState == LEVEL_SELECT)
+                switch (gameState)
                 {
+                case LEVEL_SELECT:
                     gameState = TITLE_SCREEN;
+                    break;
+                case PLAYING:
+                    playingState.setToPause(gameState);
+                    break;
+                case PAUSED:
+                    gameState = LEVEL_SELECT;
+                    playingState.resetMusic();
+                    playingState = PlayingState();
+                    Mix_PlayMusic(menuLoop, -1);
+                    cameraPos = {0, 0};
+                    break;
+                }
+                break;
+            case SDLK_SPACE:
+                switch (gameState)
+                {
+                case TITLE_SCREEN:
+                    gameState = LEVEL_SELECT;
+                    break;
+                case PAUSED:
+                    playingState.setBackToPlay(gameState);
+                    break;
                 }
                 break;
             }
@@ -236,7 +265,7 @@ int init()
     titleScreen = TitleScreen();
     levelSelect = LevelSelect();
     playingState = PlayingState();
-    menuLoop = Mix_LoadWAV("res/sfx/menuLoop.wav");
+    menuLoop = Mix_LoadMUS("res/sfx/menuLoop.wav");
     cameraPos = {0, 0};
 
     return 0;

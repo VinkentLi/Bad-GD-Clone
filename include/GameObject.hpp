@@ -6,18 +6,22 @@ enum ObjectType
     BLOCK,
     HAZARD,
     ORB,
-    PAD
+    PAD,
+    SHIP_PORTAL,
+    UPSIDE_DOWN_PORTAL,
+    NORMAL_PORTAL
 };
 
 class GameObject
 {
 private:
-    int id, type;
+    SDL_Rect src;
+    int type;
     SDL_FPoint pos;
     SDL_FRect hitbox;
 
 public:
-    GameObject(int id, int type, SDL_FPoint pos, SDL_FRect hitbox);
+    GameObject(SDL_Rect src, int type, SDL_FPoint pos, SDL_FRect hitbox);
     void render();
 };
 

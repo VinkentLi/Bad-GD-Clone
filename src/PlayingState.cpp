@@ -10,12 +10,17 @@ PlayingState::PlayingState()
 
     for (int i = 0; i < LEVEL_COUNT; i++)
     {
-        songs.push_back(Mix_LoadWAV(("res/sfx/" + std::to_string(i) + ".mp3").c_str()));
+        songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".mp3").c_str()));
     }
 }
 
-void PlayingState::update(float delta, bool mouseHeld)
+void PlayingState::update(int &gameState, float delta, bool mouseHeld)
 {
+    if (gameState == PAUSED)
+    {
+        return;
+    }
+
     if (timer > 0)
     {
         timer--;
@@ -26,11 +31,28 @@ void PlayingState::update(float delta, bool mouseHeld)
 
     if (!songPlaying)
     {
-        Mix_PlayChannel(1, songs[levelSelected], 0);
+        Mix_PlayMusic(songs[levelSelected], 0);
         songPlaying = true;
     }
 
     player.update(delta, mouseHeld);
+}
+
+void PlayingState::setToPause(int &gameState)
+{
+    gameState = PAUSED;
+    Mix_PauseMusic();
+}
+
+void PlayingState::setBackToPlay(int &gameState)
+{
+    gameState = PLAYING;
+    Mix_ResumeMusic();
+}
+
+void PlayingState::resetMusic()
+{
+    Mix_HaltMusic();
 }
 
 void PlayingState::attemptResetTimer()
