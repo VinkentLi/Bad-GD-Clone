@@ -43,10 +43,10 @@ void Player::update(float delta, bool mouseHeld)
         rotation = targetRotation;
     }
 
-    hazardHitbox.x += xVelocity;
-    hazardHitbox.y += yVelocity;
-    solidHitbox.x += xVelocity;
-    solidHitbox.y += yVelocity;
+    hazardHitbox.x += xVelocity * delta;
+    hazardHitbox.y += yVelocity * delta;
+    solidHitbox.x += xVelocity * delta;
+    solidHitbox.y += yVelocity * delta;
 
     if (hazardHitbox.y > HEIGHT - 300 - TILE_SIZE)
     {
