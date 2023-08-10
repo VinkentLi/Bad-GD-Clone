@@ -8,7 +8,6 @@
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
-extern SDL_Texture *tileSheet;
 extern Mix_Music *menuLoop;
 extern SDL_FPoint cameraPos;
 extern int SCREEN_WIDTH;

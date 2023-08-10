@@ -1,7 +1,8 @@
 #pragma once
-#include "Global.hpp"
+#include <optional>
 #include "Player.hpp"
 #include "GameStates.hpp"
+#include "ObjectManager.hpp"
 
 class PlayingState
 {
@@ -10,6 +11,7 @@ private:
     float timer;
     bool timerFinished, songPlaying;
     std::vector<Mix_Music *> songs;
+    std::optional<ObjectManager> ObjectManager;
     
 public:
     PlayingState();

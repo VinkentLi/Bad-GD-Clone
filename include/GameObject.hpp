@@ -8,6 +8,7 @@ enum ObjectType
     ORB,
     PAD,
     SHIP_PORTAL,
+    CUBE_PORTAL,
     UPSIDE_DOWN_PORTAL,
     NORMAL_PORTAL
 };
@@ -15,13 +16,13 @@ enum ObjectType
 class GameObject
 {
 private:
-    SDL_Rect src;
     int type;
     SDL_FPoint pos;
     SDL_FRect hitbox;
+    SDL_Texture *objectTexture;
 
 public:
-    GameObject(SDL_Rect src, int type, SDL_FPoint pos, SDL_FRect hitbox);
+    GameObject(int type, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath);
     void render();
 };
 

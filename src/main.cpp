@@ -1,10 +1,8 @@
 #include "Global.hpp"
-#include "GameObject.hpp"
 #include "Background.hpp"
 #include "Ground.hpp"
 #include "TitleScreen.hpp"
 #include "LevelSelect.hpp"
-#include "GameStates.hpp"
 #include "PlayingState.hpp"
 
 int init();
@@ -21,11 +19,11 @@ SDL_Point mousePos;
 SDL_FPoint cameraPos;
 TTF_Font *font;
 TTF_Font *fontOutline;
-Background bg;
-Ground ground;
-TitleScreen titleScreen;
-LevelSelect levelSelect;
-PlayingState playingState;
+Background *bg = NULL;
+Ground *ground = NULL;
+TitleScreen *titleScreen = NULL;
+LevelSelect *levelSelect = NULL;
+PlayingState *playingState = NULL;
 
 int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN, levelSelected = 0;
 
@@ -75,32 +73,31 @@ void update(float delta)
     switch (gameState)
     {
     case TITLE_SCREEN:
-        ground.setPos({ground.getPos().x, HEIGHT - 300});
-        bg.setMoving(true);
-        bg.update(delta);
-        ground.update();
-        ground.move(-17.31f, delta);
-        titleScreen.update(gameState, &mousePos, mouseHeld);
+        ground->setPos({ground->getPos().x, HEIGHT - 300});
+        bg->setMoving(true);
+        bg->update(delta);
+        ground->update();
+        ground->move(-17.31f, delta);
+        titleScreen->update(gameState, &mousePos, mouseHeld);
         break;
     case LEVEL_SELECT:
-        ground.setPos({0, HEIGHT - 200});
-        bg.setMoving(false);
-        // ground.resetPos();
-        levelSelect.update(gameState, &mousePos, mouseHeld);
+        ground->setPos({0, HEIGHT - 200});
+        bg->setMoving(false);
+        // ground->resetPos();
+        levelSelect->update(gameState, &mousePos, mouseHeld);
         break;
     case PLAYING:
-        ground.setPos({ground.getPos().x, HEIGHT - 300});
-        bg.update(delta);
-        playingState.update(gameState, delta, mouseHeld);
+        ground->setPos({ground->getPos().x, HEIGHT - 300});
+        bg->update(delta);
+        playingState->update(gameState, delta, mouseHeld);
 
         if (cameraPos.x != 0)
         {
-            bg.setMoving(true);
+            bg->setMoving(true);
         }
-
         break;
     case PAUSED:
-        playingState.update(gameState, delta, mouseHeld);
+        playingState->update(gameState, delta, mouseHeld);
         break;
     }
 }
@@ -108,22 +105,22 @@ void update(float delta)
 void render()
 {
     SDL_RenderClear(renderer);
-    bg.render(gameState);
-    ground.render();
+    bg->render(gameState);
+    ground->render();
 
     switch (gameState)
     {
     case TITLE_SCREEN:
-        titleScreen.render();
+        titleScreen->render();
         break;
     case LEVEL_SELECT:
-        levelSelect.render();
+        levelSelect->render();
         break;
     case PLAYING:
-        playingState.render();
+        playingState->render();
         break;
     case PAUSED:
-        playingState.render();
+        playingState->render();
         break;
     }
 
@@ -164,12 +161,13 @@ void handleEvents()
                     gameState = TITLE_SCREEN;
                     break;
                 case PLAYING:
-                    playingState.setToPause(gameState);
+                    playingState->setToPause(gameState);
                     break;
                 case PAUSED:
                     gameState = LEVEL_SELECT;
-                    playingState.resetMusic();
-                    playingState = PlayingState();
+                    playingState->resetMusic();
+                    delete playingState;
+                    playingState = new PlayingState();
                     Mix_PlayMusic(menuLoop, -1);
                     cameraPos = {0, 0};
                     break;
@@ -182,7 +180,7 @@ void handleEvents()
                     gameState = LEVEL_SELECT;
                     break;
                 case PAUSED:
-                    playingState.setBackToPlay(gameState);
+                    playingState->setBackToPlay(gameState);
                     break;
                 }
                 break;
@@ -259,12 +257,12 @@ int init()
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1" );
     tileSheet = IMG_LoadTexture(renderer, "res/gfx/tileSheet.png");
     font = TTF_OpenFont("res/fonts/pusab.ttf", 50);
-    bg = Background(0, 0, 255);
-    bg.setMoving(true);
-    ground = Ground(0, 0, 255);
-    titleScreen = TitleScreen();
-    levelSelect = LevelSelect();
-    playingState = PlayingState();
+    bg = new Background(0, 0, 255);
+    bg->setMoving(true);
+    ground = new Ground(0, 0, 255);
+    titleScreen = new TitleScreen();
+    levelSelect = new LevelSelect();
+    playingState = new PlayingState();
     menuLoop = Mix_LoadMUS("res/sfx/menuLoop.wav");
     cameraPos = {0, 0};
 

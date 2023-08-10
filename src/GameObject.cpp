@@ -1,19 +1,25 @@
 #include "GameObject.hpp"
 
-GameObject::GameObject(SDL_Rect src, int type, SDL_FPoint pos, SDL_FRect hitbox)
-    : src(src), type(type), pos(pos), hitbox(hitbox)
+GameObject::GameObject(int type, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath)
+    : type(type), pos(pos), hitbox(hitbox)
 {
+    objectTexture = IMG_LoadTexture(renderer, texturePath);
+    
+    if (objectTexture == NULL)
+    {
+        std::cerr << "Failed to load objectTexture! " << SDL_GetError() << std::endl;
+    }
 }
 
 void GameObject::render()
 {
     SDL_Rect dst;
-    dst.x = (int) (pos.x);
-    dst.y = (int) (pos.y);
+    dst.x = (int) (pos.x) - cameraPos.x;
+    dst.y = (int) (pos.y) - cameraPos.y;
     dst.w = TILE_SIZE;
     dst.h = TILE_SIZE;
 
-    if (SDL_RenderCopy(renderer, tileSheet, &src, &dst) != 0)
+    if (SDL_RenderCopy(renderer, objectTexture, NULL, &dst) != 0)
     {
         std::cerr << "GameObject failed to render texture! " << SDL_GetError() << std::endl;
     }
