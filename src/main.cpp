@@ -19,11 +19,11 @@ SDL_Point mousePos;
 SDL_FPoint cameraPos;
 TTF_Font *font;
 TTF_Font *fontOutline;
-Background *bg = NULL;
-Ground *ground = NULL;
-TitleScreen *titleScreen = NULL;
-LevelSelect *levelSelect = NULL;
-PlayingState *playingState = NULL;
+Background *bg = nullptr;
+Ground *ground = nullptr;
+TitleScreen *titleScreen = nullptr;
+LevelSelect *levelSelect = nullptr;
+PlayingState *playingState = nullptr;
 
 int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN, levelSelected = 0;
 
@@ -253,8 +253,8 @@ int init()
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     WIDTH = ((float) (SCREEN_WIDTH) / (float) (SCREEN_HEIGHT)) * HEIGHT;
-    SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1" );
+    SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT); // render a WIDTHx1080 screen and scale it for the actual window
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1" ); // anti-aliasing
     tileSheet = IMG_LoadTexture(renderer, "res/gfx/tileSheet.png");
     font = TTF_OpenFont("res/fonts/pusab.ttf", 50);
     bg = new Background(0, 0, 255);

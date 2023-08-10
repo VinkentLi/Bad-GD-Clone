@@ -2,7 +2,8 @@
 
 PlayingState::PlayingState()
 {
-    player = Player();
+    player = new Player();
+    objectManager = new ObjectManager();
     timer = 60;
     timerFinished = false;
     songPlaying = false;
@@ -12,6 +13,12 @@ PlayingState::PlayingState()
     {
         songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".mp3").c_str()));
     }
+}
+
+PlayingState::~PlayingState()
+{
+    delete player;
+    delete objectManager;
 }
 
 void PlayingState::update(int &gameState, float delta, bool mouseHeld)
@@ -35,7 +42,7 @@ void PlayingState::update(int &gameState, float delta, bool mouseHeld)
         songPlaying = true;
     }
 
-    player.update(delta, mouseHeld);
+    player->update(delta, mouseHeld);
 }
 
 void PlayingState::setToPause(int &gameState)
@@ -67,5 +74,6 @@ void PlayingState::attemptResetTimer()
 
 void PlayingState::render()
 {
-    player.render();
+    objectManager->render();
+    player->render();
 }

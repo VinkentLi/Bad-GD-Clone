@@ -7,14 +7,15 @@
 class PlayingState
 {
 private:
-    Player player;
+    Player *player = nullptr;
     float timer;
     bool timerFinished, songPlaying;
     std::vector<Mix_Music *> songs;
-    std::optional<ObjectManager> ObjectManager;
+    ObjectManager *objectManager = nullptr;
     
 public:
     PlayingState();
+    ~PlayingState();
     void update(int &gameState, float delta, bool mouseHeld);
     void setToPause(int &gameState);
     void setBackToPlay(int &gameState);

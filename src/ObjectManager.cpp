@@ -20,6 +20,8 @@ ObjectManager::ObjectManager()
                      {CUBE_PORTAL,        {0,  0,  TILE_SIZE, TILE_SIZE*3}},
                      {UPSIDE_DOWN_PORTAL, {0,  0,  TILE_SIZE, TILE_SIZE*3}},
                      {NORMAL_PORTAL,      {0,  0,  TILE_SIZE, TILE_SIZE*3}} };
+
+    loadLevelData();
 }
 
 void ObjectManager::clearObjects()
