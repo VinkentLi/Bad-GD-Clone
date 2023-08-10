@@ -1,5 +1,4 @@
 #pragma once
-#include <optional>
 #include "Player.hpp"
 #include "GameStates.hpp"
 #include "ObjectManager.hpp"

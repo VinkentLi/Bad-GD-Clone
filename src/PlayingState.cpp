@@ -42,7 +42,7 @@ void PlayingState::update(int &gameState, float delta, bool mouseHeld)
         songPlaying = true;
     }
 
-    player->update(delta, mouseHeld);
+    player->update(delta, mouseHeld, objectManager->getObjects());
 }
 
 void PlayingState::setToPause(int &gameState)

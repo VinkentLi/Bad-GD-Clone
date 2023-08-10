@@ -23,6 +23,9 @@ private:
 
 public:
     GameObject(int type, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath);
+    SDL_FRect *getHitbox();
+    SDL_FPoint getPos();
+    int getType();
     void render();
 };
 

@@ -17,7 +17,7 @@ Player::Player()
     mouseHeld = false;
 }
 
-void Player::update(float delta, bool mouseHeld)
+void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects)
 {
     this->mouseHeld = mouseHeld;
 
@@ -27,11 +27,7 @@ void Player::update(float delta, bool mouseHeld)
         grounded = false;
     }
 
-    if (!grounded)
-    {
-        yVelocity += gravity * delta;
-    }
-
+    yVelocity += gravity * delta;
     rotation += rotationAdder * delta;
 
     if (!grounded && rotation > targetRotation)
@@ -48,20 +44,57 @@ void Player::update(float delta, bool mouseHeld)
     solidHitbox.x += xVelocity * delta;
     solidHitbox.y += yVelocity * delta;
 
-    if (hazardHitbox.y > HEIGHT - 300 - TILE_SIZE)
-    {
-        hazardHitbox.y = HEIGHT - 300 - TILE_SIZE;
-        solidHitbox.y = hazardHitbox.y + TILE_SIZE/3;
-        grounded = true;
-    }
-    
-    pos.x = hazardHitbox.x;
-    pos.y = hazardHitbox.y;
+    handleCollisions(objects);
 
     if (pos.x - cameraPos.x > CAMERA_SCROLL)
     {
         cameraPos.x = pos.x - CAMERA_SCROLL;
     }
+}
+
+void Player::handleCollisions(std::vector<GameObject> objects)
+{
+    if (hazardHitbox.y > HEIGHT - 300 - TILE_SIZE)
+    {
+        hazardHitbox.y = HEIGHT - 300 - TILE_SIZE;
+        solidHitbox.y = hazardHitbox.y + TILE_SIZE/3;
+        grounded = true;
+        yVelocity = 0;
+    }
+
+    for (GameObject &object : objects)
+    {
+        SDL_FRect intersect;
+
+        if (SDL_IntersectFRect(&hazardHitbox, object.getHitbox(), &intersect))
+        {
+            switch (object.getType())
+            {
+            case HAZARD:
+                break;
+            case BLOCK:
+                if (!SDL_HasIntersectionF(&solidHitbox, object.getHitbox()))
+                {
+                    if (yVelocity > 0)
+                    {
+                        hazardHitbox.y = object.getPos().y - TILE_SIZE;
+                        grounded = true;
+                        yVelocity = 0;
+                    }
+                    else
+                    {
+                        grounded = false;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    solidHitbox.x = hazardHitbox.x + TILE_SIZE/3;
+    solidHitbox.y = hazardHitbox.y + TILE_SIZE/3;
+    pos.x = hazardHitbox.x;
+    pos.y = hazardHitbox.y;
 }
 
 void Player::render()
@@ -78,12 +111,12 @@ void Player::render()
     SDL_RenderFillRectF(renderer, &temp2);
 }
 
-SDL_FRect Player::getHazardHitbox()
-{
-    return hazardHitbox;
-}
+// SDL_FRect Player::getHazardHitbox()
+// {
+//     return hazardHitbox;
+// }
 
-SDL_FRect Player::getSolidHitbox()
-{
-    return solidHitbox;
-}
+// SDL_FRect Player::getSolidHitbox()
+// {
+//     return solidHitbox;
+// }

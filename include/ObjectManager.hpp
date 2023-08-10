@@ -11,6 +11,7 @@ private:
 
 public:
     ObjectManager();
+    std::vector<GameObject> getObjects();
     void clearObjects();
     void loadLevelData();
     void render();

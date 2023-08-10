@@ -11,6 +11,21 @@ GameObject::GameObject(int type, SDL_FPoint pos, SDL_FRect hitbox, const char *t
     }
 }
 
+SDL_FRect *GameObject::getHitbox()
+{
+    return &hitbox;
+}
+
+SDL_FPoint GameObject::getPos()
+{
+    return pos;
+}
+
+int GameObject::getType()
+{
+    return type;
+}
+
 void GameObject::render()
 {
     SDL_Rect dst;

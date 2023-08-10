@@ -24,6 +24,11 @@ ObjectManager::ObjectManager()
     loadLevelData();
 }
 
+std::vector<GameObject> ObjectManager::getObjects()
+{
+    return objects;
+}
+
 void ObjectManager::clearObjects()
 {
     objects.clear();

@@ -1,5 +1,5 @@
 #pragma once
-#include "Global.hpp"
+#include "GameObject.hpp"
 
 class Player
 {
@@ -12,8 +12,9 @@ private:
 
 public:
     Player();
-    void update(float delta, bool mouseHeld);
-    SDL_FRect getHazardHitbox();
-    SDL_FRect getSolidHitbox();
+    void update(float delta, bool mouseHeld, std::vector<GameObject> objects);
+    void handleCollisions(std::vector<GameObject> objects);
+    // SDL_FRect getHazardHitbox();
+    // SDL_FRect getSolidHitbox();
     void render();
 };
