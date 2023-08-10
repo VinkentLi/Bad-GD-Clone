@@ -7,6 +7,7 @@ PlayingState::PlayingState()
     timer = 60;
     timerFinished = false;
     songPlaying = false;
+    playerIsDead = false;
     songs.clear();
 
     for (int i = 0; i < LEVEL_COUNT; i++)
@@ -36,12 +37,13 @@ void PlayingState::update(int &gameState, float delta, bool mouseHeld)
 
     timerFinished = true;
 
-    if (!songPlaying)
+    if (!songPlaying || (playerIsDead && !player->isDead()))
     {
         Mix_PlayMusic(songs[levelSelected], 0);
         songPlaying = true;
     }
 
+    playerIsDead = player->isDead();
     player->update(delta, mouseHeld, objectManager->getObjects());
 }
 

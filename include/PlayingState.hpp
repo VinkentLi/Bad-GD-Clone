@@ -8,7 +8,7 @@ class PlayingState
 private:
     Player *player = nullptr;
     float timer;
-    bool timerFinished, songPlaying;
+    bool timerFinished, songPlaying, playerIsDead;
     std::vector<Mix_Music *> songs;
     ObjectManager *objectManager = nullptr;
     
