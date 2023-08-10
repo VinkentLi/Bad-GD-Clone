@@ -1,0 +1,16 @@
+format:
+
+<number of lines>
+
+<object-name> <x-pos (in pixels)> <y-pos (in pixels)> <repeats (horizontal)> <repeats (vertical)>
+
+names:
+
+BLOCK is a block
+SPIKE is a spike
+ywORB is a yellow orb
+ywPAD is a yellow pad
+pSHIP is a ship portal
+pCUBE is a cube portal
+pUPSD is an upside-down portal
+pRGLR is a normal portal
