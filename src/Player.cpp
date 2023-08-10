@@ -68,4 +68,22 @@ void Player::render()
 {
     SDL_FRect dst = {pos.x - cameraPos.x, pos.y, TILE_SIZE, TILE_SIZE};
     SDL_RenderCopyExF(renderer, playerTexture, NULL, &dst, rotation, NULL, SDL_FLIP_NONE);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 125);
+    SDL_FRect temp = hazardHitbox;
+    temp.x -= cameraPos.x;
+    SDL_RenderFillRectF(renderer, &temp);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 125);
+    SDL_FRect temp2 = solidHitbox;
+    temp2.x -= cameraPos.x;
+    SDL_RenderFillRectF(renderer, &temp2);
+}
+
+SDL_FRect Player::getHazardHitbox()
+{
+    return hazardHitbox;
+}
+
+SDL_FRect Player::getSolidHitbox()
+{
+    return solidHitbox;
 }

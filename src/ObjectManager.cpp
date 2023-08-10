@@ -13,7 +13,7 @@ ObjectManager::ObjectManager()
                      {"pRGLR", NORMAL_PORTAL} };
     
     typeToHitbox = { {BLOCK,              {0,  0,  TILE_SIZE, TILE_SIZE}},
-                     {HAZARD,             {36, 31, 27, 69}},
+                     {HAZARD,             {36, 31, 27, 50}},
                      {ORB,                {0,  0,  TILE_SIZE, TILE_SIZE}},
                      {PAD,                {10, 90, 77, 10}},
                      {SHIP_PORTAL,        {0,  0,  TILE_SIZE, TILE_SIZE*3}},

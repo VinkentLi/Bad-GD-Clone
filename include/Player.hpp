@@ -13,5 +13,7 @@ private:
 public:
     Player();
     void update(float delta, bool mouseHeld);
+    SDL_FRect getHazardHitbox();
+    SDL_FRect getSolidHitbox();
     void render();
 };

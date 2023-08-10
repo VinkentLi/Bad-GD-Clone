@@ -23,4 +23,9 @@ void GameObject::render()
     {
         std::cerr << "GameObject failed to render texture! " << SDL_GetError() << std::endl;
     }
+
+    SDL_FRect temp = hitbox;
+    temp.x -= cameraPos.x;
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 125);
+    SDL_RenderFillRectF(renderer, &temp);
 }
