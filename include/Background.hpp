@@ -4,12 +4,10 @@
 class Background
 {
 private:
-    constexpr static int BACKGROUND_SIZE = 2048;
     int bgCount;
     float r, g, b;
     uint8_t targetR, targetG, targetB;
     SDL_Texture *bgTexture, *emptyBG;
-    SDL_Rect src;
     SDL_FPoint pos;
     bool moving, fading;
     float fadeTime = 0;

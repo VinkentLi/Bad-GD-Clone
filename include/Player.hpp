@@ -12,6 +12,7 @@ private:
     std::vector<SDL_FRect *> pressedOrbs;
     bool grounded, mouseHeld, dead, orbBuffered;
     float deadTimer;
+    int gravityMultiplier;
 
 public:
     Player();

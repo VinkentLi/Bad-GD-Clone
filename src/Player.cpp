@@ -21,6 +21,7 @@ Player::Player()
     orbBuffered = false;
     dead = false;
     deadTimer = 0;
+    gravityMultiplier = 1;
 }
 
 void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects)
@@ -55,6 +56,7 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
             cameraPos = {0, 0};
             rotation = 0;
             targetRotation = 0;
+            gravityMultiplier = 1;
         }
         return;
     }
@@ -83,16 +85,30 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
         yVelocity = TILE_SIZE/2;
     }
 
+    yVelocity *= gravityMultiplier;
+
     hazardHitbox.x += xVelocity * delta;
     hazardHitbox.y += yVelocity * delta;
     solidHitbox.x += xVelocity * delta;
     solidHitbox.y += yVelocity * delta;
+
+    yVelocity /= gravityMultiplier;
 
     handleCollisions(objects);
 
     if (pos.x - cameraPos.x > CAMERA_SCROLL)
     {
         cameraPos.x = pos.x - CAMERA_SCROLL;
+    }
+    
+    if (pos.y - cameraPos.y < CAMERA_UP_SCROLL)
+    {
+        cameraPos.y = pos.y - CAMERA_UP_SCROLL;
+    }
+
+    if (pos.y < -7*BACKGROUND_SIZE)
+    {
+        die();
     }
 }
 
@@ -120,10 +136,21 @@ void Player::handleCollisions(std::vector<GameObject> objects)
             case BLOCK:
                 if (!SDL_HasIntersectionF(&solidHitbox, object.getHitbox()))
                 {
-                    if (yVelocity > 0 && solidHitbox.y + solidHitbox.h < object.getHitbox()->y)
+                    if (gravityMultiplier == 1)
                     {
-                        hazardHitbox.y = object.getPos().y - TILE_SIZE;
-                        yVelocity = 0;
+                        if (yVelocity > 0 && solidHitbox.y + solidHitbox.h < object.getHitbox()->y)
+                        {
+                            hazardHitbox.y = object.getPos().y - TILE_SIZE;
+                            yVelocity = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (yVelocity > 0 && solidHitbox.y > object.getHitbox()->y + object.getHitbox()->h)
+                        {
+                            hazardHitbox.y = object.getPos().y + TILE_SIZE;
+                            yVelocity = 0;
+                        }
                     }
                     break;
                 }
@@ -139,6 +166,32 @@ void Player::handleCollisions(std::vector<GameObject> objects)
                     pressedOrbs.push_back(object.getHitbox());
                 }
                 break;
+            case UPSIDE_DOWN_PORTAL:
+                if (gravityMultiplier == 1) 
+                {
+                    yVelocity /= 2;
+                }
+
+                gravityMultiplier = -1;
+
+                if (yVelocity < 0)
+                {
+                    yVelocity *= -1;
+                }
+                break;
+            case NORMAL_PORTAL:
+                if (gravityMultiplier == -1) 
+                {
+                    yVelocity /= 2;
+                }
+
+                gravityMultiplier = 1;
+
+                if (yVelocity < 0)
+                {
+                    yVelocity *= -1;
+                }
+                break;
             }
         }
     }
@@ -152,7 +205,7 @@ void Player::handleCollisions(std::vector<GameObject> objects)
 
 void Player::render()
 {
-    SDL_FRect dst = {pos.x - cameraPos.x, pos.y, TILE_SIZE, TILE_SIZE};
+    SDL_FRect dst = {pos.x - cameraPos.x, pos.y - cameraPos.y, TILE_SIZE, TILE_SIZE};
     SDL_RenderCopyExF(renderer, playerTexture, NULL, &dst, rotation, NULL, SDL_FLIP_NONE);
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 125);
     // SDL_FRect temp = hazardHitbox;

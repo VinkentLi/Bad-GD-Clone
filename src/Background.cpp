@@ -9,7 +9,6 @@ Background::Background(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b)
     SDL_SetTextureColorMod(bgTexture, r, g, b);
     SDL_SetTextureColorMod(emptyBG, r, g, b);
     bgCount = WIDTH / BACKGROUND_SIZE + 2;
-    src = {0, BACKGROUND_SIZE - HEIGHT, BACKGROUND_SIZE, HEIGHT};
     pos = {0, 0};
     moving = false;
     fading = false;
@@ -78,15 +77,17 @@ void Background::render(int gameState)
 {
     for (int i = 0; i < bgCount; i++)
     {
-        SDL_FRect dst = {pos.x + i * BACKGROUND_SIZE, pos.y, BACKGROUND_SIZE, HEIGHT};
+        SDL_FRect dst = {pos.x + i * BACKGROUND_SIZE, pos.y - (BACKGROUND_SIZE - HEIGHT) - cameraPos.y/10, BACKGROUND_SIZE, BACKGROUND_SIZE};
 
         if (gameState == LEVEL_SELECT)
         {
-            SDL_RenderCopyExF(renderer, emptyBG, &src, &dst, 0, NULL, SDL_FLIP_VERTICAL);
+            dst.y += (BACKGROUND_SIZE - HEIGHT);
+            SDL_RenderCopyExF(renderer, emptyBG, NULL, &dst, 0, NULL, SDL_FLIP_VERTICAL);
             continue;
         }
 
-        if (SDL_RenderCopyF(renderer, bgTexture, &src, &dst) != 0)
+
+        if (SDL_RenderCopyF(renderer, bgTexture, NULL, &dst) != 0)
         {
             std::cerr << "Failed to render background! " << SDL_GetError() << std::endl;
         }

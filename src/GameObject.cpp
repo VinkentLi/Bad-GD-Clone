@@ -34,6 +34,14 @@ void GameObject::render()
     dst.w = TILE_SIZE;
     dst.h = TILE_SIZE;
 
+    if (type == SHIP_PORTAL ||
+        type == CUBE_PORTAL ||
+        type == UPSIDE_DOWN_PORTAL ||
+        type == NORMAL_PORTAL)
+    {
+        dst.h *= 3;
+    }
+
     if (SDL_RenderCopy(renderer, objectTexture, NULL, &dst) != 0)
     {
         std::cerr << "GameObject failed to render texture! " << SDL_GetError() << std::endl;
