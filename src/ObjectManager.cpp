@@ -37,7 +37,7 @@ void ObjectManager::clearObjects()
 void ObjectManager::loadLevelData()
 {
     std::ifstream in;
-    in.open("res/leveldata/" + std::to_string(levelSelected) + ".level", std::ios::in);
+    in.open("res/leveldata/" + std::to_string(levelSelected) + ".level");
     int lines;
     in >> lines;
 
@@ -60,8 +60,7 @@ void ObjectManager::loadLevelData()
             }
         }
     }
-
-    std::cout << objects.size() << '\n';
+    in.close();
 }
 
 void ObjectManager::render()

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Player.hpp"
 
 Player::Player()
@@ -8,6 +9,7 @@ Player::Player()
     xVelocity = 17.31;
     yVelocity = 0;
     jumpStrength = -37.2671;
+    padStrength = -52.61467;
     gravity = 2.874767;
     rotationAdder = 6.92308;
     rotation = 0;
@@ -16,13 +18,25 @@ Player::Player()
     solidHitbox = {pos.x + TILE_SIZE/3, pos.y + TILE_SIZE/3, TILE_SIZE/3, TILE_SIZE/3};
     grounded = true;
     mouseHeld = false;
+    orbBuffered = false;
     dead = false;
     deadTimer = 0;
 }
 
 void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects)
 {
+    bool mouseClicked = (!this->mouseHeld && mouseHeld);
+    bool mouseReleased = (this->mouseHeld && !mouseHeld);
     this->mouseHeld = mouseHeld;
+
+    if (!grounded && mouseClicked)
+    {
+        orbBuffered = true;
+    }
+    else if (mouseReleased)
+    {
+        orbBuffered = false;
+    }
 
     if (dead)
     {
@@ -30,6 +44,7 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
 
         if (deadTimer < 0)
         {
+            pressedOrbs.clear();
             dead = false;
             grounded = true;
             hazardHitbox.x = -TILE_SIZE;
@@ -103,7 +118,6 @@ void Player::handleCollisions(std::vector<GameObject> objects)
                 die();
                 break;
             case BLOCK:
-
                 if (!SDL_HasIntersectionF(&solidHitbox, object.getHitbox()))
                 {
                     if (yVelocity > 0 && solidHitbox.y + solidHitbox.h < object.getHitbox()->y)
@@ -114,7 +128,16 @@ void Player::handleCollisions(std::vector<GameObject> objects)
                     break;
                 }
                 die();
-
+                break;
+            case PAD:
+                yVelocity = padStrength;
+                break;
+            case ORB:
+                if (orbBuffered && (pressedOrbs.empty() || std::find(pressedOrbs.begin(), pressedOrbs.end(), object.getHitbox()) == pressedOrbs.end()))
+                {
+                    yVelocity = jumpStrength;
+                    pressedOrbs.push_back(object.getHitbox());
+                }
                 break;
             }
         }
@@ -131,14 +154,14 @@ void Player::render()
 {
     SDL_FRect dst = {pos.x - cameraPos.x, pos.y, TILE_SIZE, TILE_SIZE};
     SDL_RenderCopyExF(renderer, playerTexture, NULL, &dst, rotation, NULL, SDL_FLIP_NONE);
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 125);
-    SDL_FRect temp = hazardHitbox;
-    temp.x -= cameraPos.x;
-    SDL_RenderFillRectF(renderer, &temp);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 125);
-    SDL_FRect temp2 = solidHitbox;
-    temp2.x -= cameraPos.x;
-    SDL_RenderFillRectF(renderer, &temp2);
+    // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 125);
+    // SDL_FRect temp = hazardHitbox;
+    // temp.x -= cameraPos.x;
+    // SDL_RenderFillRectF(renderer, &temp);
+    // SDL_SetRenderDrawColor(renderer, 0, 0, 255, 125);
+    // SDL_FRect temp2 = solidHitbox;
+    // temp2.x -= cameraPos.x;
+    // SDL_RenderFillRectF(renderer, &temp2);
 }
 
 void Player::die()

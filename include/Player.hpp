@@ -7,9 +7,10 @@ private:
     SDL_Texture *playerTexture;
     Mix_Chunk *deathSound;
     SDL_FPoint pos;
-    double xVelocity, yVelocity, jumpStrength, gravity, rotationAdder, rotation, targetRotation;
+    double xVelocity, yVelocity, jumpStrength, padStrength, gravity, rotationAdder, rotation, targetRotation;
     SDL_FRect hazardHitbox, solidHitbox;
-    bool grounded, mouseHeld, dead;
+    std::vector<SDL_FRect *> pressedOrbs;
+    bool grounded, mouseHeld, dead, orbBuffered;
     float deadTimer;
 
 public:
