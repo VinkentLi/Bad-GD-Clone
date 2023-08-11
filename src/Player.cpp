@@ -68,16 +68,31 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
     }
 
     yVelocity += gravity * delta;
-    rotation += rotationAdder * delta;
+    rotation += gravityMultiplier == 1 ? rotationAdder * delta : -rotationAdder * delta;
 
-    if (!grounded && rotation > targetRotation)
+    if (gravityMultiplier == 1)
     {
-        targetRotation = ((int) rotation/90)*90 + 90;
-        // std::cout << targetRotation << ' ';
+        if (!grounded && rotation > targetRotation)
+        {
+            targetRotation = ((int) rotation/90)*90 + 90;
+            // std::cout << targetRotation << ' ';
+        }
+        else if (rotation > targetRotation)
+        {
+            rotation = targetRotation;
+        }
     }
-    else if (rotation > targetRotation)
+    else
     {
-        rotation = targetRotation;
+        if (!grounded && rotation < targetRotation)
+        {
+            targetRotation = ((int) rotation/90)*90 - 90;
+            // std::cout << targetRotation << ' ';
+        }
+        else if (rotation < targetRotation)
+        {
+            rotation = targetRotation;
+        }
     }
 
     if (yVelocity > TILE_SIZE/2)
