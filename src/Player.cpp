@@ -12,6 +12,9 @@ Player::Player()
     padStrength = -52.61467;
     gravity = 2.874767;
     rotationAdder = 6.92308;
+    shipUpAdderHigh = 1.4373;
+    shipUpAdderLow = 1.293567;
+    shipDownAdder = 0.91987;
     rotation = 0;
     targetRotation = 0;
     hazardHitbox = {pos.x, pos.y, TILE_SIZE, TILE_SIZE};
@@ -22,6 +25,7 @@ Player::Player()
     dead = false;
     deadTimer = 0;
     gravityMultiplier = 1;
+    gamemode = CUBE;
 }
 
 void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects)
@@ -30,21 +34,13 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
     bool mouseReleased = (this->mouseHeld && !mouseHeld);
     this->mouseHeld = mouseHeld;
 
-    if (!grounded && mouseClicked)
-    {
-        orbBuffered = true;
-    }
-    else if (mouseReleased)
-    {
-        orbBuffered = false;
-    }
-
     if (dead)
     {
         deadTimer -= delta;
 
         if (deadTimer < 0)
         {
+            gamemode = CUBE;
             pressedOrbs.clear();
             dead = false;
             grounded = true;
@@ -61,43 +57,83 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
         return;
     }
 
-    if (grounded && this->mouseHeld)
+    switch (gamemode)
     {
-        yVelocity = jumpStrength;
-        grounded = false;
-    }
+    case CUBE:    
+        if (mouseClicked)
+        {
+            orbBuffered = true;
+        }
+        else if (mouseReleased)
+        {
+            orbBuffered = false;
+        }
 
-    yVelocity += gravity * delta;
-    rotation += gravityMultiplier == 1 ? rotationAdder * delta : -rotationAdder * delta;
+        if (grounded && this->mouseHeld)
+        {
+            yVelocity = jumpStrength;
+            grounded = false;
+        }
 
-    if (gravityMultiplier == 1)
-    {
-        if (!grounded && rotation > targetRotation)
-        {
-            targetRotation = ((int) rotation/90)*90 + 90;
-            // std::cout << targetRotation << ' ';
-        }
-        else if (rotation > targetRotation)
-        {
-            rotation = targetRotation;
-        }
-    }
-    else
-    {
-        if (!grounded && rotation < targetRotation)
-        {
-            targetRotation = ((int) rotation/90)*90 - 90;
-            // std::cout << targetRotation << ' ';
-        }
-        else if (rotation < targetRotation)
-        {
-            rotation = targetRotation;
-        }
-    }
+        yVelocity += gravity * delta;
+        rotation += gravityMultiplier == 1 ? rotationAdder * delta : -rotationAdder * delta;
 
-    if (yVelocity > TILE_SIZE/2)
-    {
-        yVelocity = TILE_SIZE/2;
+        if (gravityMultiplier == 1)
+        {
+            if (!grounded && rotation > targetRotation)
+            {
+                targetRotation = ((int) rotation/90)*90 + 90;
+                // std::cout << targetRotation << ' ';
+            }
+            else if (rotation > targetRotation)
+            {
+                rotation = targetRotation;
+            }
+        }
+        else
+        {
+            if (!grounded && rotation < targetRotation)
+            {
+                targetRotation = ((int) rotation/90)*90 - 90;
+                // std::cout << targetRotation << ' ';
+            }
+            else if (rotation < targetRotation)
+            {
+                rotation = targetRotation;
+            }
+        }
+
+        if (yVelocity > TILE_SIZE/2)
+        {
+            yVelocity = TILE_SIZE/2;
+        }
+        break;
+    case SHIP:
+        if (mouseHeld)
+        {
+            if (yVelocity < 1.7)
+            {
+                yVelocity -= shipUpAdderLow * delta;
+            }
+            else
+            {
+                yVelocity -= shipUpAdderHigh * delta;
+            }
+        }
+        else
+        {
+            yVelocity += shipDownAdder * delta;
+        }
+
+        if (yVelocity < -80.0/3.0)
+        {
+            yVelocity = -80.0f/3.0f;
+        }
+        else if (yVelocity > 64.0/3.0)
+        {
+            yVelocity = 64.0/3.0;
+        }
+        break;
     }
 
     yVelocity *= gravityMultiplier;
@@ -115,15 +151,26 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
     {
         cameraPos.x = pos.x - CAMERA_SCROLL;
     }
-    
-    if (pos.y - cameraPos.y < CAMERA_UP_SCROLL)
+
+    switch (gamemode)
     {
-        cameraPos.y = pos.y - CAMERA_UP_SCROLL;
+    case CUBE:        
+        if (pos.y - cameraPos.y < CAMERA_UP_SCROLL)
+        {
+            cameraPos.y = pos.y - CAMERA_UP_SCROLL;
+        }
+        break;
     }
+    
 
     if (pos.y < -7*BACKGROUND_SIZE)
     {
         die();
+    }
+
+    if (grounded)
+    {
+        orbBuffered = false;
     }
 }
 
@@ -139,7 +186,7 @@ void Player::handleCollisions(std::vector<GameObject> objects)
 
     for (GameObject &object : objects)
     {
-        SDL_FRect intersect;
+        SDL_FRect intersect; // this is useless but im too lazy to remove it lmfao
 
         if (SDL_IntersectFRect(&hazardHitbox, object.getHitbox(), &intersect))
         {
@@ -182,11 +229,12 @@ void Player::handleCollisions(std::vector<GameObject> objects)
                 }
                 break;
             case UPSIDE_DOWN_PORTAL:
-                if (gravityMultiplier == 1) 
+                if (gravityMultiplier == -1) 
                 {
-                    yVelocity /= 2;
+                    break;
                 }
 
+                yVelocity /= 2;
                 gravityMultiplier = -1;
 
                 if (yVelocity < 0)
@@ -195,17 +243,25 @@ void Player::handleCollisions(std::vector<GameObject> objects)
                 }
                 break;
             case NORMAL_PORTAL:
-                if (gravityMultiplier == -1) 
+                if (gravityMultiplier == 1)
                 {
-                    yVelocity /= 2;
+                    break;
                 }
 
+                yVelocity /= 2;
                 gravityMultiplier = 1;
 
                 if (yVelocity < 0)
                 {
                     yVelocity *= -1;
                 }
+                break;
+            case SHIP_PORTAL:
+                gamemode = SHIP;
+                rotation = 0;
+                break;
+            case CUBE_PORTAL:
+                gamemode = CUBE;
                 break;
             }
         }

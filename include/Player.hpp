@@ -1,18 +1,24 @@
 #pragma once
 #include "GameObject.hpp"
 
+enum Gamemodes
+{
+    CUBE,
+    SHIP
+};
+
 class Player
 {
 private:
     SDL_Texture *playerTexture;
     Mix_Chunk *deathSound;
     SDL_FPoint pos;
-    double xVelocity, yVelocity, jumpStrength, padStrength, gravity, rotationAdder, rotation, targetRotation;
+    double xVelocity, yVelocity, jumpStrength, padStrength, gravity, rotationAdder, shipUpAdderHigh, shipUpAdderLow, shipDownAdder, rotation, targetRotation;
     SDL_FRect hazardHitbox, solidHitbox;
     std::vector<SDL_FRect *> pressedOrbs;
     bool grounded, mouseHeld, dead, orbBuffered;
     float deadTimer;
-    int gravityMultiplier;
+    int gravityMultiplier, gamemode;
 
 public:
     Player();
