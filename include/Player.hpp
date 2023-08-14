@@ -10,9 +10,9 @@ enum Gamemodes
 class Player
 {
 private:
-    SDL_Texture *playerTexture;
+    SDL_Texture *playerTexture, *shipTexture;
     Mix_Chunk *deathSound;
-    SDL_FPoint pos;
+    SDL_FPoint pos, previousPos;
     double xVelocity, yVelocity, jumpStrength, padStrength, gravity, rotationAdder, shipUpAdderHigh, shipUpAdderLow, shipDownAdder, rotation, targetRotation;
     SDL_FRect hazardHitbox, solidHitbox;
     std::vector<SDL_FRect *> pressedOrbs;

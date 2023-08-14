@@ -187,11 +187,11 @@ void handleEvents()
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            {
+        {
             int mouseState = SDL_GetMouseState(&mousePos.x, &mousePos.y);
             mouseHeld = mouseState == 1;
             break;
-            }
+        }
         case SDL_MOUSEBUTTONUP:
             mouseHeld = false;
             break;
@@ -244,17 +244,17 @@ int init()
     SCREEN_WIDTH = 1280;
     SCREEN_HEIGHT = 720;
 
-    window = SDL_CreateWindow("GDClone", 
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          SDL_WINDOWPOS_UNDEFINED, 
-                                          SCREEN_WIDTH, 
-                                          SCREEN_HEIGHT, 
-                                          SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("GDClone",
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SCREEN_WIDTH,
+                              SCREEN_HEIGHT,
+                              SDL_WINDOW_SHOWN);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    WIDTH = ((float) (SCREEN_WIDTH) / (float) (SCREEN_HEIGHT)) * HEIGHT;
+    WIDTH = ((float)(SCREEN_WIDTH) / (float)(SCREEN_HEIGHT)) * HEIGHT;
     SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT); // render a WIDTHx1080 screen and scale it for the actual window
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1" ); // anti-aliasing
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");   // anti-aliasing
     tileSheet = IMG_LoadTexture(renderer, "res/gfx/tileSheet.png");
     font = TTF_OpenFont("res/fonts/pusab.ttf", 50);
     bg = new Background(0, 0, 255);
