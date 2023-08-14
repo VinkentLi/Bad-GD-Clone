@@ -12,6 +12,7 @@ private:
 public:
     ObjectManager();
     std::vector<GameObject> getObjects();
+    SDL_FRect rotateHitbox(SDL_FRect hitbox, int rotations);
     void clearObjects();
     void loadLevelData();
     void render();

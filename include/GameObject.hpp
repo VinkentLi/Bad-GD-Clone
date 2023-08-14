@@ -16,13 +16,13 @@ enum ObjectType
 class GameObject
 {
 private:
-    int type;
+    int type, rotation;
     SDL_FPoint pos;
     SDL_FRect hitbox;
     SDL_Texture *objectTexture;
 
 public:
-    GameObject(int type, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath);
+    GameObject(int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath);
     SDL_FRect *getHitbox();
     SDL_FPoint getPos();
     int getType();

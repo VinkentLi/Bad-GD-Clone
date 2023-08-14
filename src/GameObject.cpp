@@ -1,7 +1,7 @@
 #include "GameObject.hpp"
 
-GameObject::GameObject(int type, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath)
-    : type(type), pos(pos), hitbox(hitbox)
+GameObject::GameObject(int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath)
+    : type(type), rotation(rotation), pos(pos), hitbox(hitbox)
 {
     objectTexture = IMG_LoadTexture(renderer, texturePath);
     
@@ -42,7 +42,7 @@ void GameObject::render()
         dst.h *= 3;
     }
 
-    if (SDL_RenderCopy(renderer, objectTexture, NULL, &dst) != 0)
+    if (SDL_RenderCopyEx(renderer, objectTexture, NULL, &dst, rotation * 90.0, NULL, SDL_FLIP_NONE) != 0)
     {
         std::cerr << "GameObject failed to render texture! " << SDL_GetError() << std::endl;
     }

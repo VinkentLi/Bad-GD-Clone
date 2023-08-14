@@ -34,6 +34,43 @@ void ObjectManager::clearObjects()
     objects.clear();
 }
 
+SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations)
+{
+    if (rotations == 0)
+    {
+        return hitbox;
+    }
+
+    SDL_FRect rotated = hitbox;
+    SDL_FPoint center = {rotated.x + rotated.w/2, rotated.y + rotated.h/2};
+    rotated.x -= center.x;
+    rotated.y -= center.y;
+
+    for (int i = 0; i < rotations; i++)
+    {
+        // (x, y) -> (y - h, -x)
+
+        float newX = -rotated.y - rotated.h;
+        float newY = rotated.x;
+
+        // std::cout << newX + center.x << ", " << newY + center.y << '\n';
+
+        rotated.x = newX;
+        rotated.y = newY;
+
+        // swap w & h
+
+        float temp = rotated.h;
+        rotated.h = rotated.w;
+        rotated.w = temp;
+    }
+
+    rotated.x += center.x;
+    rotated.y += center.y;
+
+    return rotated;
+}
+
 void ObjectManager::loadLevelData()
 {
     std::ifstream in;
@@ -45,10 +82,10 @@ void ObjectManager::loadLevelData()
     {
         std::string objectName;
         SDL_FPoint objectPos;
-        int horizontalRepeats, verticalRepeats;
-        in >> objectName >> objectPos.x >> objectPos.y >> horizontalRepeats >> verticalRepeats;
+        int horizontalRepeats, verticalRepeats, rotation;
+        in >> objectName >> objectPos.x >> objectPos.y >> horizontalRepeats >> verticalRepeats >> rotation;
         int objectType = stringToType.at(objectName);
-        SDL_FRect hitboxOffset = typeToHitbox.at(objectType);
+        SDL_FRect hitboxOffset = rotateHitbox(typeToHitbox.at(objectType), rotation);
 
         for (int h = 0; h < horizontalRepeats; h++)
         {
@@ -56,7 +93,7 @@ void ObjectManager::loadLevelData()
             {
                 SDL_FPoint pos = {objectPos.x + h*TILE_SIZE, objectPos.y + v*TILE_SIZE};
                 SDL_FRect hitbox = {hitboxOffset.x + pos.x, hitboxOffset.y + pos.y, hitboxOffset.w, hitboxOffset.h};
-                objects.push_back(GameObject(objectType, pos, hitbox, ("res/gfx/" + objectName + ".png").c_str()));
+                objects.push_back(GameObject(objectType, rotation, pos, hitbox, ("res/gfx/" + objectName + ".png").c_str()));
             }
         }
     }
