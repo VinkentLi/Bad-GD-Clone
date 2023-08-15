@@ -18,6 +18,6 @@ inline constexpr int HEIGHT = 1080;
 inline constexpr int TILE_SIZE = 100;
 inline constexpr int CAMERA_SCROLL = TILE_SIZE * 6;
 inline constexpr int CAMERA_UP_SCROLL = HEIGHT / 4;
-inline constexpr int CAMERA_DOWN_SCROLL = 3 * CAMERA_UP_SCROLL;
+inline constexpr int CAMERA_DOWN_SCROLL = HEIGHT - 400;
 inline constexpr int LEVEL_COUNT = 2;
 inline constexpr int BACKGROUND_SIZE = 2048;

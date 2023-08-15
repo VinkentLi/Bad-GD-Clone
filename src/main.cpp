@@ -88,6 +88,12 @@ void update(float delta)
         levelSelect->update(gameState, &mousePos, mouseHeld);
         break;
     case PLAYING:
+        if (levelSelect->getNeedToRecallPlayingStateConstructor())
+        {
+            delete playingState;
+            playingState = new PlayingState();
+        }
+
         ground->setPos({ground->getPos().x, HEIGHT - 300});
         bg->update(delta);
         playingState->update(gameState, delta, mouseHeld);
@@ -176,10 +182,11 @@ void handleEvents()
                 case PAUSED:
                     gameState = LEVEL_SELECT;
                     playingState->resetMusic();
-                    delete playingState;
-                    playingState = new PlayingState();
                     Mix_PlayMusic(menuLoop, -1);
                     cameraPos = {0, 0};
+                    break;
+                case TITLE_SCREEN:
+                    gameRunning = false;
                     break;
                 }
                 break;
@@ -248,11 +255,8 @@ int init()
 
     SDL_GetDisplayBounds(0, &displayBounds);
 
-    // const int SCREEN_WIDTH = displayBounds.w;
-    // const int SCREEN_HEIGHT = displayBounds.h;
-
-    SCREEN_WIDTH = 1280;
-    SCREEN_HEIGHT = 720;
+    SCREEN_WIDTH = displayBounds.w;
+    SCREEN_HEIGHT = displayBounds.h;
 
     window = SDL_CreateWindow(
         "GDClone",
@@ -260,7 +264,7 @@ int init()
         SDL_WINDOWPOS_UNDEFINED,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
-        SDL_WINDOW_SHOWN
+        SDL_WINDOW_FULLSCREEN_DESKTOP
     );
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);

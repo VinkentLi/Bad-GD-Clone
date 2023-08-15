@@ -11,12 +11,13 @@ private:
     SDL_Texture *corner, *top, *levelArrow, *titleArrow;
     SDL_Point mousePos;
     Mix_Chunk *playSound;
-    bool mouseHeld;
+    bool mouseHeld, needToRecallPlayingStateConstructor;
     std::vector<std::string> levelStrings;
 
 public:
     LevelSelect();
     void update(int &gameState, SDL_Point *mousePos, bool mouseHeld);
     void render();
+    bool getNeedToRecallPlayingStateConstructor();
 };
 

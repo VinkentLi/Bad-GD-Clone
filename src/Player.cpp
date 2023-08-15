@@ -212,6 +212,11 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
         {
             cameraPos.y = pos.y - CAMERA_UP_SCROLL;
         }
+
+        if (pos.y - cameraPos.y > CAMERA_DOWN_SCROLL)
+        {
+            cameraPos.y = pos.y - CAMERA_DOWN_SCROLL;
+        }
         break;
     }
 
@@ -281,7 +286,7 @@ void Player::handleCollisions(std::vector<GameObject> objects)
                             yVelocity = 0;
                         }
                     }
-                    else if (gravityMultiplier == -1)
+                    else
                     {
                         if (yVelocity > 0 && solidHitbox.y > object.getHitbox()->y + object.getHitbox()->h)
                         {

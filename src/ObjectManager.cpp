@@ -78,7 +78,7 @@ void ObjectManager::loadLevelData()
     int lines;
     in >> lines;
 
-    for ( ; lines > 0; lines--)
+    while (lines --> 0)
     {
         std::string objectName;
         SDL_FPoint objectPos;

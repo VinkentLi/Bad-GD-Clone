@@ -14,6 +14,7 @@ LevelSelect::LevelSelect()
     titleArrow = IMG_LoadTexture(renderer, "res/gfx/toTitleScreen.png");
     mousePos = {0, 0};
     mouseHeld = false;
+    needToRecallPlayingStateConstructor = false;
     levelSelected = 0;
     levelStrings.push_back("Test level1");
     levelStrings.push_back("Test Level2");
@@ -76,6 +77,7 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
         else if (SDL_PointInRect(mousePos, &scaledLevelRect))
         {
             gameState = PLAYING;
+            needToRecallPlayingStateConstructor = true;
             Mix_HaltMusic();
             Mix_PlayChannel(0, playSound, 0);
         }
@@ -104,8 +106,10 @@ void LevelSelect::render()
 
     // render level name
 
-    SDL_Surface *levelShadowSurface = TTF_RenderText_Blended(font, levelStrings[levelSelected].c_str(), {0, 0, 0, 100});
-    SDL_Surface *levelStringSurface = TTF_RenderText_Blended(font, levelStrings[levelSelected].c_str(), {255, 255, 255});
+    std::string levelName = levelStrings[levelSelected];
+
+    SDL_Surface *levelShadowSurface = TTF_RenderText_Blended(font, levelName.c_str(), {0, 0, 0, 100});
+    SDL_Surface *levelStringSurface = TTF_RenderText_Blended(font, levelName.c_str(), {255, 255, 255});
     SDL_Surface *levelStringOutline = TTF_RenderText_Blended(fontOutline, levelStrings[levelSelected].c_str(), {0, 0, 0});
     SDL_SetSurfaceBlendMode(levelStringSurface, SDL_BLENDMODE_BLEND);
     SDL_Rect rect = {4, 4, levelStringSurface->w, levelStringSurface->h};
@@ -123,4 +127,15 @@ void LevelSelect::render()
     SDL_DestroyTexture(levelShadowTexture);
     SDL_FreeSurface(levelStringOutline);
     SDL_DestroyTexture(levelStringTexture);
+}
+
+bool LevelSelect::getNeedToRecallPlayingStateConstructor()
+{
+    if (needToRecallPlayingStateConstructor)
+    {
+        needToRecallPlayingStateConstructor = false;
+        return true;
+    }
+
+    return false;
 }
