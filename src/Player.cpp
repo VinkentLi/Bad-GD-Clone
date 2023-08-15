@@ -14,8 +14,7 @@ Player::Player()
     padStrength = -52.61467;
     gravity = 2.874767;
     rotationAdder = 6.92308;
-    shipUpAdderHigh = 1.4373;
-    shipUpAdderLow = 1.293567;
+    shipUpAdder = 1.4373;
     shipDownAdder = 0.91987;
     rotation = 0;
     targetRotation = 0;
@@ -111,20 +110,48 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
         }
         break;
     case SHIP:
-        if (mouseHeld)
+        if (gravityMultiplier == 1)
         {
-            if (yVelocity < 1.7)
+            if (mouseHeld)
             {
-                yVelocity -= shipUpAdderLow * delta;
+                if (yVelocity < 5)
+                {
+                    yVelocity -= shipUpAdder * delta;
+                }
+                else
+                {
+                    yVelocity -= shipUpAdder * 0.9 * delta;
+                }
             }
             else
             {
-                yVelocity -= shipUpAdderHigh * delta;
+                yVelocity += shipDownAdder * delta;
             }
         }
         else
         {
-            yVelocity += shipDownAdder * delta;
+            if (mouseHeld)
+            {
+                if (yVelocity < 6)
+                {
+                    yVelocity -= 0.4791 * delta;
+                }
+                else
+                {
+                    yVelocity -= 0.598867 * delta;
+                }
+            }
+            else
+            {
+                if (yVelocity < -6)
+                {
+                    yVelocity += 0.3833 * delta;
+                }
+                else
+                {
+                    yVelocity += 0.574933 * delta;
+                }
+            }
         }
 
         if (yVelocity < -80.0 / 3.0)
@@ -153,8 +180,24 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
     {
         // i tried to make rotations accurate, but i couldn't get it to work
 
-        rotation = yVelocity * 2.0;
-        rotation /= std::clamp(5.0 / std::abs(yVelocity), 1.0, 3.0);
+        if (yVelocity == 0.0)
+        {
+            if (rotation < 0)
+            {
+                rotation = std::clamp(rotation + rotationAdder, -360.0, 0.0);
+            }
+            else if (rotation > 0)
+            {
+                rotation = std::clamp(rotation - rotationAdder, 0.0, 360.0);
+            }
+        }
+        else
+        {
+            rotation = yVelocity * 2.0;
+            rotation /= std::clamp(5.0 / std::abs(yVelocity), 1.0, 3.0);
+        }
+
+        rotation *= gravityMultiplier;
     }
 
     if (pos.x - cameraPos.x > CAMERA_SCROLL)
@@ -186,13 +229,34 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
 }
 
 void Player::handleCollisions(std::vector<GameObject> objects)
-{
-    if (hazardHitbox.y > HEIGHT - 300 - TILE_SIZE)
+{   
+    switch (gamemode)
     {
-        hazardHitbox.y = HEIGHT - 300 - TILE_SIZE;
-        solidHitbox.y = hazardHitbox.y + TILE_SIZE / 3;
-        grounded = true;
-        yVelocity = 0;
+    case CUBE:    
+        if (hazardHitbox.y > HEIGHT - 300 - TILE_SIZE)
+        {
+            hazardHitbox.y = HEIGHT - 300 - TILE_SIZE;
+            solidHitbox.y = hazardHitbox.y + TILE_SIZE / 3;
+            grounded = true;
+            yVelocity = 0;
+        }
+        break;
+    case SHIP:
+        if (hazardHitbox.y < bounds.first)
+        {
+            hazardHitbox.y = bounds.first;
+            solidHitbox.y = hazardHitbox.y + TILE_SIZE / 3;
+            yVelocity = 0;
+        }
+
+        if (hazardHitbox.y + hazardHitbox.h > bounds.second)
+        {
+            hazardHitbox.y = bounds.second - hazardHitbox.h;
+            solidHitbox.y = hazardHitbox.y + TILE_SIZE / 3;
+            grounded = true;
+            yVelocity = 0;
+        }
+        break;
     }
 
     for (GameObject &object : objects)
@@ -217,9 +281,18 @@ void Player::handleCollisions(std::vector<GameObject> objects)
                             yVelocity = 0;
                         }
                     }
-                    else
+                    else if (gravityMultiplier == -1)
                     {
                         if (yVelocity > 0 && solidHitbox.y > object.getHitbox()->y + object.getHitbox()->h)
+                        {
+                            hazardHitbox.y = object.getPos().y + TILE_SIZE;
+                            yVelocity = 0;
+                        }
+                    }
+
+                    if (gamemode == SHIP)
+                    {
+                        if (yVelocity < 0 && solidHitbox.y > object.getHitbox()->y + object.getHitbox()->h)
                         {
                             hazardHitbox.y = object.getPos().y + TILE_SIZE;
                             yVelocity = 0;
@@ -275,6 +348,10 @@ void Player::handleCollisions(std::vector<GameObject> objects)
                 {
                     yVelocity /= 2;
                 }
+
+                cameraPos.y = std::clamp((float)((((int)(object.getPos().y / TILE_SIZE)) - 3) * TILE_SIZE), -10000.0f, -260.0f);
+                bounds.first = cameraPos.y + 40;
+                bounds.second = bounds.first + 10 * TILE_SIZE;
                 break;
             case CUBE_PORTAL:
                 gamemode = CUBE;
@@ -288,7 +365,7 @@ void Player::handleCollisions(std::vector<GameObject> objects)
         }
     }
 
-    grounded = yVelocity == 0;
+    grounded = yVelocity == 0 && (!mouseHeld || gamemode != SHIP);
     solidHitbox.x = hazardHitbox.x + TILE_SIZE / 3;
     solidHitbox.y = hazardHitbox.y + TILE_SIZE / 3;
     pos.x = hazardHitbox.x;
@@ -307,11 +384,22 @@ void Player::render()
     }
     case SHIP:
     {
-        SDL_FRect cubeDST = {pos.x - cameraPos.x + TILE_SIZE / 4, pos.y - cameraPos.y, TILE_SIZE * 3 / 5, TILE_SIZE * 3 / 5};
-        SDL_FRect shipDST = {pos.x - cameraPos.x - 14, pos.y - cameraPos.y + 22, 132, 78};
-        SDL_FPoint cubeCenter = {shipDST.x + shipDST.w / 2 - cubeDST.x, shipDST.y + shipDST.h / 2 - cubeDST.y};
-        SDL_RenderCopyExF(renderer, playerTexture, NULL, &cubeDST, rotation, &cubeCenter, SDL_FLIP_NONE);
-        SDL_RenderCopyExF(renderer, shipTexture, NULL, &shipDST, rotation, NULL, SDL_FLIP_NONE);
+        if (gravityMultiplier == 1)
+        {
+            SDL_FRect cubeDST = {pos.x - cameraPos.x + TILE_SIZE / 4, pos.y - cameraPos.y, TILE_SIZE * 3 / 5, TILE_SIZE * 3 / 5};
+            SDL_FRect shipDST = {pos.x - cameraPos.x - 14, pos.y - cameraPos.y + 22, 132, 78};
+            SDL_FPoint cubeCenter = {shipDST.x + shipDST.w / 2 - cubeDST.x, shipDST.y + shipDST.h / 2 - cubeDST.y};
+            SDL_RenderCopyExF(renderer, playerTexture, NULL, &cubeDST, rotation, &cubeCenter, SDL_FLIP_NONE);
+            SDL_RenderCopyExF(renderer, shipTexture, NULL, &shipDST, rotation, NULL, SDL_FLIP_NONE);
+        }
+        else
+        {
+            SDL_FRect cubeDST = {pos.x - cameraPos.x + TILE_SIZE / 4, pos.y - cameraPos.y + TILE_SIZE * 2 / 5, TILE_SIZE * 3 / 5, TILE_SIZE * 3 / 5};
+            SDL_FRect shipDST = {pos.x - cameraPos.x - 14, pos.y - cameraPos.y, 132, 78};
+            SDL_FPoint cubeCenter = {shipDST.x + shipDST.w / 2 - cubeDST.x, shipDST.y + shipDST.h / 2 - cubeDST.y};
+            SDL_RenderCopyExF(renderer, playerTexture, NULL, &cubeDST, rotation, &cubeCenter, SDL_FLIP_VERTICAL);
+            SDL_RenderCopyExF(renderer, shipTexture, NULL, &shipDST, rotation, NULL, SDL_FLIP_VERTICAL);
+        }
         break;
     }
     }
@@ -338,6 +426,11 @@ void Player::die()
 bool Player::isDead()
 {
     return dead;
+}
+
+int Player::getGamemode()
+{
+    return gamemode;
 }
 
 // SDL_FRect Player::getHazardHitbox()

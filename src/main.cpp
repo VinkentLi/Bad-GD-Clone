@@ -19,11 +19,11 @@ SDL_Point mousePos;
 SDL_FPoint cameraPos;
 TTF_Font *font;
 TTF_Font *fontOutline;
-Background *bg = nullptr;
-Ground *ground = nullptr;
-TitleScreen *titleScreen = nullptr;
-LevelSelect *levelSelect = nullptr;
-PlayingState *playingState = nullptr;
+Background *bg = nullptr;             // pointer so i can make it null
+Ground *ground = nullptr;             // i want it null so i can call the constructor when
+TitleScreen *titleScreen = nullptr;   // SDL is initiated
+LevelSelect *levelSelect = nullptr;   // there's probably a better way of doing it
+PlayingState *playingState = nullptr; // but I'm an idiot
 
 int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN, levelSelected = 0;
 
@@ -82,6 +82,7 @@ void update(float delta)
         break;
     case LEVEL_SELECT:
         ground->setPos({0, HEIGHT - 200});
+        ground->setOnTop(false);
         bg->setMoving(false);
         // ground->resetPos();
         levelSelect->update(gameState, &mousePos, mouseHeld);
@@ -94,6 +95,15 @@ void update(float delta)
         if (cameraPos.x != 0)
         {
             bg->setMoving(true);
+        }
+
+        if (playingState->getPlayerGamemode() == SHIP)
+        {
+            ground->setOnTop(true);
+        }
+        else
+        {
+            ground->setOnTop(false);
         }
         break;
     case PAUSED:
@@ -244,12 +254,14 @@ int init()
     SCREEN_WIDTH = 1280;
     SCREEN_HEIGHT = 720;
 
-    window = SDL_CreateWindow("GDClone",
-                              SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED,
-                              SCREEN_WIDTH,
-                              SCREEN_HEIGHT,
-                              SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow(
+        "GDClone",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        SDL_WINDOW_SHOWN
+    );
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     WIDTH = ((float)(SCREEN_WIDTH) / (float)(SCREEN_HEIGHT)) * HEIGHT;

@@ -79,3 +79,8 @@ void PlayingState::render()
     objectManager->render();
     player->render();
 }
+
+int PlayingState::getPlayerGamemode()
+{
+    return player->getGamemode();
+}

@@ -21,4 +21,5 @@ public:
     void resetMusic();
     void attemptResetTimer();
     void render();
+    int getPlayerGamemode();
 };

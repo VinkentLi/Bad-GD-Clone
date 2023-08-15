@@ -10,6 +10,7 @@ private:
     SDL_Texture *groundTexture;
     SDL_Rect src;
     SDL_FPoint pos;
+    bool renderOnTop;
 
 public:
     Ground() = default;
@@ -20,5 +21,6 @@ public:
     void update();
     void move(float distance, float delta);
     void render();
+    void setOnTop(bool value);
 };
 

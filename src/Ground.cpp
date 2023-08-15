@@ -7,6 +7,7 @@ Ground::Ground(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b)
     squareCount = WIDTH / GROUND_SIZE + 2;
     src = {0, 0, GROUND_SIZE, GROUND_SIZE};
     pos = {0, HEIGHT - 300};
+    renderOnTop = false;
 }
 
 void Ground::setPos(SDL_FPoint pos)
@@ -48,9 +49,19 @@ void Ground::render()
             dst.x += squareCount * GROUND_SIZE;
         }
 
-        if (SDL_RenderCopyF(renderer, groundTexture, &src, &dst) != 0)
+        SDL_RenderCopyF(renderer, groundTexture, &src, &dst);
+
+        if (renderOnTop)
         {
-            std::cerr << "Failed to render ground texture! " << std::endl;
+            SDL_FRect newDST = dst;
+            newDST.y = HEIGHT - dst.y - dst.h;
+
+            SDL_RenderCopyExF(renderer, groundTexture, &src, &newDST, 0.0, NULL, SDL_FLIP_VERTICAL);
         }
     }
+}
+
+void Ground::setOnTop(bool value)
+{
+    renderOnTop = value;
 }
