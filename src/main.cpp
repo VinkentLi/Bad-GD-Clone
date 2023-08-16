@@ -258,6 +258,9 @@ int init()
     SCREEN_WIDTH = displayBounds.w;
     SCREEN_HEIGHT = displayBounds.h;
 
+    // SCREEN_WIDTH = 1280;
+    // SCREEN_HEIGHT = 720;
+
     window = SDL_CreateWindow(
         "GDClone",
         SDL_WINDOWPOS_UNDEFINED,

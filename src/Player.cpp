@@ -15,7 +15,7 @@ Player::Player()
     gravity = 2.874767;
     rotationAdder = 6.92308;
     shipUpAdder = 1.4373;
-    shipDownAdder = 0.91987;
+    shipDownAdder = 1.3798;
     rotation = 0;
     targetRotation = 0;
     hazardHitbox = {pos.x, pos.y, TILE_SIZE, TILE_SIZE};
@@ -110,47 +110,42 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
         }
         break;
     case SHIP:
-        if (gravityMultiplier == 1)
+    {
+        double shipUp = shipUpAdder;
+        double shipDown = shipDownAdder;
+        double lessHelpUp = 0.9;
+        double lessHelpDown = 0.667;
+
+        if (gravityMultiplier == -1)
         {
-            if (mouseHeld)
+            double t1 = shipUp;
+            shipUp = shipDown;
+            shipDown = t1;
+            double t2 = lessHelpUp;
+            lessHelpUp = lessHelpDown;
+            lessHelpDown = t2;
+        }
+
+        if (mouseHeld)
+        {
+            if (yVelocity > -7)
             {
-                if (yVelocity < 5)
-                {
-                    yVelocity -= shipUpAdder * delta;
-                }
-                else
-                {
-                    yVelocity -= shipUpAdder * 0.9 * delta;
-                }
+                yVelocity -= shipUp * delta;
             }
             else
             {
-                yVelocity += shipDownAdder * delta;
+                yVelocity -= shipUp * lessHelpUp * delta;
             }
         }
         else
         {
-            if (mouseHeld)
+            if (yVelocity < -7)
             {
-                if (yVelocity < 6)
-                {
-                    yVelocity -= 0.4791 * delta;
-                }
-                else
-                {
-                    yVelocity -= 0.598867 * delta;
-                }
+                yVelocity += shipDown * delta;
             }
             else
             {
-                if (yVelocity < -6)
-                {
-                    yVelocity += 0.3833 * delta;
-                }
-                else
-                {
-                    yVelocity += 0.574933 * delta;
-                }
+                yVelocity += shipDown * lessHelpDown * delta;
             }
         }
 
@@ -163,6 +158,7 @@ void Player::update(float delta, bool mouseHeld, std::vector<GameObject> objects
             yVelocity = 64.0 / 3.0;
         }
         break;
+    }
     }
 
     yVelocity *= gravityMultiplier;
