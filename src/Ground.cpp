@@ -1,67 +1,55 @@
 #include "Ground.hpp"
 
-Ground::Ground(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b)
-{
-    groundTexture = IMG_LoadTexture(renderer, "res/gfx/ground.png");
-    SDL_SetTextureColorMod(groundTexture, r, g, b);
-    squareCount = WIDTH / GROUND_SIZE + 2;
-    src = {0, 0, GROUND_SIZE, GROUND_SIZE};
-    pos = {0, HEIGHT - 300};
-    renderOnTop = false;
+Ground::Ground(uint8_t r, uint8_t g, uint8_t b) : m_red(r), m_green(g), m_blue(b) {
+    m_ground_texture = IMG_LoadTexture(renderer, "res/gfx/ground.png");
+    SDL_SetTextureColorMod(m_ground_texture, r, g, b);
+    m_square_count = WIDTH / m_GROUND_SIZE + 2;
+    m_src = {0, 0, m_GROUND_SIZE, m_GROUND_SIZE};
+    m_pos = {0, HEIGHT - 300};
+    m_render_on_top = false;
 }
 
-void Ground::setPos(SDL_FPoint pos)
-{
-    this->pos = pos;
+void Ground::set_pos(SDL_FPoint pos) {
+    m_pos = pos;
 }
 
-SDL_FPoint Ground::getPos()
-{
-    return pos;
+SDL_FPoint Ground::get_pos() {
+    return m_pos;
 }
 
-void Ground::move(float distance, float delta)
-{
-    pos.x += distance * delta;
+void Ground::move(float distance, float delta) {
+    m_pos.x += distance * delta;
 }
 
-void Ground::resetPos()
-{
-    pos.x = 0;
+void Ground::reset_pos() {
+    m_pos.x = 0;
 }
 
-void Ground::update()
-{
-    if (pos.x < -GROUND_SIZE)
-    {
-        pos.x += GROUND_SIZE;
+void Ground::update() {
+    if (m_pos.x < -m_GROUND_SIZE) {
+        m_pos.x += m_GROUND_SIZE;
     }
 }
 
-void Ground::render()
-{
-    for (int i = 0; i < squareCount; i++)
-    {
-        SDL_FRect dst = {pos.x + i * GROUND_SIZE - cameraPos.x, pos.y - cameraPos.y, GROUND_SIZE, GROUND_SIZE};
+void Ground::render() {
+    for (int i = 0; i < m_square_count; i++) {
+        SDL_FRect dst = {m_pos.x + i * m_GROUND_SIZE - camera_pos.x, m_pos.y - camera_pos.y, m_GROUND_SIZE, m_GROUND_SIZE};
 
-        while (dst.x + GROUND_SIZE < 0)
-        {
-            dst.x += squareCount * GROUND_SIZE;
+        while (dst.x + m_GROUND_SIZE < 0) {
+            dst.x += m_square_count * m_GROUND_SIZE;
         }
 
-        SDL_RenderCopyF(renderer, groundTexture, &src, &dst);
+        SDL_RenderCopyF(renderer, m_ground_texture, &m_src, &dst);
 
-        if (renderOnTop)
-        {
-            SDL_FRect newDST = dst;
-            newDST.y = HEIGHT - dst.y - dst.h;
+        if (m_render_on_top) {
+            SDL_FRect new_dst = dst;
+            new_dst.y = HEIGHT - dst.y - dst.h;
 
-            SDL_RenderCopyExF(renderer, groundTexture, &src, &newDST, 0.0, NULL, SDL_FLIP_VERTICAL);
+            SDL_RenderCopyExF(renderer, m_ground_texture, &m_src, &new_dst, 0.0, NULL, SDL_FLIP_VERTICAL);
         }
     }
 }
 
-void Ground::setOnTop(bool value)
-{
-    renderOnTop = value;
+void Ground::set_on_top(bool value) {
+    m_render_on_top = value;
 }

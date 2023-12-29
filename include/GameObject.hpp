@@ -1,8 +1,7 @@
 #pragma once
 #include "Global.hpp"
 
-enum ObjectType
-{
+enum ObjectType {
     BLOCK,
     HAZARD,
     ORB,
@@ -13,19 +12,18 @@ enum ObjectType
     NORMAL_PORTAL
 };
 
-class GameObject
-{
+class GameObject {
 private:
-    int type, rotation;
-    SDL_FPoint pos;
-    SDL_FRect hitbox;
-    SDL_Texture *objectTexture;
+    int m_type, m_rotation;
+    SDL_FPoint m_pos;
+    SDL_FRect m_hitbox;
+    SDL_Texture *m_object_texture;
 
 public:
-    GameObject(int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath);
-    SDL_FRect *getHitbox();
-    SDL_FPoint getPos();
-    int getType();
+    GameObject(int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, const char *texture_path);
+    SDL_FRect *get_hitbox();
+    SDL_FPoint get_pos();
+    int get_type();
     void render();
 };
 

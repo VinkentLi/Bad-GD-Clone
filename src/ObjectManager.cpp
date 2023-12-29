@@ -1,43 +1,38 @@
 #include "ObjectManager.hpp"
 #include <fstream>
 
-ObjectManager::ObjectManager()
-{
-    stringToType = { {"BLOCK", BLOCK},
-                     {"SPIKE", HAZARD},
-                     {"ywORB", ORB},
-                     {"ywPAD", PAD},
-                     {"pSHIP", SHIP_PORTAL},
-                     {"pCUBE", CUBE_PORTAL},
-                     {"pUPSD", UPSIDE_DOWN_PORTAL},
-                     {"pRGLR", NORMAL_PORTAL} };
+ObjectManager::ObjectManager() {
+    m_string_to_type = { {"BLOCK", BLOCK},
+                         {"SPIKE", HAZARD},
+                         {"ywORB", ORB},
+                         {"ywPAD", PAD},
+                         {"pSHIP", SHIP_PORTAL},
+                         {"pCUBE", CUBE_PORTAL},
+                         {"pUPSD", UPSIDE_DOWN_PORTAL},
+                         {"pRGLR", NORMAL_PORTAL} };
     
-    typeToHitbox = { {BLOCK,              {0,  0,  TILE_SIZE, TILE_SIZE}},
-                     {HAZARD,             {36, 31, 27, 50}},
-                     {ORB,                {0,  0,  TILE_SIZE, TILE_SIZE}},
-                     {PAD,                {10, 90, 77, 10}},
-                     {SHIP_PORTAL,        {0,  0,  TILE_SIZE, TILE_SIZE*3}},
-                     {CUBE_PORTAL,        {0,  0,  TILE_SIZE, TILE_SIZE*3}},
-                     {UPSIDE_DOWN_PORTAL, {0,  0,  TILE_SIZE, TILE_SIZE*3}},
-                     {NORMAL_PORTAL,      {0,  0,  TILE_SIZE, TILE_SIZE*3}} };
+    m_type_to_hitbox = { {BLOCK,              {0,  0,  TILE_SIZE, TILE_SIZE}},
+                         {HAZARD,             {36, 31, 27, 50}},
+                         {ORB,                {0,  0,  TILE_SIZE, TILE_SIZE}},
+                         {PAD,                {10, 90, 77, 10}},
+                         {SHIP_PORTAL,        {0,  0,  TILE_SIZE, TILE_SIZE*3}},
+                         {CUBE_PORTAL,        {0,  0,  TILE_SIZE, TILE_SIZE*3}},
+                         {UPSIDE_DOWN_PORTAL, {0,  0,  TILE_SIZE, TILE_SIZE*3}},
+                         {NORMAL_PORTAL,      {0,  0,  TILE_SIZE, TILE_SIZE*3}} };
 
-    loadLevelData();
+    load_level_data();
 }
 
-std::vector<GameObject> ObjectManager::getObjects()
-{
-    return objects;
+std::vector<GameObject> ObjectManager::get_objects() {
+    return m_objects;
 }
 
-void ObjectManager::clearObjects()
-{
-    objects.clear();
+void ObjectManager::clear_objects() {
+    m_objects.clear();
 }
 
-SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations)
-{
-    if (rotations == 0)
-    {
+SDL_FRect ObjectManager::rotate_hitbox(SDL_FRect hitbox, int rotations) {
+    if (rotations == 0) {
         return hitbox;
     }
 
@@ -46,23 +41,18 @@ SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations)
     rotated.x -= center.x;
     rotated.y -= center.y;
 
-    for (int i = 0; i < rotations; i++)
-    {
+    for (int i = 0; i < rotations; i++) {
         // (x, y) -> (y - h, -x)
 
-        float newX = -rotated.y - rotated.h;
-        float newY = rotated.x;
+        float new_x = -rotated.y - rotated.h;
+        float new_y = rotated.x;
 
-        // std::cout << newX + center.x << ", " << newY + center.y << '\n';
+        // std::cout << new_x + center.x << ", " << new_y + center.y << '\n';
 
-        rotated.x = newX;
-        rotated.y = newY;
+        rotated.x = new_x;
+        rotated.y = new_y;
 
-        // swap w & h
-
-        float temp = rotated.h;
-        rotated.h = rotated.w;
-        rotated.w = temp;
+        std::swap(rotated.w, rotated.h);
     }
 
     rotated.x += center.x;
@@ -71,39 +61,33 @@ SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations)
     return rotated;
 }
 
-void ObjectManager::loadLevelData()
-{
-    std::ifstream in;
-    in.open("res/leveldata/" + std::to_string(levelSelected) + ".level");
+void ObjectManager::load_level_data() {
+    std::ifstream fin;
+    fin.open("res/leveldata/" + std::to_string(level_selected) + ".level");
     int lines;
-    in >> lines;
+    fin >> lines;
 
-    while (lines --> 0)
-    {
-        std::string objectName;
-        SDL_FPoint objectPos;
-        int horizontalRepeats, verticalRepeats, rotation;
-        in >> objectName >> objectPos.x >> objectPos.y >> horizontalRepeats >> verticalRepeats >> rotation;
-        int objectType = stringToType.at(objectName);
-        SDL_FRect hitboxOffset = rotateHitbox(typeToHitbox.at(objectType), rotation);
+    while (lines --> 0) {
+        std::string object_name;
+        SDL_FPoint object_pos;
+        int horizontal_repeats, vertical_repeats, rotation;
+        fin >> object_name >> object_pos.x >> object_pos.y >> horizontal_repeats >> vertical_repeats >> rotation;
+        int object_type = m_string_to_type.at(object_name);
+        SDL_FRect hitbox_offset = rotate_hitbox(m_type_to_hitbox.at(object_type), rotation);
 
-        for (int h = 0; h < horizontalRepeats; h++)
-        {
-            for (int v = 0; v < verticalRepeats; v++)
-            {
-                SDL_FPoint pos = {objectPos.x + h*TILE_SIZE, objectPos.y + v*TILE_SIZE};
-                SDL_FRect hitbox = {hitboxOffset.x + pos.x, hitboxOffset.y + pos.y, hitboxOffset.w, hitboxOffset.h};
-                objects.push_back(GameObject(objectType, rotation, pos, hitbox, ("res/gfx/" + objectName + ".png").c_str()));
+        for (int h = 0; h < horizontal_repeats; h++) {
+            for (int v = 0; v < vertical_repeats; v++) {
+                SDL_FPoint pos = {object_pos.x + h*TILE_SIZE, object_pos.y + v*TILE_SIZE};
+                SDL_FRect hitbox = {hitbox_offset.x + pos.x, hitbox_offset.y + pos.y, hitbox_offset.w, hitbox_offset.h};
+                m_objects.push_back(GameObject(object_type, rotation, pos, hitbox, ("res/gfx/" + object_name + ".png").c_str()));
             }
         }
     }
-    in.close();
+    fin.close();
 }
 
-void ObjectManager::render()
-{
-    for (GameObject &gameObject : objects)
-    {
-        gameObject.render();
+void ObjectManager::render() {
+    for (GameObject &game_object : m_objects) {
+        game_object.render();
     }
 }

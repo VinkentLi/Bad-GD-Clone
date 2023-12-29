@@ -2,16 +2,15 @@
 #include "GameStates.hpp"
 #include "Global.hpp"
 
-class TitleScreen
-{
+class TitleScreen {
 private:
-    SDL_Rect titleDST, titlePlayDST;
-    SDL_Texture *titleTexture, *titlePlay;
-    SDL_Point mousePos;
-    bool mouseHeld;
+    SDL_Rect m_title_dst, m_title_play_dst;
+    SDL_Texture *m_title_texture, *m_title_play;
+    SDL_Point m_mouse_pos;
+    bool m_mouse_held;
 
 public:
     TitleScreen();
-    void update(int &gameState, SDL_Point *mousePos, bool mouseHeld);
+    void update(int &game_state, SDL_Point *mouse_pos, bool mouse_held);
     void render();
 };

@@ -8,12 +8,12 @@
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
-extern Mix_Music *menuLoop;
-extern SDL_FPoint cameraPos;
+extern Mix_Music *menu_loop;
+extern SDL_FPoint camera_pos;
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 extern int WIDTH;
-extern int levelSelected;
+extern int level_selected;
 inline constexpr int HEIGHT = 1080;
 inline constexpr int TILE_SIZE = 100;
 inline constexpr int CAMERA_SCROLL = TILE_SIZE * 6;
