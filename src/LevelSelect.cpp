@@ -2,39 +2,39 @@
 
 LevelSelect::LevelSelect()
 {
-    leftCornerDST = {0, HEIGHT - 282, 285, 282};
-    rightCornerDST = {WIDTH - 285, HEIGHT - 282, 285, 282};
-    topDST = {WIDTH/2 - 1226/2*3/4, 0, 1226*3/4, 144*3/4};
-    leftLevelArrowDST = {40, HEIGHT/2 - 238/2, 106, 238};
-    rightLevelArrowDST = {WIDTH - 40 - 106, HEIGHT/2 - 238/2, 106, 238};
-    titleArrowDST = {40, 20, 124, 150};
-    corner = IMG_LoadTexture(renderer, "res/gfx/selectCorner.png");
-    top = IMG_LoadTexture(renderer, "res/gfx/top.png");
-    levelArrow = IMG_LoadTexture(renderer, "res/gfx/levelArrow.png");
-    titleArrow = IMG_LoadTexture(renderer, "res/gfx/toTitleScreen.png");
-    mousePos = {0, 0};
-    mouseHeld = false;
-    needToRecallPlayingStateConstructor = false;
+    m_LeftCornerDST = {0, HEIGHT - 282, 285, 282};
+    m_RightCornerDST = {WIDTH - 285, HEIGHT - 282, 285, 282};
+    m_TopDST = {WIDTH/2 - 1226/2*3/4, 0, 1226*3/4, 144*3/4};
+    m_LeftLevelArrowDST = {40, HEIGHT/2 - 238/2, 106, 238};
+    m_RightLevelArrowDST = {WIDTH - 40 - 106, HEIGHT/2 - 238/2, 106, 238};
+    m_TitleArrowDST = {40, 20, 124, 150};
+    m_Corner = IMG_LoadTexture(renderer, "res/gfx/selectCorner.png");
+    m_Top = IMG_LoadTexture(renderer, "res/gfx/top.png");
+    m_LevelArrow = IMG_LoadTexture(renderer, "res/gfx/levelArrow.png");
+    m_TitleArrow = IMG_LoadTexture(renderer, "res/gfx/toTitleScreen.png");
+    m_MousePos = {0, 0};
+    m_MouseHeld = false;
+    m_NeedToRecallPlayingStateConstructor = false;
     levelSelected = 0;
     levelStrings.push_back("Test level1");
     levelStrings.push_back("Test Level2");
-    font = TTF_OpenFont("res/fonts/pusab.ttf", 100);
-    fontOutline = TTF_OpenFont("res/fonts/pusab.ttf", 100);
-    TTF_SetFontOutline(fontOutline, 4);
-    rectWithLevelName.w = 1000;
-    rectWithLevelName.h = 300;
-    rectWithLevelName.x = WIDTH / 2 - 1000/2;
-    rectWithLevelName.y = HEIGHT / 2 - 350;
-    playSound = Mix_LoadWAV("res/sfx/playSound.ogg");
+    m_Font = TTF_OpenFont("res/fonts/pusab.ttf", 100);
+    m_FontOutline = TTF_OpenFont("res/fonts/pusab.ttf", 100);
+    TTF_SetFontOutline(m_FontOutline, 4);
+    m_RectWithLevelName.w = 1000;
+    m_RectWithLevelName.h = 300;
+    m_RectWithLevelName.x = WIDTH / 2 - 1000/2;
+    m_RectWithLevelName.y = HEIGHT / 2 - 350;
+    m_PlaySound = Mix_LoadWAV("res/sfx/playSound.ogg");
 }
 
 void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
 {
-    if (this->mouseHeld && !mouseHeld)
+    if (this->m_MouseHeld && !mouseHeld)
     {  
         float wScale = SCREEN_WIDTH / (float) WIDTH;
         float hScale = SCREEN_HEIGHT / (float) HEIGHT;
-        SDL_Rect scaledTitleArrow = titleArrowDST, scaledLeft = leftLevelArrowDST, scaledRight = rightLevelArrowDST, scaledLevelRect = rectWithLevelName;
+        SDL_Rect scaledTitleArrow = m_TitleArrowDST, scaledLeft = m_LeftLevelArrowDST, scaledRight = m_RightLevelArrowDST, scaledLevelRect = m_RectWithLevelName;
         scaledTitleArrow.x *= wScale;
         scaledTitleArrow.y *= hScale;
         scaledTitleArrow.w *= wScale;
@@ -77,47 +77,47 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool mouseHeld)
         else if (SDL_PointInRect(mousePos, &scaledLevelRect))
         {
             gameState = PLAYING;
-            needToRecallPlayingStateConstructor = true;
+            m_NeedToRecallPlayingStateConstructor = true;
             Mix_HaltMusic();
-            Mix_PlayChannel(0, playSound, 0);
+            Mix_PlayChannel(0, m_PlaySound, 0);
         }
     }
 
-    this->mouseHeld = mouseHeld;
-    this->mousePos = *mousePos;
+    this->m_MouseHeld = mouseHeld;
+    this->m_MousePos = *mousePos;
 }
 
 void LevelSelect::render()
 {
     // render textures
 
-    SDL_RenderCopyEx(renderer, corner, NULL, &leftCornerDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(renderer, corner, NULL, &rightCornerDST, 0, NULL, SDL_FLIP_HORIZONTAL);
-    SDL_RenderCopyEx(renderer, top, NULL, &topDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(renderer, levelArrow, NULL, &leftLevelArrowDST, 0, NULL, SDL_FLIP_HORIZONTAL);
-    SDL_RenderCopyEx(renderer, levelArrow, NULL, &rightLevelArrowDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(renderer, titleArrow, NULL, &titleArrowDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, m_Corner, NULL, &m_LeftCornerDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, m_Corner, NULL, &m_RightCornerDST, 0, NULL, SDL_FLIP_HORIZONTAL);
+    SDL_RenderCopyEx(renderer, m_Top, NULL, &m_TopDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, m_LevelArrow, NULL, &m_LeftLevelArrowDST, 0, NULL, SDL_FLIP_HORIZONTAL);
+    SDL_RenderCopyEx(renderer, m_LevelArrow, NULL, &m_RightLevelArrowDST, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, m_TitleArrow, NULL, &m_TitleArrowDST, 0, NULL, SDL_FLIP_NONE);
 
     // render the rectangle with the level name
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_RenderFillRect(renderer, &rectWithLevelName);
+    SDL_RenderFillRect(renderer, &m_RectWithLevelName);
 
     // render level name
 
     std::string levelName = levelStrings[levelSelected];
 
-    SDL_Surface *levelShadowSurface = TTF_RenderText_Blended(font, levelName.c_str(), {0, 0, 0, 100});
-    SDL_Surface *levelStringSurface = TTF_RenderText_Blended(font, levelName.c_str(), {255, 255, 255});
-    SDL_Surface *levelStringOutline = TTF_RenderText_Blended(fontOutline, levelStrings[levelSelected].c_str(), {0, 0, 0});
+    SDL_Surface *levelShadowSurface = TTF_RenderText_Blended(m_Font, levelName.c_str(), {0, 0, 0, 100});
+    SDL_Surface *levelStringSurface = TTF_RenderText_Blended(m_Font, levelName.c_str(), {255, 255, 255});
+    SDL_Surface *levelStringOutline = TTF_RenderText_Blended(m_FontOutline, levelStrings[levelSelected].c_str(), {0, 0, 0});
     SDL_SetSurfaceBlendMode(levelStringSurface, SDL_BLENDMODE_BLEND);
     SDL_Rect rect = {4, 4, levelStringSurface->w, levelStringSurface->h};
     SDL_BlitSurface(levelStringSurface, NULL, levelStringOutline, &rect);
     SDL_FreeSurface(levelStringSurface);
     SDL_Texture *levelShadowTexture = SDL_CreateTextureFromSurface(renderer, levelShadowSurface);
     SDL_Texture *levelStringTexture = SDL_CreateTextureFromSurface(renderer, levelStringOutline);
-    SDL_Rect stringDST = {WIDTH/2 - levelStringOutline->w/2, rectWithLevelName.y + rectWithLevelName.h/2 - levelStringOutline->h/2, levelStringOutline->w, levelStringOutline->h};
+    SDL_Rect stringDST = {WIDTH/2 - levelStringOutline->w/2, m_RectWithLevelName.y + m_RectWithLevelName.h/2 - levelStringOutline->h/2, levelStringOutline->w, levelStringOutline->h};
     SDL_Rect shadowDST = stringDST;
     shadowDST.x += 5;
     shadowDST.y += 5;
@@ -131,9 +131,9 @@ void LevelSelect::render()
 
 bool LevelSelect::getNeedToRecallPlayingStateConstructor()
 {
-    if (needToRecallPlayingStateConstructor)
+    if (m_NeedToRecallPlayingStateConstructor)
     {
-        needToRecallPlayingStateConstructor = false;
+        m_NeedToRecallPlayingStateConstructor = false;
         return true;
     }
 

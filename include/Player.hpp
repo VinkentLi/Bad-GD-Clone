@@ -10,16 +10,16 @@ enum Gamemodes
 class Player
 {
 private:
-    SDL_Texture *playerTexture, *shipTexture;
-    Mix_Chunk *deathSound;
-    SDL_FPoint pos, previousPos;
-    double xVelocity, yVelocity, jumpStrength, padStrength, gravity, rotationAdder, shipUpAdder, shipDownAdder, rotation, targetRotation;
-    SDL_FRect hazardHitbox, solidHitbox;
-    std::vector<SDL_FRect *> pressedOrbs;
-    bool grounded, mouseHeld, dead, orbBuffered;
-    float deadTimer;
-    int gravityMultiplier, gamemode;
-    std::pair<float, float> bounds;
+    SDL_Texture *m_PlayerTexture, *m_ShipTexture;
+    Mix_Chunk *m_DeathSound;
+    SDL_FPoint m_Pos, m_PreviousPos;
+    double m_XVelocity, m_YVelocity, m_JumpStrength, m_PadStrength, m_Gravity, m_RotationAdder, m_ShipUpAdder, m_ShipDownAdder, m_Rotation, m_TargetRotation;
+    SDL_FRect m_HazardHitbox, m_SolidHitbox;
+    std::vector<SDL_FRect *> m_PressedOrbs;
+    bool m_Grounded, m_MouseHeld, m_Dead, m_OrbBuffered;
+    float m_DeadTimer;
+    int m_GravityMultiplier, m_Gamemode;
+    std::pair<float, float> m_Bounds;
 
 public:
     Player();

@@ -3,7 +3,7 @@
 
 ObjectManager::ObjectManager()
 {
-    stringToType = { {"BLOCK", BLOCK},
+    m_StringToType = { {"BLOCK", BLOCK},
                      {"SPIKE", HAZARD},
                      {"ywORB", ORB},
                      {"ywPAD", PAD},
@@ -12,7 +12,7 @@ ObjectManager::ObjectManager()
                      {"pUPSD", UPSIDE_DOWN_PORTAL},
                      {"pRGLR", NORMAL_PORTAL} };
     
-    typeToHitbox = { {BLOCK,              {0,  0,  TILE_SIZE, TILE_SIZE}},
+    m_TypeToHitbox = { {BLOCK,              {0,  0,  TILE_SIZE, TILE_SIZE}},
                      {HAZARD,             {36, 31, 27, 50}},
                      {ORB,                {0,  0,  TILE_SIZE, TILE_SIZE}},
                      {PAD,                {10, 90, 77, 10}},
@@ -26,12 +26,12 @@ ObjectManager::ObjectManager()
 
 std::vector<GameObject> ObjectManager::getObjects()
 {
-    return objects;
+    return m_Objects;
 }
 
 void ObjectManager::clearObjects()
 {
-    objects.clear();
+    m_Objects.clear();
 }
 
 SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations)
@@ -84,8 +84,8 @@ void ObjectManager::loadLevelData()
         SDL_FPoint objectPos;
         int horizontalRepeats, verticalRepeats, rotation;
         in >> objectName >> objectPos.x >> objectPos.y >> horizontalRepeats >> verticalRepeats >> rotation;
-        int objectType = stringToType.at(objectName);
-        SDL_FRect hitboxOffset = rotateHitbox(typeToHitbox.at(objectType), rotation);
+        int objectType = m_StringToType.at(objectName);
+        SDL_FRect hitboxOffset = rotateHitbox(m_TypeToHitbox.at(objectType), rotation);
 
         for (int h = 0; h < horizontalRepeats; h++)
         {
@@ -93,7 +93,7 @@ void ObjectManager::loadLevelData()
             {
                 SDL_FPoint pos = {objectPos.x + h*TILE_SIZE, objectPos.y + v*TILE_SIZE};
                 SDL_FRect hitbox = {hitboxOffset.x + pos.x, hitboxOffset.y + pos.y, hitboxOffset.w, hitboxOffset.h};
-                objects.push_back(GameObject(objectType, rotation, pos, hitbox, ("res/gfx/" + objectName + ".png").c_str()));
+                m_Objects.push_back(GameObject(objectType, rotation, pos, hitbox, ("res/gfx/" + objectName + ".png").c_str()));
             }
         }
     }
@@ -102,7 +102,7 @@ void ObjectManager::loadLevelData()
 
 void ObjectManager::render()
 {
-    for (GameObject &gameObject : objects)
+    for (GameObject &gameObject : m_Objects)
     {
         gameObject.render();
     }

@@ -4,13 +4,13 @@
 class Background
 {
 private:
-    int bgCount;
-    float r, g, b;
-    uint8_t targetR, targetG, targetB;
-    SDL_Texture *bgTexture, *emptyBG;
-    SDL_FPoint pos;
-    bool moving, fading;
-    float fadeTime = 0;
+    int m_BGCount;
+    float m_Red, m_Green, m_Blue;
+    uint8_t m_TargetRed, m_TargetGreen, m_TargetBlue;
+    SDL_Texture *m_BGTexture, *m_EmptyBG;
+    SDL_FPoint m_Pos;
+    bool m_Moving, m_Fading;
+    float m_FadeTime = 0;
 
 public:
     Background() = default;

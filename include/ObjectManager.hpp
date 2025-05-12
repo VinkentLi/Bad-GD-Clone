@@ -5,9 +5,9 @@
 class ObjectManager
 {
 private:
-    std::vector<GameObject> objects;
-    std::map<std::string, int> stringToType;
-    std::map<int, SDL_FRect> typeToHitbox;
+    std::vector<GameObject> m_Objects;
+    std::map<std::string, int> m_StringToType;
+    std::map<int, SDL_FRect> m_TypeToHitbox;
 
 public:
     ObjectManager();

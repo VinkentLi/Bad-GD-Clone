@@ -1,11 +1,11 @@
 #include "GameObject.hpp"
 
 GameObject::GameObject(int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath)
-    : type(type), rotation(rotation), pos(pos), hitbox(hitbox)
+    : m_Type(type), m_Rotation(rotation), m_Pos(pos), m_Hitbox(hitbox)
 {
-    objectTexture = IMG_LoadTexture(renderer, texturePath);
+    m_ObjectTexture = IMG_LoadTexture(renderer, texturePath);
     
-    if (objectTexture == NULL)
+    if (m_ObjectTexture == NULL)
     {
         std::cerr << "Failed to load objectTexture! " << SDL_GetError() << std::endl;
     }
@@ -13,36 +13,36 @@ GameObject::GameObject(int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox,
 
 SDL_FRect *GameObject::getHitbox()
 {
-    return &hitbox;
+    return &m_Hitbox;
 }
 
 SDL_FPoint GameObject::getPos()
 {
-    return pos;
+    return m_Pos;
 }
 
 int GameObject::getType()
 {
-    return type;
+    return m_Type;
 }
 
 void GameObject::render()
 {
     SDL_Rect dst;
-    dst.x = (int) (pos.x) - cameraPos.x;
-    dst.y = (int) (pos.y) - cameraPos.y;
+    dst.x = (int) (m_Pos.x) - cameraPos.x;
+    dst.y = (int) (m_Pos.y) - cameraPos.y;
     dst.w = TILE_SIZE;
     dst.h = TILE_SIZE;
 
-    if (type == SHIP_PORTAL ||
-        type == CUBE_PORTAL ||
-        type == UPSIDE_DOWN_PORTAL ||
-        type == NORMAL_PORTAL)
+    if (m_Type == SHIP_PORTAL ||
+        m_Type == CUBE_PORTAL ||
+        m_Type == UPSIDE_DOWN_PORTAL ||
+        m_Type == NORMAL_PORTAL)
     {
         dst.h *= 3;
     }
 
-    if (SDL_RenderCopyEx(renderer, objectTexture, NULL, &dst, rotation * 90.0, NULL, SDL_FLIP_NONE) != 0)
+    if (SDL_RenderCopyEx(renderer, m_ObjectTexture, NULL, &dst, m_Rotation * 90.0, NULL, SDL_FLIP_NONE) != 0)
     {
         std::cerr << "GameObject failed to render texture! " << SDL_GetError() << std::endl;
     }

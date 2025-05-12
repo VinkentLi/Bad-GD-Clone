@@ -6,11 +6,11 @@
 class PlayingState
 {
 private:
-    Player *player = nullptr;
-    float timer;
-    bool timerFinished, songPlaying, playerIsDead;
-    std::vector<Mix_Music *> songs;
-    ObjectManager *objectManager = nullptr;
+    Player *m_Player = nullptr;
+    float m_Timer;
+    bool m_TimerFinished, m_SongPlaying, m_PlayerIsDead;
+    std::vector<Mix_Music *> m_Songs;
+    ObjectManager *m_ObjectManager = nullptr;
     
 public:
     PlayingState();

@@ -5,12 +5,12 @@ class Ground
 {
 private:
     constexpr static int GROUND_SIZE = 432;
-    int squareCount;
-    uint8_t r, g, b;
-    SDL_Texture *groundTexture;
-    SDL_Rect src;
-    SDL_FPoint pos;
-    bool renderOnTop;
+    int m_SquareCount;
+    uint8_t m_Red, m_Green, m_Blue;
+    SDL_Texture *m_GroundTexture;
+    SDL_Rect m_Source;
+    SDL_FPoint m_Pos;
+    bool m_RenderOnTop;
 
 public:
     Ground() = default;

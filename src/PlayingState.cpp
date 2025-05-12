@@ -2,24 +2,24 @@
 
 PlayingState::PlayingState()
 {
-    player = new Player();
-    objectManager = new ObjectManager();
-    timer = 60;
-    timerFinished = false;
-    songPlaying = false;
-    playerIsDead = false;
-    songs.clear();
+    m_Player = new Player();
+    m_ObjectManager = new ObjectManager();
+    m_Timer = 60;
+    m_TimerFinished = false;
+    m_SongPlaying = false;
+    m_PlayerIsDead = false;
+    m_Songs.clear();
 
     for (int i = 0; i < LEVEL_COUNT; i++)
     {
-        songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".mp3").c_str()));
+        m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".mp3").c_str()));
     }
 }
 
 PlayingState::~PlayingState()
 {
-    delete player;
-    delete objectManager;
+    delete m_Player;
+    delete m_ObjectManager;
 }
 
 void PlayingState::update(int &gameState, float delta, bool mouseHeld)
@@ -29,22 +29,22 @@ void PlayingState::update(int &gameState, float delta, bool mouseHeld)
         return;
     }
 
-    if (timer > 0)
+    if (m_Timer > 0)
     {
-        timer--;
+        m_Timer--;
         return;
     }
 
-    timerFinished = true;
+    m_TimerFinished = true;
 
-    if (!songPlaying || (playerIsDead && !player->isDead()))
+    if (!m_SongPlaying || (m_PlayerIsDead && !m_Player->isDead()))
     {
-        Mix_PlayMusic(songs[levelSelected], 0);
-        songPlaying = true;
+        Mix_PlayMusic(m_Songs[levelSelected], 0);
+        m_SongPlaying = true;
     }
 
-    playerIsDead = player->isDead();
-    player->update(delta, mouseHeld, objectManager->getObjects());
+    m_PlayerIsDead = m_Player->isDead();
+    m_Player->update(delta, mouseHeld, m_ObjectManager->getObjects());
 }
 
 void PlayingState::setToPause(int &gameState)
@@ -66,21 +66,21 @@ void PlayingState::resetMusic()
 
 void PlayingState::attemptResetTimer()
 {
-    if (timerFinished)
+    if (m_TimerFinished)
     {
         return;
     }
 
-    timer = 60;
+    m_Timer = 60;
 }
 
 void PlayingState::render()
 {
-    objectManager->render();
-    player->render();
+    m_ObjectManager->render();
+    m_Player->render();
 }
 
 int PlayingState::getPlayerGamemode()
 {
-    return player->getGamemode();
+    return m_Player->getGamemode();
 }
