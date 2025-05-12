@@ -12,7 +12,7 @@ PlayingState::PlayingState()
 
     for (int i = 0; i < LEVEL_COUNT; i++)
     {
-        m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".mp3").c_str()));
+        m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".wav").c_str()));
     }
 }
 

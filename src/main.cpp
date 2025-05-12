@@ -5,6 +5,10 @@
 #include "LevelSelect.hpp"
 #include "PlayingState.hpp"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 int init();
 void update(float delta);
 void render();
@@ -25,9 +29,40 @@ TitleScreen *titleScreen = nullptr;   // SDL is initiated
 LevelSelect *levelSelect = nullptr;   // there's probably a better way of doing it
 PlayingState *playingState = nullptr; // but I'm an idiot
 
-int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN, levelSelected = 0;
+int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN, levelSelected = 0, timer = 0;
 
 bool gameRunning = true, mouseHeld = false;
+
+#ifdef __EMSCRIPTEN__
+void mainLoop() {
+    if (!gameRunning) {
+        quit();
+        emscripten_cancel_main_loop();
+    }
+    handleEvents();
+    update(1);
+    render();
+    currentFPS = 60;
+}
+#else
+void mainLoop(float delta) {
+    if (!gameRunning) {
+        quit();
+        exit(0);
+    }
+    handleEvents();
+    update(delta);
+    render();
+    frames++;
+
+    if (timer >= 1000)
+    {
+        currentFPS = frames;
+        frames = 0;
+        timer -= 1000;
+    }
+}
+#endif
 
 int main(int argc, char **argv)
 {
@@ -38,33 +73,24 @@ int main(int argc, char **argv)
 
     Mix_PlayMusic(menuLoop, -1);
 
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(mainLoop, 60, 1);
+#else
+    
     float interval = 1000.0f / 60.0f;
     uint64_t currentTime = SDL_GetTicks64();
     uint64_t newTime;
-    int timer = 0;
 
-    while (gameRunning)
+    while (true)
     {
         newTime = SDL_GetTicks64();
         timer += newTime - currentTime;
         float delta = (newTime - currentTime) / interval;
         currentTime = newTime;
 
-        handleEvents();
-        update(delta);
-        render();
-        frames++;
-
-        if (timer >= 1000)
-        {
-            currentFPS = frames;
-            frames = 0;
-            timer -= 1000;
-        }
+        mainLoop(delta);
     }
-
-    quit();
-
+#endif
     return 0;
 }
 
@@ -186,7 +212,9 @@ void handleEvents()
                     cameraPos = {0, 0};
                     break;
                 case TITLE_SCREEN:
+#ifndef __EMSCRIPTEN
                     gameRunning = false;
+#endif
                     break;
                 }
                 break;
@@ -267,7 +295,11 @@ int init()
         SDL_WINDOWPOS_UNDEFINED,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
+#ifdef __EMSCRIPTEN__
+        SDL_WINDOW_SHOWN
+#else
         SDL_WINDOW_FULLSCREEN_DESKTOP
+#endif
     );
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
