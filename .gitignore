@@ -35,3 +35,7 @@
 *.js
 *.wasm
 *.html
+*.data
+
+build/
+build-web/
