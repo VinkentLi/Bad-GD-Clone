@@ -1,7 +1,6 @@
 #pragma once
 
-enum GameStates
-{
+enum GameStates {
     TITLE_SCREEN,
     LEVEL_SELECT,
     PLAYING,

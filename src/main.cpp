@@ -1,300 +1,54 @@
-#include "Global.hpp"
+#include <iostream>
+#include <SDL_image.h>
+
+#include "Game.hpp"
 #include "Background.hpp"
 #include "Ground.hpp"
 #include "TitleScreen.hpp"
 #include "LevelSelect.hpp"
 #include "PlayingState.hpp"
+#include "Player.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
-int init();
-void update(float delta);
-void render();
-void handleEvents();
-void quit();
-
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Texture *tileSheet;
-Mix_Music *menuLoop;
-SDL_Point mousePos;
-SDL_FPoint cameraPos;
-TTF_Font *font;
-TTF_Font *fontOutline;
-Background *bg = nullptr;             // pointer so i can make it null
-Ground *ground = nullptr;             // i want it null so i can call the constructor when
-TitleScreen *titleScreen = nullptr;   // SDL is initiated
-LevelSelect *levelSelect = nullptr;   // there's probably a better way of doing it
-PlayingState *playingState = nullptr; // but I'm an idiot
-
-int WIDTH, SCREEN_WIDTH, SCREEN_HEIGHT, frames = 0, currentFPS = 0, gameState = TITLE_SCREEN, levelSelected = 0, timer = 0;
-
-bool gameRunning = true, mouseHeld = false;
-
-#ifdef __EMSCRIPTEN__
-void mainLoop() {
-    if (!gameRunning) {
-        quit();
-        emscripten_cancel_main_loop();
+int main(int argc, char **argv) {
+    Game game;
+    if (game.init() != 0) {
+        game.quit();
     }
-    handleEvents();
-    update(1);
-    render();
-    currentFPS = 60;
-}
-#else
-void mainLoop(float delta) {
-    if (!gameRunning) {
-        quit();
-        exit(0);
-    }
-    handleEvents();
-    update(delta);
-    render();
-    frames++;
-
-    if (timer >= 1000)
-    {
-        currentFPS = frames;
-        frames = 0;
-        timer -= 1000;
-    }
-}
-#endif
-
-int main(int argc, char **argv)
-{
-    if (init() != 0)
-    {
-        quit();
-    }
-
-    Mix_PlayMusic(menuLoop, -1);
-
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(mainLoop, 60, 1);
-#else
-    
-    float interval = 1000.0f / 60.0f;
-    uint64_t currentTime = SDL_GetTicks64();
-    uint64_t newTime;
-
-    while (true)
-    {
-        newTime = SDL_GetTicks64();
-        timer += newTime - currentTime;
-        float delta = (newTime - currentTime) / interval;
-        currentTime = newTime;
-
-        mainLoop(delta);
-    }
-#endif
+    game.run();
     return 0;
 }
 
-void update(float delta)
-{
-    switch (gameState)
-    {
-    case TITLE_SCREEN:
-        ground->setPos({ground->getPos().x, HEIGHT - 300});
-        bg->setMoving(true);
-        bg->update(delta);
-        ground->update();
-        ground->move(-17.31f, delta);
-        titleScreen->update(gameState, &mousePos, mouseHeld);
-        break;
-    case LEVEL_SELECT:
-        ground->setPos({0, HEIGHT - 200});
-        ground->setOnTop(false);
-        bg->setMoving(false);
-        // ground->resetPos();
-        levelSelect->update(gameState, &mousePos, mouseHeld);
-        break;
-    case PLAYING:
-        if (levelSelect->getNeedToRecallPlayingStateConstructor())
-        {
-            delete playingState;
-            playingState = new PlayingState();
-        }
-
-        ground->setPos({ground->getPos().x, HEIGHT - 300});
-        bg->update(delta);
-        playingState->update(gameState, delta, mouseHeld);
-
-        if (cameraPos.x != 0)
-        {
-            bg->setMoving(true);
-        }
-
-        if (playingState->getPlayerGamemode() == SHIP)
-        {
-            ground->setOnTop(true);
-        }
-        else
-        {
-            ground->setOnTop(false);
-        }
-        break;
-    case PAUSED:
-        playingState->update(gameState, delta, mouseHeld);
-        break;
-    }
-}
-
-void render()
-{
-    SDL_RenderClear(renderer);
-    bg->render(gameState);
-    ground->render();
-
-    switch (gameState)
-    {
-    case TITLE_SCREEN:
-        titleScreen->render();
-        break;
-    case LEVEL_SELECT:
-        levelSelect->render();
-        break;
-    case PLAYING:
-        playingState->render();
-        break;
-    case PAUSED:
-        playingState->render();
-        break;
-    }
-
-    // render fps
-
-    SDL_Surface *fpsSurface = TTF_RenderText_Blended(font, ("FPS: " + std::to_string(currentFPS)).c_str(), {255, 255, 255});
-    SDL_Texture *fpsTexture = SDL_CreateTextureFromSurface(renderer, fpsSurface);
-    SDL_Rect fpsSRC = {0, 0, fpsSurface->w, fpsSurface->h};
-    SDL_Rect fpsDST = {20, 20, fpsSurface->w, fpsSurface->h};
-    SDL_RenderCopy(renderer, fpsTexture, &fpsSRC, &fpsDST);
-    SDL_FreeSurface(fpsSurface);
-    SDL_DestroyTexture(fpsTexture);
-
-    SDL_RenderPresent(renderer);
-}
-
-void handleEvents()
-{
-    SDL_Event event;
-
-    while (SDL_PollEvent(&event))
-    {
-        switch (event.type)
-        {
-        case SDL_QUIT:
-            gameRunning = false;
-            break;
-        case SDL_KEYDOWN:
-            switch (event.key.keysym.sym)
-            {
-            case SDLK_q:
-                gameRunning = false;
-                break;
-            case SDLK_ESCAPE:
-                switch (gameState)
-                {
-                case LEVEL_SELECT:
-                    gameState = TITLE_SCREEN;
-                    break;
-                case PLAYING:
-                    playingState->setToPause(gameState);
-                    break;
-                case PAUSED:
-                    gameState = LEVEL_SELECT;
-                    playingState->resetMusic();
-                    Mix_PlayMusic(menuLoop, -1);
-                    cameraPos = {0, 0};
-                    break;
-                case TITLE_SCREEN:
-#ifndef __EMSCRIPTEN
-                    gameRunning = false;
-#endif
-                    break;
-                }
-                break;
-            case SDLK_SPACE:
-                switch (gameState)
-                {
-                case TITLE_SCREEN:
-                    gameState = LEVEL_SELECT;
-                    break;
-                case PAUSED:
-                    playingState->setBackToPlay(gameState);
-                    break;
-                }
-                break;
-            }
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-        {
-            int mouseState = SDL_GetMouseState(&mousePos.x, &mousePos.y);
-            mouseHeld = mouseState == 1;
-            break;
-        }
-        case SDL_MOUSEBUTTONUP:
-            mouseHeld = false;
-            break;
-        }
-    }
-}
-
-void quit()
-{
-    TTF_CloseFont(font);
-    TTF_Quit();
-    Mix_Quit();
-    IMG_Quit();
-    SDL_Quit();
-}
-
-int init()
-{
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
-    {
+int Game::init() {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::cerr << "SDL VIDEO INIT HAS FAILED! " << SDL_GetError() << std::endl;
         return -1;
     }
-
-    if (!(IMG_Init(IMG_INIT_PNG)))
-    {
+    if (!(IMG_Init(IMG_INIT_PNG))) {
         std::cerr << "IMG PNG INIT HAS FAILED! " << SDL_GetError() << std::endl;
         return -1;
     }
-
-    if (TTF_Init() != 0)
-    {
+    if (TTF_Init() != 0) {
         std::cerr << "TTF Init has failed! " << SDL_GetError() << std::endl;
         return -1;
     }
-
-    if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) != 0)
-    {
+    if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
         std::cerr << "Mix Open Audio has failed! " << SDL_GetError() << std::endl;
         return -1;
     }
-
     SDL_Rect displayBounds;
-
     SDL_GetDisplayBounds(0, &displayBounds);
-
-    SCREEN_WIDTH = displayBounds.w;
-    SCREEN_HEIGHT = displayBounds.h;
-
-    // SCREEN_WIDTH = 1280;
-    // SCREEN_HEIGHT = 720;
-
-    window = SDL_CreateWindow(
+    m_ScreenWidth = displayBounds.w;
+    m_ScreenHeight = displayBounds.h;
+    m_Window = SDL_CreateWindow(
         "GDClone",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT,
+        m_ScreenWidth,
+        m_ScreenHeight,
 #ifdef __EMSCRIPTEN__
         SDL_WINDOW_SHOWN
 #else
@@ -302,20 +56,205 @@ int init()
 #endif
     );
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    WIDTH = ((float)(SCREEN_WIDTH) / (float)(SCREEN_HEIGHT)) * HEIGHT;
-    SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT); // render a WIDTHx1080 screen and scale it for the actual window
+    m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED);
+    m_Width = ((float)(m_ScreenWidth) / (float)(m_ScreenHeight)) * m_Height;
+    SDL_RenderSetLogicalSize(m_Renderer, m_Width, m_Height); // render a WIDTHx1080 screen and scale it for the actual window
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");   // anti-aliasing
-    tileSheet = IMG_LoadTexture(renderer, "res/gfx/tileSheet.png");
-    font = TTF_OpenFont("res/fonts/pusab.ttf", 50);
-    bg = new Background(0, 0, 255);
-    bg->setMoving(true);
-    ground = new Ground(0, 0, 255);
-    titleScreen = new TitleScreen();
-    levelSelect = new LevelSelect();
-    playingState = new PlayingState();
-    menuLoop = Mix_LoadMUS("res/sfx/menuLoop.wav");
-    cameraPos = {0, 0};
+    m_TileSheet = IMG_LoadTexture(m_Renderer, "res/gfx/tileSheet.png");
+    m_Font = TTF_OpenFont("res/fonts/pusab.ttf", 50);
+    m_Background = new Background(this, 0, 0, 255);
+    m_Background->setMoving(true);
+    m_Ground = new Ground(this, 0, 0, 255);
+    m_TitleScreen = new TitleScreen(this);
+    m_LevelSelect = new LevelSelect(this);
+    m_PlayingState = new PlayingState(this);
+    m_MenuLoop = Mix_LoadMUS("res/sfx/menuLoop.wav");
+    m_CameraPosition = {0, 0};
 
     return 0;
+}
+
+void Game::quit() {
+    TTF_CloseFont(m_Font);
+    TTF_Quit();
+    Mix_Quit();
+    IMG_Quit();
+    SDL_Quit();
+}
+
+void Game::run() {
+    Mix_PlayMusic(m_MenuLoop, -1);
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(mainLoop, 60, 1);
+#else
+    float interval = 1000.0f / 60.0f;
+    uint64_t currentTime = SDL_GetTicks64();
+    uint64_t newTime;
+    while (true) {
+        newTime = SDL_GetTicks64();
+        m_Timer += newTime - currentTime;
+        float delta = (newTime - currentTime) / interval;
+        currentTime = newTime;
+        mainLoop(delta);
+    }
+#endif
+}
+
+#ifdef __EMSCRIPTEN__
+void Game::mainLoop() {
+    if (!m_GameRunning) {
+        quit();
+        emscripten_cancel_main_loop();
+    }
+    handleEvents();
+    update(1);
+    render();
+    m_CurrentFPS = 60;
+}
+#else
+void Game::mainLoop(float deltaTime) {
+    if (!m_IsGameRunning) {
+        quit();
+        exit(0);
+    }
+    handleEvents();
+    update(deltaTime);
+    render();
+    m_Frames++;
+    if (m_Timer >= 1000) {
+        m_CurrentFPS = m_Frames;
+        m_Frames = 0;
+        m_Timer -= 1000;
+    }
+}
+#endif
+
+void Game::update(float deltaTime) {
+    switch (m_GameState) {
+    case TITLE_SCREEN:
+        m_Ground->setPos({m_Ground->getPosition().x, m_Height - 300.0f});
+        m_Background->setMoving(true);
+        m_Background->update(deltaTime);
+        m_Ground->update();
+        m_Ground->move(-17.31f, deltaTime);
+        m_TitleScreen->update(m_GameState, &m_MousePos, m_IsMouseHeld);
+        break;
+    case LEVEL_SELECT:
+        m_Ground->setPos({0, m_Height - 200.0f});
+        m_Ground->setOnTop(false);
+        m_Background->setMoving(false);
+        // ground->resetPos();
+        m_LevelSelect->update(m_GameState, &m_MousePos, m_IsMouseHeld);
+        break;
+    case PLAYING:
+        if (m_LevelSelect->getNeedToRecallPlayingStateConstructor()) {
+            delete m_PlayingState;
+            m_PlayingState = new PlayingState(this);
+        }
+        m_Ground->setPos({m_Ground->getPosition().x, m_Height - 300.0f});
+        m_Background->update(deltaTime);
+        m_PlayingState->update(m_GameState, deltaTime, m_IsMouseHeld);
+
+        if (m_CameraPosition.x != 0) {
+            m_Background->setMoving(true);
+        }
+        if (m_PlayingState->getPlayerGamemode() == SHIP) {
+            m_Ground->setOnTop(true);
+        } else {
+            m_Ground->setOnTop(false);
+        }
+        break;
+    case PAUSED:
+        m_PlayingState->update(m_GameState, deltaTime, m_IsMouseHeld);
+        break;
+    }
+}
+
+void Game::render() {
+    SDL_RenderClear(m_Renderer);
+    m_Background->render(m_GameState);
+    m_Ground->render();
+
+    switch (m_GameState) {
+    case TITLE_SCREEN:
+        m_TitleScreen->render();
+        break;
+    case LEVEL_SELECT:
+        m_LevelSelect->render();
+        break;
+    case PLAYING:
+        m_PlayingState->render();
+        break;
+    case PAUSED:
+        m_PlayingState->render();
+        break;
+    }
+    // render fps
+    SDL_Surface *fpsSurface = TTF_RenderText_Blended(m_Font, ("FPS: " + std::to_string(m_CurrentFPS)).c_str(), {255, 255, 255});
+    SDL_Texture *fpsTexture = SDL_CreateTextureFromSurface(m_Renderer, fpsSurface);
+    SDL_Rect fpsSRC = {0, 0, fpsSurface->w, fpsSurface->h};
+    SDL_Rect fpsDST = {20, 20, fpsSurface->w, fpsSurface->h};
+    SDL_RenderCopy(m_Renderer, fpsTexture, &fpsSRC, &fpsDST);
+    SDL_FreeSurface(fpsSurface);
+    SDL_DestroyTexture(fpsTexture);
+    SDL_RenderPresent(m_Renderer);
+}
+
+void Game::handleEvents() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+        case SDL_QUIT:
+            m_IsGameRunning = false;
+            break;
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym) {
+            case SDLK_q:
+#ifndef __EMSCRIPTEN__
+                m_IsGameRunning = false;
+#endif
+                break;
+            case SDLK_ESCAPE:
+                switch (m_GameState) {
+                case LEVEL_SELECT:
+                    m_GameState = TITLE_SCREEN;
+                    break;
+                case PLAYING:
+                    m_PlayingState->setToPause(m_GameState);
+                    break;
+                case PAUSED:
+                    m_GameState = LEVEL_SELECT;
+                    m_PlayingState->resetMusic();
+                    Mix_PlayMusic(m_MenuLoop, -1);
+                    m_CameraPosition = {0, 0};
+                    break;
+                case TITLE_SCREEN:
+#ifndef __EMSCRIPTEN__
+                    m_IsGameRunning = false;
+#endif
+                    break;
+                }
+                break;
+            case SDLK_SPACE:
+                switch (m_GameState) {
+                case TITLE_SCREEN:
+                    m_GameState = LEVEL_SELECT;
+                    break;
+                case PAUSED:
+                    m_PlayingState->setBackToPlay(m_GameState);
+                    break;
+                }
+                break;
+            }
+            break;
+        case SDL_MOUSEBUTTONDOWN: {
+            int mouseState = SDL_GetMouseState(&m_MousePos.x, &m_MousePos.y);
+            m_IsMouseHeld = mouseState == 1;
+            break;
+        }
+        case SDL_MOUSEBUTTONUP:
+            m_IsMouseHeld = false;
+            break;
+        }
+    }
 }

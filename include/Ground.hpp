@@ -1,26 +1,32 @@
 #pragma once
-#include "Global.hpp"
+#include <SDL.h>
+#include <cstdint>
 
-class Ground
-{
-private:
-    constexpr static int GROUND_SIZE = 432;
-    int m_SquareCount;
-    uint8_t m_Red, m_Green, m_Blue;
-    SDL_Texture *m_GroundTexture;
-    SDL_Rect m_Source;
-    SDL_FPoint m_Pos;
-    bool m_RenderOnTop;
+class Game;
 
+class Ground {
 public:
     Ground() = default;
-    Ground(uint8_t r, uint8_t g, uint8_t b);
+    Ground(Game *game, uint8_t r, uint8_t g, uint8_t b);
     void setPos(SDL_FPoint pos);
-    SDL_FPoint getPos();
-    void resetPos();
+    SDL_FPoint getPosition();
+    void resetPosition();
     void update();
     void move(float distance, float delta);
     void render();
     void setOnTop(bool value);
+
+private:
+    constexpr static int GROUND_SIZE = 432;
+    int m_SquareCount;
+    uint8_t m_Red;
+    uint8_t m_Green;
+    uint8_t m_Blue;
+    SDL_Texture *m_GroundTexture;
+    SDL_Rect m_Source;
+    SDL_FPoint m_Position;
+    Game *m_Game;
+    SDL_Renderer *m_Renderer;
+    bool m_ShouldRenderOnTop;
 };
 

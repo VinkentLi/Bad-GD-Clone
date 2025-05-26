@@ -1,25 +1,30 @@
 #pragma once
-#include "Player.hpp"
-#include "GameStates.hpp"
-#include "ObjectManager.hpp"
+#include <vector>
+#include <SDL_mixer.h>
 
-class PlayingState
-{
-private:
-    Player *m_Player = nullptr;
-    float m_Timer;
-    bool m_TimerFinished, m_SongPlaying, m_PlayerIsDead;
-    std::vector<Mix_Music *> m_Songs;
-    ObjectManager *m_ObjectManager = nullptr;
-    
+class Player;
+class Game;
+class ObjectManager;
+
+class PlayingState {
 public:
-    PlayingState();
+    PlayingState(Game *game);
     ~PlayingState();
-    void update(int &gameState, float delta, bool mouseHeld);
+    void update(int &gameState, float delta, bool isMouseHeld);
     void setToPause(int &gameState);
     void setBackToPlay(int &gameState);
     void resetMusic();
     void attemptResetTimer();
     void render();
     int getPlayerGamemode();
+
+private:
+    Game *m_Game;
+    Player *m_Player = nullptr;
+    float m_Timer;
+    bool m_IsTimerFinished;
+    bool m_IsSongPlaying;
+    bool m_IsPlayerDead;
+    std::vector<Mix_Music *> m_Songs;
+    ObjectManager *m_ObjectManager = nullptr;
 };
