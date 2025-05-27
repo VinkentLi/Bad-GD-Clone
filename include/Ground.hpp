@@ -18,6 +18,7 @@ public:
 
 private:
     constexpr static int GROUND_SIZE = 432;
+    Game *m_Game;
     int m_SquareCount;
     uint8_t m_Red;
     uint8_t m_Green;
@@ -25,7 +26,6 @@ private:
     SDL_Texture *m_GroundTexture;
     SDL_Rect m_Source;
     SDL_FPoint m_Position;
-    Game *m_Game;
     SDL_Renderer *m_Renderer;
     bool m_ShouldRenderOnTop;
 };

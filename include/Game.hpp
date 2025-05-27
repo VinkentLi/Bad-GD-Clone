@@ -20,26 +20,28 @@ public:
     int init();
     void run();
     void quit();
-    bool isMouseHeld() { return m_IsMouseHeld; }
-    SDL_Renderer *getRenderer() { return m_Renderer; }
-    int getWidth() { return m_Width; }
-    int getHeight() { return m_Height; }
-    int getScreenWidth() { return m_ScreenWidth; }
-    int getScreenHeight() { return m_ScreenHeight; }
-    SDL_FPoint getCameraPosition() { return m_CameraPosition; }
-    void setCameraPosition(SDL_FPoint newPosition) { m_CameraPosition = newPosition; } 
-    void setCameraX(float x) { m_CameraPosition.x = x; }
-    void setCameraY(float y) { m_CameraPosition.y = y; }
-    int getLevelSelected() { return m_LevelSelected; }
-    void setLevelSelected(int num) { m_LevelSelected = num; }
-    void increaseLevelSelected() { m_LevelSelected++; }
-    void decreaseLevelSelected() { m_LevelSelected--; }
+    inline bool isMouseHeld() { return m_IsMouseHeld; }
+    inline SDL_Renderer *getRenderer() { return m_Renderer; }
+    inline int getWidth() { return m_Width; }
+    inline int getHeight() { return m_Height; }
+    inline int getScreenWidth() { return m_ScreenWidth; }
+    inline int getScreenHeight() { return m_ScreenHeight; }
+    inline SDL_FPoint getCameraPosition() { return m_CameraPosition; }
+    inline void setCameraPosition(SDL_FPoint newPosition) { m_CameraPosition = newPosition; } 
+    inline void setCameraX(float x) { m_CameraPosition.x = x; }
+    inline void setCameraY(float y) { m_CameraPosition.y = y; }
+    inline int getLevelSelected() { return m_LevelSelected; }
+    inline void setLevelSelected(int num) { m_LevelSelected = num; }
+    inline void increaseLevelSelected() { m_LevelSelected++; }
+    inline void decreaseLevelSelected() { m_LevelSelected--; }
+    inline SDL_Point getMousePosition() { return m_MousePosition; }
+    inline int &getGameState() { return m_GameState; } // TODO: get rid of this
 
 private:
     SDL_Window *m_Window;
     SDL_Renderer *m_Renderer;
     SDL_Texture *m_TileSheet;
-    SDL_Point m_MousePos;
+    SDL_Point m_MousePosition;
     SDL_FPoint m_CameraPosition;
     TTF_Font *m_Font;
     TTF_Font *m_FontOutline;

@@ -18,7 +18,6 @@ LevelSelect::LevelSelect(Game *game) : m_Game(game) {
     m_Top = IMG_LoadTexture(m_Renderer, "res/gfx/top.png");
     m_LevelArrow = IMG_LoadTexture(m_Renderer, "res/gfx/levelArrow.png");
     m_TitleArrow = IMG_LoadTexture(m_Renderer, "res/gfx/toTitleScreen.png");
-    m_MousePos = {0, 0};
     m_IsMouseHeld = false;
     m_NeedToRecallPlayingStateConstructor = false;
     m_Game->setLevelSelected(0);
@@ -34,9 +33,11 @@ LevelSelect::LevelSelect(Game *game) : m_Game(game) {
     m_PlaySound = Mix_LoadWAV("res/sfx/playSound.ogg");
 }
 
-void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool isMouseHeld) {
-    bool isMouseReleased = m_IsMouseHeld && !isMouseHeld;
+void LevelSelect::update(float deltaTime) {
+    const bool isMouseHeld = m_Game->isMouseHeld();
+    const bool isMouseReleased = m_IsMouseHeld && !isMouseHeld;
     if (isMouseReleased) {  
+        SDL_Point mousePosition = m_Game->getMousePosition();
         float wScale = m_Game->getScreenWidth() / (float) m_Game->getWidth();
         float hScale = m_Game->getScreenHeight() / (float) m_Game->getHeight();
         SDL_Rect scaledTitleArrow = m_TitleArrowDST;
@@ -60,27 +61,28 @@ void LevelSelect::update(int &gameState, SDL_Point *mousePos, bool isMouseHeld) 
         scaledLevelRect.w *= wScale;
         scaledLevelRect.h *= hScale;
 
-        if (SDL_PointInRect(mousePos, &scaledTitleArrow)) {
+        int &gameState = m_Game->getGameState();
+
+        if (SDL_PointInRect(&mousePosition, &scaledTitleArrow)) {
             gameState = TITLE_SCREEN;
-        } else if (SDL_PointInRect(mousePos, &scaledLeft)) {
+        } else if (SDL_PointInRect(&mousePosition, &scaledLeft)) {
             m_Game->decreaseLevelSelected();
             if (m_Game->getLevelSelected() < 0) {
                 m_Game->setLevelSelected(m_Game->LEVEL_COUNT - 1);
             }
-        } else if (SDL_PointInRect(mousePos, &scaledRight)) {
+        } else if (SDL_PointInRect(&mousePosition, &scaledRight)) {
             m_Game->increaseLevelSelected();
             if (m_Game->getLevelSelected() == m_Game->LEVEL_COUNT) {
                 m_Game->setLevelSelected(0);
             }
-        } else if (SDL_PointInRect(mousePos, &scaledLevelRect)) {
+        } else if (SDL_PointInRect(&mousePosition, &scaledLevelRect)) {
             gameState = PLAYING;
             m_NeedToRecallPlayingStateConstructor = true;
             Mix_HaltMusic();
             Mix_PlayChannel(0, m_PlaySound, 0);
         }
     }
-    this->m_IsMouseHeld = isMouseHeld;
-    this->m_MousePos = *mousePos;
+    m_IsMouseHeld = isMouseHeld;
 }
 
 void LevelSelect::render() {

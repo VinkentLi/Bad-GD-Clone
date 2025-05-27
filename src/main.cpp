@@ -137,14 +137,14 @@ void Game::update(float deltaTime) {
         m_Background->update(deltaTime);
         m_Ground->update();
         m_Ground->move(-17.31f, deltaTime);
-        m_TitleScreen->update(m_GameState, &m_MousePos, m_IsMouseHeld);
+        m_TitleScreen->update(m_GameState);
         break;
     case LEVEL_SELECT:
         m_Ground->setPos({0, m_Height - 200.0f});
         m_Ground->setOnTop(false);
         m_Background->setMoving(false);
         // ground->resetPos();
-        m_LevelSelect->update(m_GameState, &m_MousePos, m_IsMouseHeld);
+        m_LevelSelect->update(deltaTime);
         break;
     case PLAYING:
         if (m_LevelSelect->getNeedToRecallPlayingStateConstructor()) {
@@ -153,7 +153,7 @@ void Game::update(float deltaTime) {
         }
         m_Ground->setPos({m_Ground->getPosition().x, m_Height - 300.0f});
         m_Background->update(deltaTime);
-        m_PlayingState->update(m_GameState, deltaTime, m_IsMouseHeld);
+        m_PlayingState->update(deltaTime);
 
         if (m_CameraPosition.x != 0) {
             m_Background->setMoving(true);
@@ -165,7 +165,7 @@ void Game::update(float deltaTime) {
         }
         break;
     case PAUSED:
-        m_PlayingState->update(m_GameState, deltaTime, m_IsMouseHeld);
+        m_PlayingState->update(deltaTime);
         break;
     }
 }
@@ -248,7 +248,7 @@ void Game::handleEvents() {
             }
             break;
         case SDL_MOUSEBUTTONDOWN: {
-            int mouseState = SDL_GetMouseState(&m_MousePos.x, &m_MousePos.y);
+            int mouseState = SDL_GetMouseState(&m_MousePosition.x, &m_MousePosition.y);
             m_IsMouseHeld = mouseState == 1;
             break;
         }

@@ -25,7 +25,8 @@ PlayingState::~PlayingState() {
     delete m_ObjectManager;
 }
 
-void PlayingState::update(int &gameState, float delta, bool isMouseHeld) {
+void PlayingState::update(float deltaTime) {
+    int &gameState = m_Game->getGameState();
     if (gameState == PAUSED) {
         return;
     }
@@ -41,7 +42,7 @@ void PlayingState::update(int &gameState, float delta, bool isMouseHeld) {
         m_IsSongPlaying = true;
     }
     m_IsPlayerDead = m_Player->isDead();
-    m_Player->update(delta, isMouseHeld, m_ObjectManager->getObjects());
+    m_Player->update(deltaTime, m_Game->isMouseHeld(), m_ObjectManager->getObjects());
 }
 
 void PlayingState::setToPause(int &gameState) {

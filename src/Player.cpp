@@ -43,9 +43,9 @@ Player::Player(Game *game) : m_Game(game) {
 }
 
 void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> objects) {
-    bool mouseClicked = (!this->m_IsMouseHeld && isMouseHeld);
-    bool mouseReleased = (this->m_IsMouseHeld && !isMouseHeld);
-    this->m_IsMouseHeld = isMouseHeld;
+    bool mouseClicked = (!m_IsMouseHeld && isMouseHeld);
+    bool mouseReleased = (m_IsMouseHeld && !isMouseHeld);
+    m_IsMouseHeld = isMouseHeld;
     if (m_IsDead) {
         m_DeadTimer -= delta;
         if (m_DeadTimer < 0) {
@@ -72,7 +72,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> objec
         } else if (mouseReleased) {
             m_HasBufferedOrb = false;
         }
-        if (m_IsGrounded && this->m_IsMouseHeld) {
+        if (m_IsGrounded && m_IsMouseHeld) {
             m_YVelocity = m_JumpStrength;
             m_IsGrounded = false;
         }

@@ -23,8 +23,9 @@ TitleScreen::TitleScreen(Game *game) : m_Game(game) {
     m_IsMouseHeld = false;
 }
 
-void TitleScreen::update(int &gameState, SDL_Point *mousePos, bool isMouseHeld) {
-    const bool mouseReleased = this->m_IsMouseHeld && !isMouseHeld;
+void TitleScreen::update(int &gameState) {
+    const bool isMouseHeld = m_Game->isMouseHeld();
+    const bool mouseReleased = m_IsMouseHeld && !isMouseHeld;
     if (mouseReleased) {
         SDL_Rect scaledTitlePlay;
         float wScale = m_Game->getScreenWidth() / static_cast<float>(m_Game->getWidth());
@@ -33,13 +34,12 @@ void TitleScreen::update(int &gameState, SDL_Point *mousePos, bool isMouseHeld) 
         scaledTitlePlay.y = m_TitlePlayDST.y * hScale;
         scaledTitlePlay.w = m_TitlePlayDST.w * wScale;
         scaledTitlePlay.h = m_TitlePlayDST.h * hScale;
-        
-        if (SDL_PointInRect(mousePos, &scaledTitlePlay)) {
+        const SDL_Point mousePosition = m_Game->getMousePosition();
+        if (SDL_PointInRect(&mousePosition, &scaledTitlePlay)) {
             gameState = LEVEL_SELECT;
         }
     }
-    this->m_IsMouseHeld = isMouseHeld;
-    this->m_MousePos = *mousePos;
+    m_IsMouseHeld = isMouseHeld;
 }
 
 void TitleScreen::render() {

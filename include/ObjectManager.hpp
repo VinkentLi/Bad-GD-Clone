@@ -7,8 +7,7 @@
 
 class Game;
 
-class ObjectManager
-{
+class ObjectManager {
 public:
     ObjectManager(Game *game);
     std::vector<GameObject> getObjects();

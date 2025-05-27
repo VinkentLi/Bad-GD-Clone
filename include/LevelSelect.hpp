@@ -11,20 +11,29 @@ class Game;
 class LevelSelect {
 public:
     LevelSelect(Game *game);
-    void update(int &gameState, SDL_Point *mousePos, bool isMouseHeld);
+    void update(float deltaTime);
     void render();
     bool getNeedToRecallPlayingStateConstructor();
 
 private:
     Game *m_Game;
     SDL_Renderer *m_Renderer;
-    SDL_Rect m_LeftCornerDST, m_RightCornerDST, m_TopDST, m_LeftLevelArrowDST, m_RightLevelArrowDST, m_TitleArrowDST, m_RectWithLevelName;
+    SDL_Rect m_LeftCornerDST;
+    SDL_Rect m_RightCornerDST;
+    SDL_Rect m_TopDST;
+    SDL_Rect m_LeftLevelArrowDST;
+    SDL_Rect m_RightLevelArrowDST;
+    SDL_Rect m_TitleArrowDST;
+    SDL_Rect m_RectWithLevelName;
     TTF_Font *m_Font;
     TTF_Font *m_FontOutline;
-    SDL_Texture *m_Corner, *m_Top, *m_LevelArrow, *m_TitleArrow;
-    SDL_Point m_MousePos;
+    SDL_Texture *m_Corner;
+    SDL_Texture *m_Top;
+    SDL_Texture *m_LevelArrow;
+    SDL_Texture *m_TitleArrow;
     Mix_Chunk *m_PlaySound;
-    bool m_IsMouseHeld, m_NeedToRecallPlayingStateConstructor;
+    bool m_IsMouseHeld;
+    bool m_NeedToRecallPlayingStateConstructor;
     std::vector<std::string> m_LevelStrings;
 };
 

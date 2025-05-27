@@ -10,7 +10,7 @@ class PlayingState {
 public:
     PlayingState(Game *game);
     ~PlayingState();
-    void update(int &gameState, float delta, bool isMouseHeld);
+    void update(float deltaTime);
     void setToPause(int &gameState);
     void setBackToPlay(int &gameState);
     void resetMusic();
