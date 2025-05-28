@@ -13,9 +13,13 @@ class GameObject;
 
 class Player {
 public:
-    Player(Game *game);
-    void update(float delta, bool IsMouseHeld, std::vector<GameObject> objects);
-    void handleCollisions(std::vector<GameObject> objects);
+    Player() = default;
+    ~Player();
+    Player(const Player &) = delete;
+    Player &operator=(const Player &) = delete;
+    void init(Game *game);
+    void update(float delta, bool IsMouseHeld, std::vector<GameObject> &objects);
+    void handleCollisions(std::vector<GameObject> &objects);
     void die();
     bool isDead();
     // SDL_FRect getHazardHitbox();

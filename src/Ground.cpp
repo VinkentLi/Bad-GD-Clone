@@ -2,7 +2,11 @@
 #include "Game.hpp"
 #include <SDL_image.h>
 
-Ground::Ground(Game *game, uint8_t r, uint8_t g, uint8_t b) : m_Game(game), m_Red(r), m_Green(g), m_Blue(b) {
+void Ground::init(Game *game, uint8_t r, uint8_t g, uint8_t b) {
+    m_Game = game;
+    m_Red = r;
+    m_Green = g;
+    m_Blue = b;
     m_Renderer = m_Game->getRenderer();
     m_GroundTexture = IMG_LoadTexture(m_Renderer, "res/gfx/ground.png");
     SDL_SetTextureColorMod(m_GroundTexture, r, g, b);
@@ -10,6 +14,10 @@ Ground::Ground(Game *game, uint8_t r, uint8_t g, uint8_t b) : m_Game(game), m_Re
     m_Source = {0, 0, GROUND_SIZE, GROUND_SIZE};
     m_Position = {0, m_Game->getHeight() - 300.0f};
     m_ShouldRenderOnTop = false;
+}
+
+Ground::~Ground() {
+    SDL_DestroyTexture(m_GroundTexture);
 }
 
 void Ground::setPos(SDL_FPoint pos) {

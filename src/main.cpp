@@ -60,11 +60,10 @@ int Game::init() {
     m_Width = ((float)(m_ScreenWidth) / (float)(m_ScreenHeight)) * m_Height;
     SDL_RenderSetLogicalSize(m_Renderer, m_Width, m_Height); // render a WIDTHx1080 screen and scale it for the actual window
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");   // anti-aliasing
-    m_TileSheet = IMG_LoadTexture(m_Renderer, "res/gfx/tileSheet.png");
     m_Font = TTF_OpenFont("res/fonts/pusab.ttf", 50);
-    m_Background = new Background(this, 0, 0, 255);
-    m_Background->setMoving(true);
-    m_Ground = new Ground(this, 0, 0, 255);
+    m_Background.init(this, 0, 0, 255);
+    m_Background.setMoving(true);
+    m_Ground.init(this, 0, 0, 255);
     m_TitleScreen = new TitleScreen(this);
     m_LevelSelect = new LevelSelect(this);
     m_PlayingState = new PlayingState(this);
@@ -76,6 +75,9 @@ int Game::init() {
 
 void Game::quit() {
     TTF_CloseFont(m_Font);
+    SDL_DestroyRenderer(m_Renderer);
+    SDL_DestroyWindow(m_Window);
+    Mix_FreeMusic(m_MenuLoop);
     TTF_Quit();
     Mix_Quit();
     IMG_Quit();
@@ -132,17 +134,17 @@ void Game::mainLoop(float deltaTime) {
 void Game::update(float deltaTime) {
     switch (m_GameState) {
     case TITLE_SCREEN:
-        m_Ground->setPos({m_Ground->getPosition().x, m_Height - 300.0f});
-        m_Background->setMoving(true);
-        m_Background->update(deltaTime);
-        m_Ground->update();
-        m_Ground->move(-17.31f, deltaTime);
+        m_Ground.setPos({m_Ground.getPosition().x, m_Height - 300.0f});
+        m_Background.setMoving(true);
+        m_Background.update(deltaTime);
+        m_Ground.update();
+        m_Ground.move(-17.31f, deltaTime);
         m_TitleScreen->update(m_GameState);
         break;
     case LEVEL_SELECT:
-        m_Ground->setPos({0, m_Height - 200.0f});
-        m_Ground->setOnTop(false);
-        m_Background->setMoving(false);
+        m_Ground.setPos({0, m_Height - 200.0f});
+        m_Ground.setOnTop(false);
+        m_Background.setMoving(false);
         // ground->resetPos();
         m_LevelSelect->update(deltaTime);
         break;
@@ -151,17 +153,17 @@ void Game::update(float deltaTime) {
             delete m_PlayingState;
             m_PlayingState = new PlayingState(this);
         }
-        m_Ground->setPos({m_Ground->getPosition().x, m_Height - 300.0f});
-        m_Background->update(deltaTime);
+        m_Ground.setPos({m_Ground.getPosition().x, m_Height - 300.0f});
+        m_Background.update(deltaTime);
         m_PlayingState->update(deltaTime);
 
         if (m_CameraPosition.x != 0) {
-            m_Background->setMoving(true);
+            m_Background.setMoving(true);
         }
         if (m_PlayingState->getPlayerGamemode() == SHIP) {
-            m_Ground->setOnTop(true);
+            m_Ground.setOnTop(true);
         } else {
-            m_Ground->setOnTop(false);
+            m_Ground.setOnTop(false);
         }
         break;
     case PAUSED:
@@ -172,8 +174,8 @@ void Game::update(float deltaTime) {
 
 void Game::render() {
     SDL_RenderClear(m_Renderer);
-    m_Background->render(m_GameState);
-    m_Ground->render();
+    m_Background.render(m_GameState);
+    m_Ground.render();
 
     switch (m_GameState) {
     case TITLE_SCREEN:

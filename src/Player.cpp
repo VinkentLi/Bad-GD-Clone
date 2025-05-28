@@ -4,7 +4,8 @@
 #include "Game.hpp"
 #include "GameObject.hpp"
 
-Player::Player(Game *game) : m_Game(game) {
+void Player::init(Game *game) {
+    m_Game = game;
     m_Renderer = m_Game->getRenderer();
     m_PlayerTexture = IMG_LoadTexture(m_Renderer, "res/gfx/icon.png");
     m_ShipTexture = IMG_LoadTexture(m_Renderer, "res/gfx/ship.png");
@@ -42,7 +43,13 @@ Player::Player(Game *game) : m_Game(game) {
     m_Gamemode = CUBE;
 }
 
-void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> objects) {
+Player::~Player() {
+    SDL_DestroyTexture(m_PlayerTexture);
+    SDL_DestroyTexture(m_ShipTexture);
+    Mix_FreeChunk(m_DeathSound);
+}
+
+void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &objects) {
     bool mouseClicked = (!m_IsMouseHeld && isMouseHeld);
     bool mouseReleased = (m_IsMouseHeld && !isMouseHeld);
     m_IsMouseHeld = isMouseHeld;
@@ -184,7 +191,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> objec
     m_PreviousPosition = m_Position;
 }
 
-void Player::handleCollisions(std::vector<GameObject> objects) {   
+void Player::handleCollisions(std::vector<GameObject> &objects) {   
     switch (m_Gamemode) {
     case CUBE:    
         if (m_HazardHitbox.y > m_Game->getHeight() - 300 - m_Game->TILE_SIZE) {

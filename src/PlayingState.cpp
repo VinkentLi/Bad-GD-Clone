@@ -6,8 +6,8 @@
 #include <iostream>
 
 PlayingState::PlayingState(Game *game) : m_Game(game) {
-    m_Player = new Player(m_Game);
-    m_ObjectManager = new ObjectManager(m_Game);
+    m_Player.init(m_Game);
+    m_ObjectManager.init(m_Game);
     m_Timer = 60;
     m_IsTimerFinished = false;
     m_IsSongPlaying = false;
@@ -20,9 +20,9 @@ PlayingState::PlayingState(Game *game) : m_Game(game) {
 }
 
 PlayingState::~PlayingState() {
-    // RAII at its finest
-    delete m_Player;
-    delete m_ObjectManager;
+    for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
+        Mix_FreeMusic(m_Songs[i]);
+    }
 }
 
 void PlayingState::update(float deltaTime) {
@@ -35,14 +35,14 @@ void PlayingState::update(float deltaTime) {
         return;
     }
     m_IsTimerFinished = true;
-    bool playerJustRevived = m_IsPlayerDead && !m_Player->isDead();
+    bool playerJustRevived = m_IsPlayerDead && !m_Player.isDead();
     if (!m_IsSongPlaying || playerJustRevived)
     {
         Mix_PlayMusic(m_Songs[m_Game->getLevelSelected()], 0);
         m_IsSongPlaying = true;
     }
-    m_IsPlayerDead = m_Player->isDead();
-    m_Player->update(deltaTime, m_Game->isMouseHeld(), m_ObjectManager->getObjects());
+    m_IsPlayerDead = m_Player.isDead();
+    m_Player.update(deltaTime, m_Game->isMouseHeld(), m_ObjectManager.getObjects());
 }
 
 void PlayingState::setToPause(int &gameState) {
@@ -67,10 +67,10 @@ void PlayingState::attemptResetTimer() {
 }
 
 void PlayingState::render() {
-    m_ObjectManager->render();
-    m_Player->render();
+    m_ObjectManager.render();
+    m_Player.render();
 }
 
 int PlayingState::getPlayerGamemode() {
-    return m_Player->getGamemode();
+    return m_Player.getGamemode();
 }

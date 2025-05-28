@@ -4,7 +4,11 @@
 #include "SDL_image.h"
 #include <iostream>
 
-Background::Background(Game* game, uint8_t r, uint8_t g, uint8_t b) : m_Game(game), m_Red(r), m_Green(g), m_Blue(b) {
+void Background::init(Game* game, uint8_t r, uint8_t g, uint8_t b) {
+    m_Game = game;
+    m_Red = r;
+    m_Green = g;
+    m_Blue = b;
     m_Renderer = m_Game->getRenderer();
     m_BGTexture = IMG_LoadTexture(m_Renderer, "res/gfx/background.png");
     m_EmptyBG = IMG_LoadTexture(m_Renderer, "res/gfx/emptyBG.png");
@@ -17,6 +21,11 @@ Background::Background(Game* game, uint8_t r, uint8_t g, uint8_t b) : m_Game(gam
     m_TargetRed = r;
     m_TargetGreen = g;
     m_TargetBlue = b;
+}
+
+Background::~Background() {
+    SDL_DestroyTexture(m_BGTexture);
+    SDL_DestroyTexture(m_EmptyBG);
 }
 
 void Background::fade(uint8_t r, uint8_t g, uint8_t b, float time) {

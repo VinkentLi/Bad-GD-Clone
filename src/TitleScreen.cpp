@@ -23,6 +23,11 @@ TitleScreen::TitleScreen(Game *game) : m_Game(game) {
     m_IsMouseHeld = false;
 }
 
+TitleScreen::~TitleScreen() {
+    SDL_DestroyTexture(m_TitleTexture);
+    SDL_DestroyTexture(m_TitlePlay);
+}
+
 void TitleScreen::update(int &gameState) {
     const bool isMouseHeld = m_Game->isMouseHeld();
     const bool mouseReleased = m_IsMouseHeld && !isMouseHeld;

@@ -11,6 +11,9 @@ class Game;
 class LevelSelect {
 public:
     LevelSelect(Game *game);
+    ~LevelSelect();
+    LevelSelect(const LevelSelect &) = delete;
+    LevelSelect &operator=(const LevelSelect &) = delete;
     void update(float deltaTime);
     void render();
     bool getNeedToRecallPlayingStateConstructor();

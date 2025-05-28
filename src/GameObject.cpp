@@ -3,14 +3,10 @@
 #include "Game.hpp"
 #include "GameObject.hpp"
 
-GameObject::GameObject(Game *game, int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath)
-    : m_Game(game), m_Type(type), m_Rotation(rotation), m_Position(pos), m_Hitbox(hitbox) {
+GameObject::GameObject(Game *game, int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, SDL_Texture *objectTexture)
+    : m_Game(game), m_Type(type), m_Rotation(rotation), m_Position(pos), m_Hitbox(hitbox), m_ObjectTexture(objectTexture) {
     
     m_Renderer = m_Game->getRenderer();
-    m_ObjectTexture = IMG_LoadTexture(m_Renderer, texturePath);
-    if (m_ObjectTexture == NULL) {
-        std::cerr << "Failed to load objectTexture! " << SDL_GetError() << std::endl;
-    }
 }
 
 SDL_FRect *GameObject::getHitbox() {

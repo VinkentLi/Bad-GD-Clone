@@ -1,9 +1,11 @@
 #include "ObjectManager.hpp"
 #include "Game.hpp"
+#include <SDL_image.h>
 #include <fstream>
 #include <iostream>
 
-ObjectManager::ObjectManager(Game *game) : m_Game(game) {
+void ObjectManager::init(Game *game) {
+    m_Game = game;
     m_StringToType = { {"BLOCK", BLOCK},
                        {"SPIKE", HAZARD},
                        {"ywORB", ORB},
@@ -22,10 +24,17 @@ ObjectManager::ObjectManager(Game *game) : m_Game(game) {
                        {UPSIDE_DOWN_PORTAL, {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
                        {NORMAL_PORTAL,      {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}} };
 
+    loadTextures();
     loadLevelData();
 }
 
-std::vector<GameObject> ObjectManager::getObjects() {
+ObjectManager::~ObjectManager() {
+    for (auto &[_, texture] : m_StringToTexture) {
+        SDL_DestroyTexture(texture);
+    }
+}
+
+std::vector<GameObject> &ObjectManager::getObjects() {
     return m_Objects;
 }
 
@@ -59,6 +68,15 @@ SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
     return rotated;
 }
 
+void ObjectManager::loadTextures() {
+    for (auto &[blockName, _] : m_StringToType) {
+        m_StringToTexture[blockName] = IMG_LoadTexture(m_Game->getRenderer(), ("res/gfx/" + blockName + ".png").c_str());
+        if (m_StringToTexture[blockName] == nullptr) {
+            std::cerr << "Failed to load " << blockName << "! " << SDL_GetError() << std::endl;
+        }
+    }
+}
+
 void ObjectManager::loadLevelData() {
     std::ifstream in;
     in.open("res/leveldata/" + std::to_string(m_Game->getLevelSelected()) + ".level");
@@ -76,7 +94,7 @@ void ObjectManager::loadLevelData() {
             for (int v = 0; v < verticalRepeats; v++) {
                 SDL_FPoint pos = {objectPos.x + h*m_Game->TILE_SIZE, objectPos.y + v*m_Game->TILE_SIZE};
                 SDL_FRect hitbox = {hitboxOffset.x + pos.x, hitboxOffset.y + pos.y, hitboxOffset.w, hitboxOffset.h};
-                m_Objects.push_back(GameObject(m_Game, objectType, rotation, pos, hitbox, ("res/gfx/" + objectName + ".png").c_str()));
+                m_Objects.emplace_back(m_Game, objectType, rotation, pos, hitbox, m_StringToTexture[objectName]);
             }
         }
     }

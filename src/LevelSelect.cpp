@@ -33,6 +33,16 @@ LevelSelect::LevelSelect(Game *game) : m_Game(game) {
     m_PlaySound = Mix_LoadWAV("res/sfx/playSound.ogg");
 }
 
+LevelSelect::~LevelSelect() {
+    SDL_DestroyTexture(m_Corner);
+    SDL_DestroyTexture(m_Top);
+    SDL_DestroyTexture(m_LevelArrow);
+    SDL_DestroyTexture(m_TitleArrow);
+    TTF_CloseFont(m_Font);
+    TTF_CloseFont(m_FontOutline);
+    Mix_FreeChunk(m_PlaySound);
+}
+
 void LevelSelect::update(float deltaTime) {
     const bool isMouseHeld = m_Game->isMouseHeld();
     const bool isMouseReleased = m_IsMouseHeld && !isMouseHeld;

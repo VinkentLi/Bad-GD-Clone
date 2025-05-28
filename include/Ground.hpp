@@ -7,7 +7,10 @@ class Game;
 class Ground {
 public:
     Ground() = default;
-    Ground(Game *game, uint8_t r, uint8_t g, uint8_t b);
+    ~Ground();
+    Ground(const Ground &) = delete;
+    Ground &operator=(const Ground &) = delete;
+    void init(Game *game, uint8_t r, uint8_t g, uint8_t b);
     void setPos(SDL_FPoint pos);
     SDL_FPoint getPosition();
     void resetPosition();

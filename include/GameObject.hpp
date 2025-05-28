@@ -16,7 +16,7 @@ enum ObjectType {
 
 class GameObject {
 public:
-    GameObject(Game *game, int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, const char *texturePath);
+    GameObject(Game *game, int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, SDL_Texture *objectTexture);
     SDL_FRect *getHitbox();
     SDL_FPoint getPos();
     int getType();
