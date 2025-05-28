@@ -3,7 +3,7 @@
 #include "Game.hpp"
 #include "GameObject.hpp"
 
-GameObject::GameObject(Game *game, int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, SDL_Texture *objectTexture)
+GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, SDL_Texture *objectTexture)
     : m_Game(game), m_Type(type), m_Rotation(rotation), m_Position(pos), m_Hitbox(hitbox), m_ObjectTexture(objectTexture) {
     
     m_Renderer = m_Game->getRenderer();
@@ -17,7 +17,7 @@ SDL_FPoint GameObject::getPos() {
     return m_Position;
 }
 
-int GameObject::getType() {
+ObjectType GameObject::getType() {
     return m_Type;
 }
 
@@ -28,10 +28,10 @@ void GameObject::render() {
     dst.w = m_Game->TILE_SIZE;
     dst.h = m_Game->TILE_SIZE;
 
-    if (m_Type == SHIP_PORTAL ||
-        m_Type == CUBE_PORTAL ||
-        m_Type == UPSIDE_DOWN_PORTAL ||
-        m_Type == NORMAL_PORTAL) {
+    if (m_Type == ObjectType::SHIP_PORTAL ||
+        m_Type == ObjectType::CUBE_PORTAL ||
+        m_Type == ObjectType::UPSIDE_DOWN_PORTAL ||
+        m_Type == ObjectType::NORMAL_PORTAL) {
 
         dst.h *= 3;
     }

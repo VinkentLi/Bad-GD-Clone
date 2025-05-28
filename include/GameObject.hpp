@@ -3,7 +3,7 @@
 
 class Game;
 
-enum ObjectType {
+enum class ObjectType {
     BLOCK,
     HAZARD,
     ORB,
@@ -16,16 +16,16 @@ enum ObjectType {
 
 class GameObject {
 public:
-    GameObject(Game *game, int type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, SDL_Texture *objectTexture);
+    GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, SDL_Texture *objectTexture);
     SDL_FRect *getHitbox();
     SDL_FPoint getPos();
-    int getType();
+    ObjectType getType();
     void render();
 
 private:
     Game *m_Game;
     SDL_Renderer *m_Renderer;
-    int m_Type;
+    ObjectType m_Type;
     int m_Rotation;
     SDL_FPoint m_Position;
     SDL_FRect m_Hitbox;

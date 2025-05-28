@@ -43,7 +43,7 @@ void Player::reset() {
     m_IsDead = false;
     m_DeadTimer = 0;
     m_GravityMultiplier = 1;
-    m_Gamemode = CUBE;
+    m_Gamemode = Gamemode::CUBE;
 }
 
 Player::~Player() {
@@ -59,7 +59,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
     if (m_IsDead) {
         m_DeadTimer -= delta;
         if (m_DeadTimer < 0) {
-            m_Gamemode = CUBE;
+            m_Gamemode = Gamemode::CUBE;
             m_PressedOrbs.clear();
             m_IsDead = false;
             m_IsGrounded = true;
@@ -76,7 +76,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
         return;
     }
     switch (m_Gamemode) {
-    case CUBE:
+    case Gamemode::CUBE:
         if (mouseClicked) {
             m_HasBufferedOrb = true;
         } else if (mouseReleased) {
@@ -109,7 +109,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
             m_YVelocity = m_Game->TILE_SIZE / 2;
         }
         break;
-    case SHIP: {
+    case Gamemode::SHIP: {
         double shipUp = m_ShipUpAdder;
         double shipDown = m_ShipDownAdder;
         double lessHelpUp = 0.9;
@@ -155,7 +155,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
 
     handleCollisions(objects);
 
-    if (m_Gamemode == SHIP) {
+    if (m_Gamemode == Gamemode::SHIP) {
         // i tried to make rotations accurate, but i couldn't get it to work
         if (m_YVelocity == 0.0) {
             if (m_Rotation < 0) {
@@ -177,7 +177,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
         m_Game->setCameraX(m_Position.x - CAMERA_SCROLL);
     }
 
-    if (m_Gamemode == CUBE) {
+    if (m_Gamemode == Gamemode::CUBE) {
         if (m_Position.y - m_Game->getCameraPosition().y < CAMERA_UP_SCROLL) {
             m_Game->setCameraY(m_Position.y - CAMERA_UP_SCROLL);
         }
@@ -196,7 +196,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
 
 void Player::handleCollisions(std::vector<GameObject> &objects) {   
     switch (m_Gamemode) {
-    case CUBE:    
+    case Gamemode::CUBE:    
         if (m_HazardHitbox.y > m_Game->getHeight() - 300 - m_Game->TILE_SIZE) {
             m_HazardHitbox.y = m_Game->getHeight() - 300 - m_Game->TILE_SIZE;
             m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
@@ -204,7 +204,7 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
             m_YVelocity = 0;
         }
         break;
-    case SHIP:
+    case Gamemode::SHIP:
         if (m_HazardHitbox.y < m_Bounds.first) {
             m_HazardHitbox.y = m_Bounds.first;
             m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
@@ -223,10 +223,10 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
         SDL_FRect intersect; // this is useless but im too lazy to remove it lmfao
         if (SDL_IntersectFRect(&m_HazardHitbox, object.getHitbox(), &intersect)) {
             switch (object.getType()) {
-            case HAZARD:
+            case ObjectType::HAZARD:
                 die();
                 break;
-            case BLOCK:
+            case ObjectType::BLOCK:
                 if (!SDL_HasIntersectionF(&m_SolidHitbox, object.getHitbox())) {
                     if (m_GravityMultiplier == 1) {
                         if (m_YVelocity > 0 && m_SolidHitbox.y + m_SolidHitbox.h < object.getHitbox()->y) {
@@ -239,7 +239,7 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                             m_YVelocity = 0;
                         }
                     }
-                    if (m_Gamemode == SHIP) {
+                    if (m_Gamemode == Gamemode::SHIP) {
                         if (m_YVelocity < 0 && m_SolidHitbox.y > object.getHitbox()->y + object.getHitbox()->h) {
                             m_HazardHitbox.y = object.getPos().y + m_Game->TILE_SIZE;
                             m_YVelocity = 0;
@@ -249,10 +249,10 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                 }
                 die();
                 break;
-            case PAD:
+            case ObjectType::PAD:
                 m_YVelocity = m_PadStrength;
                 break;
-            case ORB: {
+            case ObjectType::ORB: {
                 const bool orbNotInPressedOrbs = std::find(m_PressedOrbs.begin(), m_PressedOrbs.end(), object.getHitbox()) == m_PressedOrbs.end();
                 const bool orbHasNotBeenPressed = m_PressedOrbs.empty() || orbNotInPressedOrbs;
                 if (m_HasBufferedOrb && orbHasNotBeenPressed) {
@@ -261,7 +261,7 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                 }
                 break;
             }
-            case UPSIDE_DOWN_PORTAL:
+            case ObjectType::UPSIDE_DOWN_PORTAL:
                 if (m_GravityMultiplier == -1) {
                     break;
                 }
@@ -271,7 +271,7 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                     m_YVelocity *= -1;
                 }
                 break;
-            case NORMAL_PORTAL:
+            case ObjectType::NORMAL_PORTAL:
                 if (m_GravityMultiplier == 1) {
                     break;
                 }
@@ -281,11 +281,11 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                     m_YVelocity *= -1;
                 }
                 break;
-            case SHIP_PORTAL:
-                m_Gamemode = SHIP;
+            case ObjectType::SHIP_PORTAL:
+                m_Gamemode = Gamemode::SHIP;
                 m_Rotation = 0;
 
-                if (m_Gamemode != SHIP) {
+                if (m_Gamemode != Gamemode::SHIP) {
                     m_YVelocity /= 2;
                 }
                 m_Game->setCameraY(std::clamp(
@@ -297,9 +297,9 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                 m_Bounds.first = m_Game->getCameraPosition().y + 40;
                 m_Bounds.second = m_Bounds.first + 10 * m_Game->TILE_SIZE;
                 break;
-            case CUBE_PORTAL:
-                m_Gamemode = CUBE;
-                if (m_Gamemode != CUBE) {
+            case ObjectType::CUBE_PORTAL:
+                m_Gamemode = Gamemode::CUBE;
+                if (m_Gamemode != Gamemode::CUBE) {
                     m_YVelocity /= 2;
                 }
                 break;
@@ -307,7 +307,7 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
         }
     }
 
-    m_IsGrounded = m_YVelocity == 0 && (!m_IsMouseHeld || m_Gamemode != SHIP);
+    m_IsGrounded = m_YVelocity == 0 && (!m_IsMouseHeld || m_Gamemode != Gamemode::SHIP);
     m_SolidHitbox.x = m_HazardHitbox.x + m_Game->TILE_SIZE / 3;
     m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
     m_Position.x = m_HazardHitbox.x;
@@ -316,7 +316,7 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
 
 void Player::render() {
     switch (m_Gamemode) {
-    case CUBE: {
+    case Gamemode::CUBE: {
         SDL_FRect dst = {
             m_Position.x - m_Game->getCameraPosition().x, 
             m_Position.y - m_Game->getCameraPosition().y,
@@ -326,7 +326,7 @@ void Player::render() {
         SDL_RenderCopyExF(m_Renderer, m_PlayerTexture, NULL, &dst, m_Rotation, NULL, SDL_FLIP_NONE);
         break;
     }
-    case SHIP: {
+    case Gamemode::SHIP: {
         if (m_GravityMultiplier == 1) {
             SDL_FRect cubeDST = {
                 m_Position.x - m_Game->getCameraPosition().x + m_Game->TILE_SIZE / 4,
@@ -386,7 +386,7 @@ bool Player::isDead() {
     return m_IsDead;
 }
 
-int Player::getGamemode() {
+Gamemode Player::getGamemode() {
     return m_Gamemode;
 }
 

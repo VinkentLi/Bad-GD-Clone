@@ -19,7 +19,7 @@ public:
     void resume();
     void resetMusic();
     void attemptResetTimer();
-    int getPlayerGamemode();
+    Gamemode getPlayerGamemode();
     inline static PlayingState *get() { return &m_PlayingState; } 
 
 private:

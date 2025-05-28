@@ -6,23 +6,23 @@
 
 void ObjectManager::init(Game *game) {
     m_Game = game;
-    m_StringToType = { {"BLOCK", BLOCK},
-                       {"SPIKE", HAZARD},
-                       {"ywORB", ORB},
-                       {"ywPAD", PAD},
-                       {"pSHIP", SHIP_PORTAL},
-                       {"pCUBE", CUBE_PORTAL},
-                       {"pUPSD", UPSIDE_DOWN_PORTAL},
-                       {"pRGLR", NORMAL_PORTAL} };
+    m_StringToType = { {"BLOCK", ObjectType::BLOCK},
+                       {"SPIKE", ObjectType::HAZARD},
+                       {"ywORB", ObjectType::ORB},
+                       {"ywPAD", ObjectType::PAD},
+                       {"pSHIP", ObjectType::SHIP_PORTAL},
+                       {"pCUBE", ObjectType::CUBE_PORTAL},
+                       {"pUPSD", ObjectType::UPSIDE_DOWN_PORTAL},
+                       {"pRGLR", ObjectType::NORMAL_PORTAL} };
     
-    m_TypeToHitbox = { {BLOCK,              {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
-                       {HAZARD,             {36, 31, 27               , 50                 }},
-                       {ORB,                {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
-                       {PAD,                {10, 90, 77               , 10                 }},
-                       {SHIP_PORTAL,        {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {CUBE_PORTAL,        {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {UPSIDE_DOWN_PORTAL, {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {NORMAL_PORTAL,      {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}} };
+    m_TypeToHitbox = { {ObjectType::BLOCK,              {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
+                       {ObjectType::HAZARD,             {36, 31, 27               , 50                 }},
+                       {ObjectType::ORB,                {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
+                       {ObjectType::PAD,                {10, 90, 77               , 10                 }},
+                       {ObjectType::SHIP_PORTAL,        {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
+                       {ObjectType::CUBE_PORTAL,        {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
+                       {ObjectType::UPSIDE_DOWN_PORTAL, {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
+                       {ObjectType::NORMAL_PORTAL,      {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}} };
 
     loadTextures();
 }
@@ -92,7 +92,7 @@ void ObjectManager::loadLevelData() {
         SDL_FPoint objectPos;
         int horizontalRepeats, verticalRepeats, rotation;
         in >> objectName >> objectPos.x >> objectPos.y >> horizontalRepeats >> verticalRepeats >> rotation;
-        int objectType = m_StringToType.at(objectName);
+        ObjectType objectType = m_StringToType.at(objectName);
         SDL_FRect hitboxOffset = rotateHitbox(m_TypeToHitbox.at(objectType), rotation);
         for (int h = 0; h < horizontalRepeats; h++) {
             for (int v = 0; v < verticalRepeats; v++) {

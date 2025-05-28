@@ -25,8 +25,8 @@ public:
 private:
     Game *m_Game;
     std::vector<GameObject> m_Objects;
-    std::map<std::string, int> m_StringToType;
+    std::map<std::string, ObjectType> m_StringToType;
     std::map<std::string, SDL_Texture *> m_StringToTexture;
-    std::map<int, SDL_FRect> m_TypeToHitbox;
+    std::map<ObjectType, SDL_FRect> m_TypeToHitbox;
 };
 

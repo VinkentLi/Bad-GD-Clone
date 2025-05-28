@@ -3,7 +3,7 @@
 #include <SDL_mixer.h>
 #include <vector>
 
-enum Gamemodes {
+enum class Gamemode {
     CUBE,
     SHIP
 };
@@ -26,7 +26,7 @@ public:
     // SDL_FRect getHazardHitbox();
     // SDL_FRect getSolidHitbox();
     void render();
-    int getGamemode();
+    Gamemode getGamemode();
 
 private:
     Game *m_Game;
@@ -54,6 +54,6 @@ private:
     bool m_HasBufferedOrb;
     float m_DeadTimer;
     int m_GravityMultiplier;
-    int m_Gamemode;
+    Gamemode m_Gamemode;
     std::pair<float, float> m_Bounds;
 };

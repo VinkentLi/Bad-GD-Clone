@@ -74,7 +74,7 @@ void PlayingState::update(float deltaTime) {
     if (m_Game->getCameraPosition().x != 0) {
         background.setMoving(true);
     }
-    if (m_Player.getGamemode() == SHIP) {
+    if (m_Player.getGamemode() == Gamemode::SHIP) {
         ground.setOnTop(true);
     } else {
         ground.setOnTop(false);
@@ -121,6 +121,6 @@ void PlayingState::render() {
     m_Player.render();
 }
 
-int PlayingState::getPlayerGamemode() {
+Gamemode PlayingState::getPlayerGamemode() {
     return m_Player.getGamemode();
 }
