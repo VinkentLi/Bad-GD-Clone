@@ -1,5 +1,5 @@
 #pragma once
-#include "GameStates.hpp"
+#include "GameState.hpp"
 #include <SDL.h>
 
 class Game;
@@ -10,7 +10,7 @@ public:
     ~TitleScreen();
     TitleScreen(const TitleScreen &) = delete;
     TitleScreen &operator=(const TitleScreen &) = delete;
-    void update(int &gameState);
+    void update(float deltaTime);
     void render();
 
 private:
@@ -21,4 +21,6 @@ private:
     SDL_Texture *m_TitleTexture;
     SDL_Texture *m_TitlePlay;
     bool m_IsMouseHeld;
+    bool m_IsEscapeHeld;
+    bool m_IsSpaceHeld;
 };

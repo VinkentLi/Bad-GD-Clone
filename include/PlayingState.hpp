@@ -28,5 +28,7 @@ private:
     bool m_IsTimerFinished;
     bool m_IsSongPlaying;
     bool m_IsPlayerDead;
+    bool m_IsEscapeHeld;
+    bool m_IsSpaceHeld;
     std::vector<Mix_Music *> m_Songs;
 };

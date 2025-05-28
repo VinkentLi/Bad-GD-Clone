@@ -7,10 +7,8 @@ class Background
 {
 public:
     Background() = default;
-    ~Background();
-    Background(const Background &) = delete;
-    Background &operator=(const Background &) = delete;
     void init(Game *game, uint8_t r, uint8_t g, uint8_t b);
+    void destroy();
     void fade(uint8_t r, uint8_t g, uint8_t b, float time);
     SDL_FPoint getPosition();
     void resetPosition();

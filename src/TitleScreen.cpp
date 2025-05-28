@@ -21,6 +21,8 @@ TitleScreen::TitleScreen(Game *game) : m_Game(game) {
         415*3/4
     };
     m_IsMouseHeld = false;
+    m_IsEscapeHeld = false;
+    m_IsSpaceHeld = false;
 }
 
 TitleScreen::~TitleScreen() {
@@ -28,9 +30,28 @@ TitleScreen::~TitleScreen() {
     SDL_DestroyTexture(m_TitlePlay);
 }
 
-void TitleScreen::update(int &gameState) {
+void TitleScreen::update(float deltaTime) {
+    int &gameState = m_Game->getGameState();
+
+    const bool isEscapeHeld = m_Game->isEscapeHeld();
+    const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
+    m_IsEscapeHeld = isEscapeHeld;
+    if (isEscapeReleased) {
+#ifndef __EMSCRIPTEN__
+        m_Game->quit();
+#endif
+    }
+    Ground &ground = m_Game->getGround();
+    Background &background = m_Game->getBackground();
+    ground.setPosition({ground.getPosition().x, m_Game->getHeight() - 300.0f});
+    background.setMoving(true);
+    background.update(deltaTime);
+    ground.update();
+    ground.move(-17.31f, deltaTime);
+
     const bool isMouseHeld = m_Game->isMouseHeld();
     const bool mouseReleased = m_IsMouseHeld && !isMouseHeld;
+    m_IsMouseHeld = isMouseHeld;
     if (mouseReleased) {
         SDL_Rect scaledTitlePlay;
         float wScale = m_Game->getScreenWidth() / static_cast<float>(m_Game->getWidth());
@@ -44,7 +65,13 @@ void TitleScreen::update(int &gameState) {
             gameState = LEVEL_SELECT;
         }
     }
-    m_IsMouseHeld = isMouseHeld;
+
+    const bool isSpaceHeld = m_Game->isSpaceHeld();
+    const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
+    m_IsSpaceHeld = isSpaceHeld;
+    if (spaceReleased) {
+        gameState = LEVEL_SELECT;
+    }
 }
 
 void TitleScreen::render() {

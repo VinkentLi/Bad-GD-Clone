@@ -26,6 +26,8 @@ public:
     void run();
     void quit();
     inline bool isMouseHeld() { return m_IsMouseHeld; }
+    inline bool isEscapeHeld() { return m_IsEscapeHeld; }
+    inline bool isSpaceHeld() { return m_IsSpaceHeld; }
     inline SDL_Renderer *getRenderer() { return m_Renderer; }
     inline int getWidth() { return m_Width; }
     inline int getHeight() { return m_Height; }
@@ -41,8 +43,9 @@ public:
     inline void decreaseLevelSelected() { m_LevelSelected--; }
     inline SDL_Point getMousePosition() { return m_MousePosition; }
     inline int &getGameState() { return m_GameState; } // TODO: get rid of this
-    inline Ground *getGround() { return &m_Ground; }
-    inline Background *getBackground() { return &m_Background; }
+    inline Ground &getGround() { return m_Ground; }
+    inline Background &getBackground() { return m_Background; }
+    inline void restartMenuLoop() { Mix_PlayMusic(m_MenuLoop, -1); } // will get rid of this after gsm is added
 
 private:
     SDL_Window *m_Window;
@@ -59,6 +62,8 @@ private:
     PlayingState *m_PlayingState = nullptr;
     bool m_IsGameRunning = true;
     bool m_IsMouseHeld = false;
+    bool m_IsEscapeHeld = false;
+    bool m_IsSpaceHeld = false;
     int m_Width;
     int m_Height = 1080;
     int m_ScreenWidth;

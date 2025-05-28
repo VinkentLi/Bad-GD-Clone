@@ -36,6 +36,8 @@ private:
     SDL_Texture *m_TitleArrow;
     Mix_Chunk *m_PlaySound;
     bool m_IsMouseHeld;
+    bool m_IsEscapeHeld;
+    bool m_IsSpaceHeld;
     bool m_NeedToRecallPlayingStateConstructor;
     std::vector<std::string> m_LevelStrings;
 };

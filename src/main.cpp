@@ -74,6 +74,8 @@ int Game::init() {
 }
 
 void Game::quit() {
+    m_Background.destroy();
+    m_Ground.destroy();
     TTF_CloseFont(m_Font);
     SDL_DestroyRenderer(m_Renderer);
     SDL_DestroyWindow(m_Window);
@@ -134,18 +136,9 @@ void Game::mainLoop(float deltaTime) {
 void Game::update(float deltaTime) {
     switch (m_GameState) {
     case TITLE_SCREEN:
-        m_Ground.setPos({m_Ground.getPosition().x, m_Height - 300.0f});
-        m_Background.setMoving(true);
-        m_Background.update(deltaTime);
-        m_Ground.update();
-        m_Ground.move(-17.31f, deltaTime);
-        m_TitleScreen->update(m_GameState);
+        m_TitleScreen->update(deltaTime);
         break;
     case LEVEL_SELECT:
-        m_Ground.setPos({0, m_Height - 200.0f});
-        m_Ground.setOnTop(false);
-        m_Background.setMoving(false);
-        // ground->resetPos();
         m_LevelSelect->update(deltaTime);
         break;
     case PLAYING:
@@ -153,18 +146,7 @@ void Game::update(float deltaTime) {
             delete m_PlayingState;
             m_PlayingState = new PlayingState(this);
         }
-        m_Ground.setPos({m_Ground.getPosition().x, m_Height - 300.0f});
-        m_Background.update(deltaTime);
         m_PlayingState->update(deltaTime);
-
-        if (m_CameraPosition.x != 0) {
-            m_Background.setMoving(true);
-        }
-        if (m_PlayingState->getPlayerGamemode() == SHIP) {
-            m_Ground.setOnTop(true);
-        } else {
-            m_Ground.setOnTop(false);
-        }
         break;
     case PAUSED:
         m_PlayingState->update(deltaTime);
@@ -211,41 +193,21 @@ void Game::handleEvents() {
             break;
         case SDL_KEYDOWN:
             switch (event.key.keysym.sym) {
-            case SDLK_q:
-#ifndef __EMSCRIPTEN__
-                m_IsGameRunning = false;
-#endif
-                break;
             case SDLK_ESCAPE:
-                switch (m_GameState) {
-                case LEVEL_SELECT:
-                    m_GameState = TITLE_SCREEN;
-                    break;
-                case PLAYING:
-                    m_PlayingState->setToPause(m_GameState);
-                    break;
-                case PAUSED:
-                    m_GameState = LEVEL_SELECT;
-                    m_PlayingState->resetMusic();
-                    Mix_PlayMusic(m_MenuLoop, -1);
-                    m_CameraPosition = {0, 0};
-                    break;
-                case TITLE_SCREEN:
-#ifndef __EMSCRIPTEN__
-                    m_IsGameRunning = false;
-#endif
-                    break;
-                }
+                m_IsEscapeHeld = true;
                 break;
             case SDLK_SPACE:
-                switch (m_GameState) {
-                case TITLE_SCREEN:
-                    m_GameState = LEVEL_SELECT;
-                    break;
-                case PAUSED:
-                    m_PlayingState->setBackToPlay(m_GameState);
-                    break;
-                }
+                m_IsSpaceHeld = true;
+                break;
+            }
+            break;
+        case SDL_KEYUP:
+            switch (event.key.keysym.sym) {
+            case SDLK_ESCAPE:
+                m_IsEscapeHeld = false;
+                break;
+            case SDLK_SPACE:
+                m_IsSpaceHeld = false;
                 break;
             }
             break;

@@ -23,7 +23,7 @@ void Background::init(Game* game, uint8_t r, uint8_t g, uint8_t b) {
     m_TargetBlue = b;
 }
 
-Background::~Background() {
+void Background::destroy() {
     SDL_DestroyTexture(m_BGTexture);
     SDL_DestroyTexture(m_EmptyBG);
 }

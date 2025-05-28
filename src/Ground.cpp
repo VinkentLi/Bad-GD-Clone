@@ -16,11 +16,11 @@ void Ground::init(Game *game, uint8_t r, uint8_t g, uint8_t b) {
     m_ShouldRenderOnTop = false;
 }
 
-Ground::~Ground() {
+void Ground::destroy() {
     SDL_DestroyTexture(m_GroundTexture);
 }
 
-void Ground::setPos(SDL_FPoint pos) {
+void Ground::setPosition(SDL_FPoint pos) {
     this->m_Position = pos;
 }
 

@@ -19,6 +19,8 @@ LevelSelect::LevelSelect(Game *game) : m_Game(game) {
     m_LevelArrow = IMG_LoadTexture(m_Renderer, "res/gfx/levelArrow.png");
     m_TitleArrow = IMG_LoadTexture(m_Renderer, "res/gfx/toTitleScreen.png");
     m_IsMouseHeld = false;
+    m_IsEscapeHeld = false;
+    m_IsSpaceHeld = false;
     m_NeedToRecallPlayingStateConstructor = false;
     m_Game->setLevelSelected(0);
     m_LevelStrings.push_back("Test level1");
@@ -44,6 +46,20 @@ LevelSelect::~LevelSelect() {
 }
 
 void LevelSelect::update(float deltaTime) {
+    int &gameState = m_Game->getGameState();
+
+    const bool isEscapeHeld = m_Game->isEscapeHeld();
+    const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
+    m_IsEscapeHeld = isEscapeHeld;
+    if (isEscapeReleased) {
+        gameState = TITLE_SCREEN;
+    }
+    Background &background = m_Game->getBackground();
+    Ground &ground = m_Game->getGround();
+    ground.setPosition({0, m_Game->getHeight() - 200.0f});
+    ground.setOnTop(false);
+    background.setMoving(false);
+
     const bool isMouseHeld = m_Game->isMouseHeld();
     const bool isMouseReleased = m_IsMouseHeld && !isMouseHeld;
     if (isMouseReleased) {  
@@ -71,8 +87,6 @@ void LevelSelect::update(float deltaTime) {
         scaledLevelRect.w *= wScale;
         scaledLevelRect.h *= hScale;
 
-        int &gameState = m_Game->getGameState();
-
         if (SDL_PointInRect(&mousePosition, &scaledTitleArrow)) {
             gameState = TITLE_SCREEN;
         } else if (SDL_PointInRect(&mousePosition, &scaledLeft)) {
@@ -93,6 +107,16 @@ void LevelSelect::update(float deltaTime) {
         }
     }
     m_IsMouseHeld = isMouseHeld;
+
+    const bool isSpaceHeld = m_Game->isSpaceHeld();
+    const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
+    m_IsSpaceHeld = isSpaceHeld;
+    if (spaceReleased) {
+        gameState = PLAYING;
+        m_NeedToRecallPlayingStateConstructor = true;
+        Mix_HaltMusic();
+        Mix_PlayChannel(0, m_PlaySound, 0);
+    }
 }
 
 void LevelSelect::render() {
