@@ -14,6 +14,7 @@ public:
     ObjectManager(const ObjectManager &) = delete;
     ObjectManager &operator=(const ObjectManager &) = delete;
     void init(Game *game);
+    void reset();
     std::vector<GameObject> &getObjects();
     SDL_FRect rotateHitbox(SDL_FRect hitbox, int rotations);
     void clearObjects();

@@ -10,6 +10,9 @@ void Player::init(Game *game) {
     m_PlayerTexture = IMG_LoadTexture(m_Renderer, "res/gfx/icon.png");
     m_ShipTexture = IMG_LoadTexture(m_Renderer, "res/gfx/ship.png");
     m_DeathSound = Mix_LoadWAV("res/sfx/deathSound.ogg");
+}
+
+void Player::reset() {
     m_Position = {-m_Game->TILE_SIZE, m_Game->getHeight() - 300.0f - m_Game->TILE_SIZE};
     m_PreviousPosition = m_Position;
     m_XVelocity = 17.31;

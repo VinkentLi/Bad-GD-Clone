@@ -1,6 +1,8 @@
 #include "GameState.hpp"
 #include "Game.hpp"
+#include <iostream>
 
-GameState::GameState(Game *game) : m_Game(game) {
+void GameState::init(Game *game) {
+    m_Game = game;
     m_Renderer = m_Game->getRenderer();
 }

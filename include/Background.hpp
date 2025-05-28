@@ -14,7 +14,7 @@ public:
     void resetPosition();
     void setMoving(bool value);
     void update(float delta);
-    void render(int gameState);
+    void render();
 
 private:
     Game *m_Game;

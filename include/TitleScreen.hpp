@@ -4,18 +4,18 @@
 
 class Game;
 
-class TitleScreen {
+class TitleScreen : public GameState {
 public:
-    TitleScreen(Game *game);
-    ~TitleScreen();
-    TitleScreen(const TitleScreen &) = delete;
-    TitleScreen &operator=(const TitleScreen &) = delete;
-    void update(float deltaTime);
-    void render();
+    void init(Game *game) override;
+    void destroy() override;
+    void enter() override;
+    void exit() override;
+    void update(float deltaTime) override;
+    void render() override;
+    inline static TitleScreen *get() { return &m_TitleScreen; }
 
 private:
-    Game *m_Game;
-    SDL_Renderer *m_Renderer;
+    static TitleScreen m_TitleScreen;
     SDL_Rect m_TitleDST;
     SDL_Rect m_TitlePlayDST;
     SDL_Texture *m_TitleTexture;

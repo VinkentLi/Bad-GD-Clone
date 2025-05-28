@@ -1,10 +1,14 @@
 #include "TitleScreen.hpp"
+#include "LevelSelect.hpp"
 #include <SDL_image.h>
 #include <iostream>
 #include "Game.hpp"
 
-TitleScreen::TitleScreen(Game *game) : m_Game(game) {
-    m_Renderer = m_Game->getRenderer();
+TitleScreen TitleScreen::m_TitleScreen;
+
+void TitleScreen::init(Game *game) {
+    GameState::init(game);
+    m_Name = "TitleScreen";
     m_TitleTexture = IMG_LoadTexture(m_Renderer, "res/gfx/title.png");
     if (m_TitleTexture == NULL) {
         std::cerr << "Failed to load title.png! " << SDL_GetError() << std::endl;
@@ -13,6 +17,14 @@ TitleScreen::TitleScreen(Game *game) : m_Game(game) {
     if (m_TitlePlay == NULL) {
         std::cerr << "Failed to load titlePlay.png! " << SDL_GetError() << std::endl;
     }
+}
+
+void TitleScreen::destroy() {
+    SDL_DestroyTexture(m_TitleTexture);
+    SDL_DestroyTexture(m_TitlePlay);
+}
+
+void TitleScreen::enter() {
     m_TitleDST = {m_Game->getWidth()/ 2 - (1699*3/4) / 2, 100, 1699*3/4, 206*3/4}; // lol
     m_TitlePlayDST = { // most readable code of all time
         m_Game->getWidth()/2 - 415/2*3/4,
@@ -25,20 +37,17 @@ TitleScreen::TitleScreen(Game *game) : m_Game(game) {
     m_IsSpaceHeld = false;
 }
 
-TitleScreen::~TitleScreen() {
-    SDL_DestroyTexture(m_TitleTexture);
-    SDL_DestroyTexture(m_TitlePlay);
+void TitleScreen::exit() {
+
 }
 
 void TitleScreen::update(float deltaTime) {
-    int &gameState = m_Game->getGameState();
-
     const bool isEscapeHeld = m_Game->isEscapeHeld();
     const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
     m_IsEscapeHeld = isEscapeHeld;
     if (isEscapeReleased) {
 #ifndef __EMSCRIPTEN__
-        m_Game->quit();
+        m_Game->popState();
 #endif
     }
     Ground &ground = m_Game->getGround();
@@ -62,7 +71,7 @@ void TitleScreen::update(float deltaTime) {
         scaledTitlePlay.h = m_TitlePlayDST.h * hScale;
         const SDL_Point mousePosition = m_Game->getMousePosition();
         if (SDL_PointInRect(&mousePosition, &scaledTitlePlay)) {
-            gameState = LEVEL_SELECT;
+            m_Game->pushState(LevelSelect::get());
         }
     }
 
@@ -70,7 +79,7 @@ void TitleScreen::update(float deltaTime) {
     const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
     m_IsSpaceHeld = isSpaceHeld;
     if (spaceReleased) {
-        gameState = LEVEL_SELECT;
+        m_Game->pushState(LevelSelect::get());
     }
 }
 

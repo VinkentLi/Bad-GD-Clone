@@ -3,15 +3,10 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-#include "GameStates.hpp"
 #include "GameState.hpp"
 #include "Background.hpp"
 #include "Ground.hpp"
 #include <memory>
-
-class TitleScreen;
-class LevelSelect;
-class PlayingState;
 
 class Game {
 public:
@@ -25,6 +20,12 @@ public:
     int init();
     void run();
     void quit();
+
+    void pushState(GameState *state);
+    void popState();
+    void changeState(GameState *state);
+    inline GameState *getState() { return m_GameStates.top(); }
+    
     inline bool isMouseHeld() { return m_IsMouseHeld; }
     inline bool isEscapeHeld() { return m_IsEscapeHeld; }
     inline bool isSpaceHeld() { return m_IsSpaceHeld; }
@@ -42,10 +43,9 @@ public:
     inline void increaseLevelSelected() { m_LevelSelected++; }
     inline void decreaseLevelSelected() { m_LevelSelected--; }
     inline SDL_Point getMousePosition() { return m_MousePosition; }
-    inline int &getGameState() { return m_GameState; } // TODO: get rid of this
     inline Ground &getGround() { return m_Ground; }
     inline Background &getBackground() { return m_Background; }
-    inline void restartMenuLoop() { Mix_PlayMusic(m_MenuLoop, -1); } // will get rid of this after gsm is added
+    inline void restartMenuLoop() { Mix_PlayMusic(m_MenuLoop, -1); }
 
 private:
     SDL_Window *m_Window;
@@ -56,10 +56,7 @@ private:
     Mix_Music *m_MenuLoop;
     Background m_Background;
     Ground m_Ground;
-    // std::stack<std::unique_ptr<GameState>> m_GameStates;
-    TitleScreen *m_TitleScreen = nullptr;
-    LevelSelect *m_LevelSelect = nullptr;
-    PlayingState *m_PlayingState = nullptr;
+    std::stack<GameState *> m_GameStates;
     bool m_IsGameRunning = true;
     bool m_IsMouseHeld = false;
     bool m_IsEscapeHeld = false;
@@ -70,7 +67,6 @@ private:
     int m_ScreenHeight;
     int m_Frames = 0;
     int m_CurrentFPS = 0;
-    int m_GameState = TITLE_SCREEN;
     int m_LevelSelected = 0;
     int m_Timer = 0;
 #ifdef __EMSCRIPTEN__

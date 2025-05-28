@@ -1,5 +1,5 @@
 #pragma once
-#include "GameStates.hpp"
+#include "GameState.hpp"
 #include <vector>
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -8,19 +8,18 @@
 
 class Game;
 
-class LevelSelect {
+class LevelSelect : public GameState {
 public:
-    LevelSelect(Game *game);
-    ~LevelSelect();
-    LevelSelect(const LevelSelect &) = delete;
-    LevelSelect &operator=(const LevelSelect &) = delete;
-    void update(float deltaTime);
-    void render();
-    bool getNeedToRecallPlayingStateConstructor();
+    void init(Game *game) override;
+    void destroy() override;
+    void enter() override;
+    void exit() override;
+    void update(float deltaTime) override;
+    void render() override;
+    inline static LevelSelect *get() { return &m_LevelSelect; }
 
 private:
-    Game *m_Game;
-    SDL_Renderer *m_Renderer;
+    static LevelSelect m_LevelSelect;
     SDL_Rect m_LeftCornerDST;
     SDL_Rect m_RightCornerDST;
     SDL_Rect m_TopDST;
@@ -38,7 +37,6 @@ private:
     bool m_IsMouseHeld;
     bool m_IsEscapeHeld;
     bool m_IsSpaceHeld;
-    bool m_NeedToRecallPlayingStateConstructor;
     std::vector<std::string> m_LevelStrings;
 };
 

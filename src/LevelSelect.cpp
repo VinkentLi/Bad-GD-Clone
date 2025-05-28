@@ -1,41 +1,26 @@
 #include "LevelSelect.hpp"
+#include "PlayingState.hpp"
 #include "Game.hpp"
 #include <SDL_image.h>
 #include <iostream>
 
-LevelSelect::LevelSelect(Game *game) : m_Game(game) {
+LevelSelect LevelSelect::m_LevelSelect;
+
+void LevelSelect::init(Game *game) {
+    GameState::init(game);
+    m_Name = "LevelSelect";
     m_Renderer = m_Game->getRenderer();
-    const int WIDTH = m_Game->getWidth();
-    const int HEIGHT = m_Game->getHeight();
-    // TODO: fix magic numbers
-    m_LeftCornerDST = {0, HEIGHT - 282, 285, 282};
-    m_RightCornerDST = {WIDTH - 285, HEIGHT - 282, 285, 282};
-    m_TopDST = {WIDTH/2 - 1226/2*3/4, 0, 1226*3/4, 144*3/4};
-    m_LeftLevelArrowDST = {40, HEIGHT/2 - 238/2, 106, 238};
-    m_RightLevelArrowDST = {WIDTH - 40 - 106, HEIGHT/2 - 238/2, 106, 238};
-    m_TitleArrowDST = {40, 20, 124, 150};
     m_Corner = IMG_LoadTexture(m_Renderer, "res/gfx/selectCorner.png");
     m_Top = IMG_LoadTexture(m_Renderer, "res/gfx/top.png");
     m_LevelArrow = IMG_LoadTexture(m_Renderer, "res/gfx/levelArrow.png");
     m_TitleArrow = IMG_LoadTexture(m_Renderer, "res/gfx/toTitleScreen.png");
-    m_IsMouseHeld = false;
-    m_IsEscapeHeld = false;
-    m_IsSpaceHeld = false;
-    m_NeedToRecallPlayingStateConstructor = false;
-    m_Game->setLevelSelected(0);
-    m_LevelStrings.push_back("Test level1");
-    m_LevelStrings.push_back("Test Level2");
     m_Font = TTF_OpenFont("res/fonts/pusab.ttf", 100);
     m_FontOutline = TTF_OpenFont("res/fonts/pusab.ttf", 100);
     TTF_SetFontOutline(m_FontOutline, 4);
-    m_RectWithLevelName.w = 1000;
-    m_RectWithLevelName.h = 300;
-    m_RectWithLevelName.x = WIDTH / 2 - 1000/2;
-    m_RectWithLevelName.y = HEIGHT / 2 - 350;
     m_PlaySound = Mix_LoadWAV("res/sfx/playSound.ogg");
 }
 
-LevelSelect::~LevelSelect() {
+void LevelSelect::destroy() {
     SDL_DestroyTexture(m_Corner);
     SDL_DestroyTexture(m_Top);
     SDL_DestroyTexture(m_LevelArrow);
@@ -45,14 +30,38 @@ LevelSelect::~LevelSelect() {
     Mix_FreeChunk(m_PlaySound);
 }
 
-void LevelSelect::update(float deltaTime) {
-    int &gameState = m_Game->getGameState();
+void LevelSelect::enter() {
+    const int WIDTH = m_Game->getWidth();
+    const int HEIGHT = m_Game->getHeight();
+    m_LeftCornerDST = {0, HEIGHT - 282, 285, 282};
+    m_RightCornerDST = {WIDTH - 285, HEIGHT - 282, 285, 282};
+    m_TopDST = {WIDTH/2 - 1226/2*3/4, 0, 1226*3/4, 144*3/4};
+    m_LeftLevelArrowDST = {40, HEIGHT/2 - 238/2, 106, 238};
+    m_RightLevelArrowDST = {WIDTH - 40 - 106, HEIGHT/2 - 238/2, 106, 238};
+    m_TitleArrowDST = {40, 20, 124, 150};
+    m_IsMouseHeld = false;
+    m_IsEscapeHeld = false;
+    m_IsSpaceHeld = false;
+    m_Game->setLevelSelected(0);
+    m_LevelStrings.clear();
+    m_LevelStrings.push_back("Test level1");
+    m_LevelStrings.push_back("Test Level2");
+    m_RectWithLevelName.w = 1000;
+    m_RectWithLevelName.h = 300;
+    m_RectWithLevelName.x = WIDTH / 2 - 1000/2;
+    m_RectWithLevelName.y = HEIGHT / 2 - 350;
+}
 
+void LevelSelect::exit() {
+
+}
+
+void LevelSelect::update(float deltaTime) {
     const bool isEscapeHeld = m_Game->isEscapeHeld();
     const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
     m_IsEscapeHeld = isEscapeHeld;
     if (isEscapeReleased) {
-        gameState = TITLE_SCREEN;
+        m_Game->popState();
     }
     Background &background = m_Game->getBackground();
     Ground &ground = m_Game->getGround();
@@ -88,7 +97,7 @@ void LevelSelect::update(float deltaTime) {
         scaledLevelRect.h *= hScale;
 
         if (SDL_PointInRect(&mousePosition, &scaledTitleArrow)) {
-            gameState = TITLE_SCREEN;
+            m_Game->popState();
         } else if (SDL_PointInRect(&mousePosition, &scaledLeft)) {
             m_Game->decreaseLevelSelected();
             if (m_Game->getLevelSelected() < 0) {
@@ -100,10 +109,8 @@ void LevelSelect::update(float deltaTime) {
                 m_Game->setLevelSelected(0);
             }
         } else if (SDL_PointInRect(&mousePosition, &scaledLevelRect)) {
-            gameState = PLAYING;
-            m_NeedToRecallPlayingStateConstructor = true;
-            Mix_HaltMusic();
             Mix_PlayChannel(0, m_PlaySound, 0);
+            m_Game->pushState(PlayingState::get());
         }
     }
     m_IsMouseHeld = isMouseHeld;
@@ -112,10 +119,8 @@ void LevelSelect::update(float deltaTime) {
     const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
     m_IsSpaceHeld = isSpaceHeld;
     if (spaceReleased) {
-        gameState = PLAYING;
-        m_NeedToRecallPlayingStateConstructor = true;
-        Mix_HaltMusic();
         Mix_PlayChannel(0, m_PlaySound, 0);
+        m_Game->pushState(PlayingState::get());
     }
 }
 
@@ -163,12 +168,4 @@ void LevelSelect::render() {
     SDL_DestroyTexture(levelShadowTexture);
     SDL_FreeSurface(levelStringOutline);
     SDL_DestroyTexture(levelStringTexture);
-}
-
-bool LevelSelect::getNeedToRecallPlayingStateConstructor() {
-    if (m_NeedToRecallPlayingStateConstructor) {
-        m_NeedToRecallPlayingStateConstructor = false;
-        return true;
-    }
-    return false;
 }

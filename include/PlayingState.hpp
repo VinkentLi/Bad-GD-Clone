@@ -3,25 +3,27 @@
 #include <SDL_mixer.h>
 #include "Player.hpp"
 #include "ObjectManager.hpp"
+#include "GameState.hpp"
 
 class Game;
 
-class PlayingState {
+class PlayingState : public GameState {
 public:
-    PlayingState(Game *game);
-    ~PlayingState();
-    PlayingState(const PlayingState &) = delete;
-    PlayingState &operator=(const PlayingState &) = delete;
-    void update(float deltaTime);
-    void setToPause(int &gameState);
-    void setBackToPlay(int &gameState);
+    void init(Game *game) override;
+    void destroy() override;
+    void enter() override;
+    void exit() override;
+    void update(float deltaTime) override;
+    void render() override;
+    void pause();
+    void resume();
     void resetMusic();
     void attemptResetTimer();
-    void render();
     int getPlayerGamemode();
+    inline static PlayingState *get() { return &m_PlayingState; } 
 
 private:
-    Game *m_Game;
+    static PlayingState m_PlayingState;
     Player m_Player;
     ObjectManager m_ObjectManager;
     float m_Timer;
@@ -30,5 +32,6 @@ private:
     bool m_IsPlayerDead;
     bool m_IsEscapeHeld;
     bool m_IsSpaceHeld;
+    bool m_IsPaused;
     std::vector<Mix_Music *> m_Songs;
 };

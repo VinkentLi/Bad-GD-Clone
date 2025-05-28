@@ -5,54 +5,65 @@
 #include <string>
 #include <iostream>
 
-PlayingState::PlayingState(Game *game) : m_Game(game) {
+PlayingState PlayingState::m_PlayingState;
+
+void PlayingState::init(Game *game) {
+    GameState::init(game);
+    m_Name = "PlayingState";
     m_Player.init(m_Game);
     m_ObjectManager.init(m_Game);
-    m_Timer = 60;
-    m_IsTimerFinished = false;
-    m_IsSongPlaying = false;
-    m_IsPlayerDead = false;
-    m_IsEscapeHeld = false;
-    m_IsSpaceHeld = false;
-    m_Songs.clear();
 
     for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
         m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".wav").c_str()));
     }
 }
 
-PlayingState::~PlayingState() {
+void PlayingState::destroy() {
     for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
         Mix_FreeMusic(m_Songs[i]);
     }
 }
 
+void PlayingState::enter() {
+    Mix_HaltMusic();
+    m_Player.reset();
+    m_ObjectManager.reset();
+    m_Timer = 60;
+    m_IsTimerFinished = false;
+    m_IsSongPlaying = false;
+    m_IsPlayerDead = false;
+    m_IsEscapeHeld = false;
+    m_IsSpaceHeld = false;
+    m_IsPaused = false;
+}
+
+void PlayingState::exit() {
+    resetMusic();
+    m_Game->restartMenuLoop();
+    m_Game->setCameraPosition({0, 0});
+}
+
 void PlayingState::update(float deltaTime) {
-    int &gameState = m_Game->getGameState();
-    
     const bool isEscapeHeld = m_Game->isEscapeHeld();
     const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
     m_IsEscapeHeld = isEscapeHeld;
 
-    if (gameState == PAUSED) {
+    if (m_IsPaused) {
         if (isEscapeReleased) {
-            gameState = LEVEL_SELECT;
-            resetMusic();
-            m_Game->restartMenuLoop();
-            m_Game->setCameraPosition({0, 0});
+            m_Game->popState();
             return;
         }
         const bool isSpaceHeld = m_Game->isSpaceHeld();
         const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
         m_IsSpaceHeld = isSpaceHeld;
         if (spaceReleased) {
-            setBackToPlay(gameState);
+            resume();
         }
         return;
     }
 
     if (isEscapeReleased) {
-        setToPause(gameState);
+        pause();
     }
 
     Background &background = m_Game->getBackground();
@@ -84,13 +95,13 @@ void PlayingState::update(float deltaTime) {
     m_Player.update(deltaTime, m_Game->isMouseHeld(), m_ObjectManager.getObjects());
 }
 
-void PlayingState::setToPause(int &gameState) {
-    gameState = PAUSED;
+void PlayingState::pause() {
+    m_IsPaused = true;
     Mix_PauseMusic();
 }
 
-void PlayingState::setBackToPlay(int &gameState) {
-    gameState = PLAYING;
+void PlayingState::resume() {
+    m_IsPaused = false;
     Mix_ResumeMusic();
 }
 

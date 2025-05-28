@@ -1,5 +1,5 @@
-#include <iostream>
 #include <SDL_image.h>
+#include <iostream>
 
 #include "Game.hpp"
 #include "Background.hpp"
@@ -64,9 +64,13 @@ int Game::init() {
     m_Background.init(this, 0, 0, 255);
     m_Background.setMoving(true);
     m_Ground.init(this, 0, 0, 255);
-    m_TitleScreen = new TitleScreen(this);
-    m_LevelSelect = new LevelSelect(this);
-    m_PlayingState = new PlayingState(this);
+
+    TitleScreen::get()->init(this);
+    LevelSelect::get()->init(this);
+    PlayingState::get()->init(this);
+
+    pushState(TitleScreen::get());
+
     m_MenuLoop = Mix_LoadMUS("res/sfx/menuLoop.wav");
     m_CameraPosition = {0, 0};
 
@@ -76,6 +80,9 @@ int Game::init() {
 void Game::quit() {
     m_Background.destroy();
     m_Ground.destroy();
+    TitleScreen::get()->destroy();
+    LevelSelect::get()->destroy();
+    PlayingState::get()->destroy();
     TTF_CloseFont(m_Font);
     SDL_DestroyRenderer(m_Renderer);
     SDL_DestroyWindow(m_Window);
@@ -134,45 +141,15 @@ void Game::mainLoop(float deltaTime) {
 #endif
 
 void Game::update(float deltaTime) {
-    switch (m_GameState) {
-    case TITLE_SCREEN:
-        m_TitleScreen->update(deltaTime);
-        break;
-    case LEVEL_SELECT:
-        m_LevelSelect->update(deltaTime);
-        break;
-    case PLAYING:
-        if (m_LevelSelect->getNeedToRecallPlayingStateConstructor()) {
-            delete m_PlayingState;
-            m_PlayingState = new PlayingState(this);
-        }
-        m_PlayingState->update(deltaTime);
-        break;
-    case PAUSED:
-        m_PlayingState->update(deltaTime);
-        break;
-    }
+    m_GameStates.top()->update(deltaTime);
 }
 
 void Game::render() {
     SDL_RenderClear(m_Renderer);
-    m_Background.render(m_GameState);
+    m_Background.render();
     m_Ground.render();
+    m_GameStates.top()->render();
 
-    switch (m_GameState) {
-    case TITLE_SCREEN:
-        m_TitleScreen->render();
-        break;
-    case LEVEL_SELECT:
-        m_LevelSelect->render();
-        break;
-    case PLAYING:
-        m_PlayingState->render();
-        break;
-    case PAUSED:
-        m_PlayingState->render();
-        break;
-    }
     // render fps
     SDL_Surface *fpsSurface = TTF_RenderText_Blended(m_Font, ("FPS: " + std::to_string(m_CurrentFPS)).c_str(), {255, 255, 255});
     SDL_Texture *fpsTexture = SDL_CreateTextureFromSurface(m_Renderer, fpsSurface);
@@ -221,4 +198,23 @@ void Game::handleEvents() {
             break;
         }
     }
+}
+
+void Game::pushState(GameState *state) {
+    m_GameStates.push(state);
+    state->enter();
+}
+
+void Game::popState() {
+    if (m_GameStates.size() <= 1) {
+        m_IsGameRunning = false;
+        return;
+    }
+    m_GameStates.top()->exit();
+    m_GameStates.pop();
+}
+
+void Game::changeState(GameState *state) {
+    popState();
+    pushState(state);
 }

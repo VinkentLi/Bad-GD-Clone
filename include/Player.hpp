@@ -18,6 +18,7 @@ public:
     Player(const Player &) = delete;
     Player &operator=(const Player &) = delete;
     void init(Game *game);
+    void reset();
     void update(float delta, bool IsMouseHeld, std::vector<GameObject> &objects);
     void handleCollisions(std::vector<GameObject> &objects);
     void die();

@@ -1,5 +1,4 @@
 #include "Background.hpp"
-#include "GameStates.hpp"
 #include "Game.hpp"
 #include "SDL_image.h"
 #include <iostream>
@@ -72,7 +71,7 @@ void Background::update(float delta) {
     }
 }
 
-void Background::render(int gameState) {
+void Background::render() {
     for (int i = 0; i < m_BGCount; i++) {
         const int height = m_Game->getHeight();
         const SDL_FPoint cameraPosition = m_Game->getCameraPosition();
@@ -82,7 +81,7 @@ void Background::render(int gameState) {
             m_Game->BACKGROUND_SIZE,
             m_Game->BACKGROUND_SIZE
         };
-        if (gameState == LEVEL_SELECT) {
+        if (m_Game->getState()->getName() == "LevelSelect") {
             dst.y += (m_Game->BACKGROUND_SIZE - height);
             SDL_RenderCopyExF(m_Renderer, m_EmptyBG, NULL, &dst, 0, NULL, SDL_FLIP_VERTICAL);
             continue;

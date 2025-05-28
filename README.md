@@ -2,6 +2,8 @@
 
 The name speaks for itself. Clone of GD 1.0 written in my terrible C++ code.
 
+## How to build
+
 Run these commands to build and run
 
 ```bash
@@ -40,3 +42,9 @@ Then use this html code
 </body>
 </html>
 ```
+
+## TODO
+- Make an actual pause menu
+- Make it read from the actual game files
+- Make physics more accurate
+- Tidy up code

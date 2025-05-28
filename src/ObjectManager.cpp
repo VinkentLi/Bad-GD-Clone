@@ -25,6 +25,10 @@ void ObjectManager::init(Game *game) {
                        {NORMAL_PORTAL,      {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}} };
 
     loadTextures();
+}
+
+void ObjectManager::reset() {
+    clearObjects();
     loadLevelData();
 }
 
