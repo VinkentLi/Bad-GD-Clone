@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "ObjectManager.h"
 #include "Text.h"
+#include <SDL_image.h>
 #include <string>
 #include <iostream>
 
@@ -16,6 +17,26 @@ void PlayingState::init(Game *game) {
     for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
         m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".wav").c_str()));
     }
+    m_ResumeTexture = IMG_LoadTexture(m_Renderer, "res/gfx/resume.png");
+    if (m_ResumeTexture == nullptr) {
+        std::cerr << "Failed to load resume.png! " << SDL_GetError() << std::endl;
+    }
+    m_ExitTexture = IMG_LoadTexture(m_Renderer, "res/gfx/exitLevel.png");
+    if (m_ExitTexture == nullptr) {
+        std::cerr << "Failed to load exitLevel.png! " << SDL_GetError() << std::endl;
+    }
+    int resumeWidth = 0;
+    int resumeHeight = 0;
+    int exitWidth = 0;
+    int exitHeight = 0;
+    SDL_QueryTexture(m_ResumeTexture, NULL, NULL, &resumeWidth, &resumeHeight);
+    SDL_QueryTexture(m_ExitTexture, NULL, NULL, &exitWidth, &exitHeight);
+    const int width = m_Game->getWidth();
+    const int height = m_Game->getHeight();
+    int resumeX = width/2 - (resumeWidth + MARGIN + exitWidth)/2;
+    int exitX = width/2 + (resumeWidth + MARGIN - exitWidth)/2;
+    m_ResumeButton.init(m_Game, m_ResumeTexture, resumeX, height/2, resumeWidth, resumeHeight, false, true);
+    m_ExitButton.init(m_Game, m_ExitTexture, exitX, height/2, exitWidth, exitHeight, false, true);
 }
 
 void PlayingState::destroy() {
@@ -49,14 +70,17 @@ void PlayingState::update(float deltaTime) {
     m_IsEscapeHeld = isEscapeHeld;
 
     if (m_IsPaused) {
-        if (isEscapeReleased) {
+        m_ExitButton.update();
+        if (m_ExitButton.isPressed() || isEscapeReleased) {
             m_Game->popState();
             return;
         }
         const bool isSpaceHeld = m_Game->isSpaceHeld();
         const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
         m_IsSpaceHeld = isSpaceHeld;
-        if (spaceReleased) {
+
+        m_ResumeButton.update();
+        if (m_ResumeButton.isPressed() || spaceReleased) {
             resume();
         }
         return;
@@ -108,9 +132,10 @@ void PlayingState::renderPause() {
     SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 100);
     SDL_SetRenderDrawBlendMode(m_Renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderFillRect(m_Renderer, &screen);
-    
     const std::string levelName = m_Game->getLevelStrings()[m_Game->getLevelSelected()];
-    Text::renderText(m_Renderer, levelName, m_Game->getWidth()/2, m_Game->getHeight()/4, true, true);
+    Text::renderText(m_Renderer, levelName, m_Game->getWidth()/2, MARGIN, true, true);
+    m_ResumeButton.render();
+    m_ExitButton.render();
 }
 
 void PlayingState::pause() {

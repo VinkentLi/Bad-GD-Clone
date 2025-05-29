@@ -13,19 +13,19 @@ void LevelSelect::init(Game *game) {
     m_Renderer = m_Game->getRenderer();
     m_CornerTexture = IMG_LoadTexture(m_Renderer, "res/gfx/selectCorner.png");
     if (m_CornerTexture == nullptr) {
-        std::cerr << "Failed to load selectCorner.png!" << std::endl;
+        std::cerr << "Failed to load selectCorner.png!" << SDL_GetError() << std::endl;
     }
     m_TopTexture = IMG_LoadTexture(m_Renderer, "res/gfx/top.png");
     if (m_TopTexture == nullptr) {
-        std::cerr << "Failed to load top.png!" << std::endl;
+        std::cerr << "Failed to load top.png!" << SDL_GetError() << std::endl;
     }
     m_LevelArrowTexture = IMG_LoadTexture(m_Renderer, "res/gfx/levelArrow.png");
     if (m_LevelArrowTexture == nullptr) {
-        std::cerr << "Failed to load levelArrow.png!" << std::endl;
+        std::cerr << "Failed to load levelArrow.png!" << SDL_GetError() << std::endl;
     }
     m_TitleArrowTexture = IMG_LoadTexture(m_Renderer, "res/gfx/toTitleScreen.png");
     if (m_TitleArrowTexture == nullptr) {
-        std::cerr << "Failed to load toTitleScreen.png!" << std::endl;
+        std::cerr << "Failed to load toTitleScreen.png!" << SDL_GetError() << std::endl;
     }
     int cornerWidth = 0;
     int cornerHeight = 0;

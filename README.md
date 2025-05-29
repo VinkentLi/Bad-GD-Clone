@@ -44,11 +44,11 @@ Then use this html code
 ```
 
 ## TODO
-- Make an actual pause menu
-- Loading screen
 - Add endscreen to levels
 - Progress bar
 - Practice mode
+- Loading screen
 - Make physics more accurate
+- Make ship rotation more accurate
 - Make it read from the actual game files
 - Tidy up code

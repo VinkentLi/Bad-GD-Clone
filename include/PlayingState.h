@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "ObjectManager.h"
 #include "GameState.h"
+#include "Button.h"
 
 class Game;
 
@@ -22,6 +23,11 @@ private:
     static PlayingState m_PlayingState;
     Player m_Player;
     ObjectManager m_ObjectManager;
+    SDL_Texture *m_ResumeTexture;
+    SDL_Texture *m_ExitTexture;
+    static constexpr int MARGIN = 50;
+    Button m_ResumeButton;
+    Button m_ExitButton;
     float m_Timer;
     bool m_IsTimerFinished;
     bool m_IsSongPlaying;
