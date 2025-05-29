@@ -1,5 +1,5 @@
-#include "Background.hpp"
-#include "Game.hpp"
+#include "Background.h"
+#include "Game.h"
 #include "SDL_image.h"
 #include <iostream>
 

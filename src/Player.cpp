@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <SDL_image.h>
-#include "Player.hpp"
-#include "Game.hpp"
-#include "GameObject.hpp"
+#include "Player.h"
+#include "Game.h"
+#include "GameObject.h"
 
 void Player::init(Game *game) {
     m_Game = game;

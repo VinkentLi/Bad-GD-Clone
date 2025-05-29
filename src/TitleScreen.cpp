@@ -1,8 +1,8 @@
-#include "TitleScreen.hpp"
-#include "LevelSelect.hpp"
+#include "TitleScreen.h"
+#include "LevelSelect.h"
 #include <SDL_image.h>
 #include <iostream>
-#include "Game.hpp"
+#include "Game.h"
 
 TitleScreen TitleScreen::m_TitleScreen;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "GameState.hpp"
+#include "GameState.h"
 #include <SDL.h>
 
 class Game;

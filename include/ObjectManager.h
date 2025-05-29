@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <SDL.h>
-#include "GameObject.hpp"
+#include "GameObject.h"
 
 class Game;
 

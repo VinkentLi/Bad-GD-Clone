@@ -3,9 +3,9 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-#include "GameState.hpp"
-#include "Background.hpp"
-#include "Ground.hpp"
+#include "GameState.h"
+#include "Background.h"
+#include "Ground.h"
 #include <memory>
 
 class Game {

@@ -1,7 +1,7 @@
 #include <SDL_image.h>
 #include <iostream>
-#include "Game.hpp"
-#include "GameObject.hpp"
+#include "Game.h"
+#include "GameObject.h"
 
 GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, SDL_Texture *objectTexture)
     : m_Game(game), m_Type(type), m_Rotation(rotation), m_Position(pos), m_Hitbox(hitbox), m_ObjectTexture(objectTexture) {

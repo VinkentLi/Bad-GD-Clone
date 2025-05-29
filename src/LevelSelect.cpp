@@ -1,6 +1,6 @@
-#include "LevelSelect.hpp"
-#include "PlayingState.hpp"
-#include "Game.hpp"
+#include "LevelSelect.h"
+#include "PlayingState.h"
+#include "Game.h"
 #include <SDL_image.h>
 #include <iostream>
 

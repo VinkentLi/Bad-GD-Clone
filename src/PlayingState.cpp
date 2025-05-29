@@ -1,7 +1,7 @@
-#include "PlayingState.hpp"
-#include "Game.hpp"
-#include "Player.hpp"
-#include "ObjectManager.hpp"
+#include "PlayingState.h"
+#include "Game.h"
+#include "Player.h"
+#include "ObjectManager.h"
 #include <string>
 #include <iostream>
 

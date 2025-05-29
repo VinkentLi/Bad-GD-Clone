@@ -1,5 +1,5 @@
-#include "Ground.hpp"
-#include "Game.hpp"
+#include "Ground.h"
+#include "Game.h"
 #include <SDL_image.h>
 
 void Ground::init(Game *game, uint8_t r, uint8_t g, uint8_t b) {

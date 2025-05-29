@@ -1,13 +1,13 @@
 #include <SDL_image.h>
 #include <iostream>
 
-#include "Game.hpp"
-#include "Background.hpp"
-#include "Ground.hpp"
-#include "TitleScreen.hpp"
-#include "LevelSelect.hpp"
-#include "PlayingState.hpp"
-#include "Player.hpp"
+#include "Game.h"
+#include "Background.h"
+#include "Ground.h"
+#include "TitleScreen.h"
+#include "LevelSelect.h"
+#include "PlayingState.h"
+#include "Player.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>

@@ -1,5 +1,5 @@
-#include "ObjectManager.hpp"
-#include "Game.hpp"
+#include "ObjectManager.h"
+#include "Game.h"
 #include <SDL_image.h>
 #include <fstream>
 #include <iostream>

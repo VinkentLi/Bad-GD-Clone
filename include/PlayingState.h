@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <SDL_mixer.h>
-#include "Player.hpp"
-#include "ObjectManager.hpp"
-#include "GameState.hpp"
+#include "Player.h"
+#include "ObjectManager.h"
+#include "GameState.h"
 
 class Game;
 

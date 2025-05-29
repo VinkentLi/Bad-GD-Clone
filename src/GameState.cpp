@@ -1,5 +1,5 @@
-#include "GameState.hpp"
-#include "Game.hpp"
+#include "GameState.h"
+#include "Game.h"
 #include <iostream>
 
 void GameState::init(Game *game) {
