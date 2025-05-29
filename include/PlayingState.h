@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 #include "Player.h"
 #include "ObjectManager.h"
 #include "GameState.h"
@@ -15,11 +16,6 @@ public:
     void exit() override;
     void update(float deltaTime) override;
     void render() override;
-    void pause();
-    void resume();
-    void resetMusic();
-    void attemptResetTimer();
-    Gamemode getPlayerGamemode();
     inline static PlayingState *get() { return &m_PlayingState; } 
 
 private:
@@ -34,4 +30,10 @@ private:
     bool m_IsSpaceHeld;
     bool m_IsPaused;
     std::vector<Mix_Music *> m_Songs;
+
+    void pause();
+    void resume();
+    void resetMusic();
+    void attemptResetTimer();
+    void renderPause();
 };

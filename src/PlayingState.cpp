@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Player.h"
 #include "ObjectManager.h"
+#include "Text.h"
 #include <string>
 #include <iostream>
 
@@ -12,7 +13,6 @@ void PlayingState::init(Game *game) {
     m_Name = "PlayingState";
     m_Player.init(m_Game);
     m_ObjectManager.init(m_Game);
-
     for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
         m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".wav").c_str()));
     }
@@ -95,6 +95,24 @@ void PlayingState::update(float deltaTime) {
     m_Player.update(deltaTime, m_Game->isMouseHeld(), m_ObjectManager.getObjects());
 }
 
+void PlayingState::render() {
+    m_ObjectManager.render();
+    m_Player.render();
+    if (m_IsPaused) {
+        renderPause();
+    }
+}
+
+void PlayingState::renderPause() {
+    SDL_Rect screen = { 0, 0, m_Game->getWidth(), m_Game->getHeight() };
+    SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 100);
+    SDL_SetRenderDrawBlendMode(m_Renderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderFillRect(m_Renderer, &screen);
+    
+    const std::string levelName = m_Game->getLevelStrings()[m_Game->getLevelSelected()];
+    Text::renderText(m_Renderer, levelName, m_Game->getWidth()/2, m_Game->getHeight()/4, true, true);
+}
+
 void PlayingState::pause() {
     m_IsPaused = true;
     Mix_PauseMusic();
@@ -114,13 +132,4 @@ void PlayingState::attemptResetTimer() {
         return;
     }
     m_Timer = 60;
-}
-
-void PlayingState::render() {
-    m_ObjectManager.render();
-    m_Player.render();
-}
-
-Gamemode PlayingState::getPlayerGamemode() {
-    return m_Player.getGamemode();
 }

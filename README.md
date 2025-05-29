@@ -43,12 +43,12 @@ Then use this html code
 </html>
 ```
 
-## TODO (in no particular order)
-- Make an SDL wrapper
+## TODO
 - Make an actual pause menu
-- Make it read from the actual game files
-- Make physics more accurate
+- Loading screen
 - Add endscreen to levels
 - Progress bar
 - Practice mode
+- Make physics more accurate
+- Make it read from the actual game files
 - Tidy up code

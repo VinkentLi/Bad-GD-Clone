@@ -7,6 +7,7 @@
 #include "Background.h"
 #include "Ground.h"
 #include <memory>
+#include <vector>
 
 class Game {
 public:
@@ -26,6 +27,7 @@ public:
     void changeState(GameState *state);
     inline GameState *getState() { return m_GameStates.top(); }
     
+    inline const std::vector<std::string> &getLevelStrings() { return m_LevelStrings; } 
     inline bool isMouseHeld() { return m_IsMouseHeld; }
     inline bool isEscapeHeld() { return m_IsEscapeHeld; }
     inline bool isSpaceHeld() { return m_IsSpaceHeld; }
@@ -52,11 +54,11 @@ private:
     SDL_Renderer *m_Renderer;
     SDL_Point m_MousePosition;
     SDL_FPoint m_CameraPosition;
-    TTF_Font *m_Font;
     Mix_Music *m_MenuLoop;
     Background m_Background;
     Ground m_Ground;
     std::stack<GameState *> m_GameStates;
+    std::vector<std::string> m_LevelStrings;
     bool m_IsGameRunning = true;
     bool m_IsMouseHeld = false;
     bool m_IsEscapeHeld = false;

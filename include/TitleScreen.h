@@ -1,5 +1,6 @@
 #pragma once
 #include "GameState.h"
+#include "Button.h"
 #include <SDL.h>
 
 class Game;
@@ -16,10 +17,10 @@ public:
 
 private:
     static TitleScreen m_TitleScreen;
-    SDL_Rect m_TitleDST;
-    SDL_Rect m_TitlePlayDST;
+    SDL_Rect m_TitleRect;
     SDL_Texture *m_TitleTexture;
-    SDL_Texture *m_TitlePlay;
+    SDL_Texture *m_TitlePlayTexture;
+    Button m_TitlePlay;
     bool m_IsMouseHeld;
     bool m_IsEscapeHeld;
     bool m_IsSpaceHeld;

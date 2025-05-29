@@ -13,25 +13,37 @@ void TitleScreen::init(Game *game) {
     if (m_TitleTexture == NULL) {
         std::cerr << "Failed to load title.png! " << SDL_GetError() << std::endl;
     }
-    m_TitlePlay = IMG_LoadTexture(m_Renderer, "res/gfx/titlePlay.png");
-    if (m_TitlePlay == NULL) {
+    m_TitlePlayTexture = IMG_LoadTexture(m_Renderer, "res/gfx/titlePlay.png");
+    if (m_TitlePlayTexture == NULL) {
         std::cerr << "Failed to load titlePlay.png! " << SDL_GetError() << std::endl;
     }
+    int titleWidth = 0;
+    int titleHeight = 0;
+    int titlePlayWidth = 0;
+    int titlePlayHeight = 0;
+    SDL_QueryTexture(m_TitleTexture, NULL, NULL, &titleWidth, &titleHeight);
+    SDL_QueryTexture(m_TitlePlayTexture, NULL, NULL, &titlePlayWidth, &titlePlayHeight);
+    const int width = m_Game->getWidth();
+    const int height = m_Game->getHeight();
+    m_TitleRect = { width/2 - titleWidth/2, 100, titleWidth, titleHeight };
+    m_TitlePlay.init(
+        m_Game,
+        m_TitlePlayTexture,
+        width/2,
+        height/2,
+        titlePlayWidth,
+        titlePlayHeight,
+        true,
+        true
+    );
 }
 
 void TitleScreen::destroy() {
     SDL_DestroyTexture(m_TitleTexture);
-    SDL_DestroyTexture(m_TitlePlay);
+    SDL_DestroyTexture(m_TitlePlayTexture);
 }
 
 void TitleScreen::enter() {
-    m_TitleDST = {m_Game->getWidth()/ 2 - (1699*3/4) / 2, 100, 1699*3/4, 206*3/4}; // lol
-    m_TitlePlayDST = { // most readable code of all time
-        m_Game->getWidth()/2 - 415/2*3/4,
-        m_Game->getHeight()/2 - 415/2*3/4 - 40, 
-        415*3/4, 
-        415*3/4
-    };
     m_IsMouseHeld = false;
     m_IsEscapeHeld = false;
     m_IsSpaceHeld = false;
@@ -58,32 +70,17 @@ void TitleScreen::update(float deltaTime) {
     ground.update();
     ground.move(-17.31f, deltaTime);
 
-    const bool isMouseHeld = m_Game->isMouseHeld();
-    const bool mouseReleased = m_IsMouseHeld && !isMouseHeld;
-    m_IsMouseHeld = isMouseHeld;
-    if (mouseReleased) {
-        SDL_Rect scaledTitlePlay;
-        float wScale = m_Game->getScreenWidth() / static_cast<float>(m_Game->getWidth());
-        float hScale = m_Game->getScreenHeight() / static_cast<float>((float) m_Game->getHeight());
-        scaledTitlePlay.x = m_TitlePlayDST.x * wScale;
-        scaledTitlePlay.y = m_TitlePlayDST.y * hScale;
-        scaledTitlePlay.w = m_TitlePlayDST.w * wScale;
-        scaledTitlePlay.h = m_TitlePlayDST.h * hScale;
-        const SDL_Point mousePosition = m_Game->getMousePosition();
-        if (SDL_PointInRect(&mousePosition, &scaledTitlePlay)) {
-            m_Game->pushState(LevelSelect::get());
-        }
-    }
-
     const bool isSpaceHeld = m_Game->isSpaceHeld();
     const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
     m_IsSpaceHeld = isSpaceHeld;
-    if (spaceReleased) {
+
+    m_TitlePlay.update();
+    if (m_TitlePlay.isPressed() || spaceReleased) {
         m_Game->pushState(LevelSelect::get());
     }
 }
 
 void TitleScreen::render() {
-    SDL_RenderCopy(m_Renderer, m_TitleTexture, NULL, &m_TitleDST);
-    SDL_RenderCopy(m_Renderer, m_TitlePlay, NULL, &m_TitlePlayDST);
+    SDL_RenderCopy(m_Renderer, m_TitleTexture, NULL, &m_TitleRect);
+    m_TitlePlay.render();
 }

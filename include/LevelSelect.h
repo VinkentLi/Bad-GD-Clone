@@ -1,5 +1,6 @@
 #pragma once
 #include "GameState.h"
+#include "Button.h"
 #include <vector>
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -20,23 +21,20 @@ public:
 
 private:
     static LevelSelect m_LevelSelect;
-    SDL_Rect m_LeftCornerDST;
-    SDL_Rect m_RightCornerDST;
-    SDL_Rect m_TopDST;
-    SDL_Rect m_LeftLevelArrowDST;
-    SDL_Rect m_RightLevelArrowDST;
-    SDL_Rect m_TitleArrowDST;
-    SDL_Rect m_RectWithLevelName;
-    TTF_Font *m_Font;
-    TTF_Font *m_FontOutline;
-    SDL_Texture *m_Corner;
-    SDL_Texture *m_Top;
-    SDL_Texture *m_LevelArrow;
-    SDL_Texture *m_TitleArrow;
+    Button m_LeftLevelArrow;
+    Button m_RightLevelArrow;
+    Button m_TitleScreenArrow;
+    Button m_EnterLevel;
+    SDL_Rect m_LeftCornerRect;
+    SDL_Rect m_RightCornerRect;
+    SDL_Rect m_TopRect;
+    SDL_Texture *m_CornerTexture;
+    SDL_Texture *m_TopTexture;
+    SDL_Texture *m_LevelArrowTexture;
+    SDL_Texture *m_TitleArrowTexture;
     Mix_Chunk *m_PlaySound;
     bool m_IsMouseHeld;
     bool m_IsEscapeHeld;
     bool m_IsSpaceHeld;
-    std::vector<std::string> m_LevelStrings;
 };
 

@@ -1,6 +1,7 @@
 #include "LevelSelect.h"
 #include "PlayingState.h"
 #include "Game.h"
+#include "Text.h"
 #include <SDL_image.h>
 #include <iostream>
 
@@ -10,46 +11,95 @@ void LevelSelect::init(Game *game) {
     GameState::init(game);
     m_Name = "LevelSelect";
     m_Renderer = m_Game->getRenderer();
-    m_Corner = IMG_LoadTexture(m_Renderer, "res/gfx/selectCorner.png");
-    m_Top = IMG_LoadTexture(m_Renderer, "res/gfx/top.png");
-    m_LevelArrow = IMG_LoadTexture(m_Renderer, "res/gfx/levelArrow.png");
-    m_TitleArrow = IMG_LoadTexture(m_Renderer, "res/gfx/toTitleScreen.png");
-    m_Font = TTF_OpenFont("res/fonts/pusab.ttf", 100);
-    m_FontOutline = TTF_OpenFont("res/fonts/pusab.ttf", 100);
-    TTF_SetFontOutline(m_FontOutline, 4);
+    m_CornerTexture = IMG_LoadTexture(m_Renderer, "res/gfx/selectCorner.png");
+    if (m_CornerTexture == nullptr) {
+        std::cerr << "Failed to load selectCorner.png!" << std::endl;
+    }
+    m_TopTexture = IMG_LoadTexture(m_Renderer, "res/gfx/top.png");
+    if (m_TopTexture == nullptr) {
+        std::cerr << "Failed to load top.png!" << std::endl;
+    }
+    m_LevelArrowTexture = IMG_LoadTexture(m_Renderer, "res/gfx/levelArrow.png");
+    if (m_LevelArrowTexture == nullptr) {
+        std::cerr << "Failed to load levelArrow.png!" << std::endl;
+    }
+    m_TitleArrowTexture = IMG_LoadTexture(m_Renderer, "res/gfx/toTitleScreen.png");
+    if (m_TitleArrowTexture == nullptr) {
+        std::cerr << "Failed to load toTitleScreen.png!" << std::endl;
+    }
+    int cornerWidth = 0;
+    int cornerHeight = 0;
+    int topWidth = 0;
+    int topHeight = 0;
+    int levelArrowWidth = 0;
+    int levelArrowHeight = 0;
+    int titleArrowWidth = 0;
+    int titleArrowHeight = 0;
+    SDL_QueryTexture(m_CornerTexture, NULL, NULL, &cornerWidth, &cornerHeight);
+    SDL_QueryTexture(m_TopTexture, NULL, NULL, &topWidth, &topHeight);
+    SDL_QueryTexture(m_LevelArrowTexture, NULL, NULL, &levelArrowWidth, &levelArrowHeight);
+    SDL_QueryTexture(m_TitleArrowTexture, NULL, NULL, &titleArrowWidth, &titleArrowHeight);
+    const int width = m_Game->getWidth();
+    const int height = m_Game->getHeight();
+    const int xMargin = 40;
+    const int yMargin = 20;
+    m_LeftCornerRect = {0, height - cornerHeight, cornerWidth, cornerHeight};
+    m_RightCornerRect = {width - cornerWidth, height - cornerHeight, cornerWidth, cornerHeight};
+    m_TopRect = {width/2 - topWidth/2, 0, topWidth, topHeight};
+    m_LeftLevelArrow.init(
+        m_Game, 
+        m_LevelArrowTexture, 
+        xMargin, 
+        height/2, 
+        levelArrowWidth, 
+        levelArrowHeight, 
+        false, 
+        true,
+        SDL_FLIP_HORIZONTAL
+    );
+    m_RightLevelArrow.init(
+        m_Game, 
+        m_LevelArrowTexture, 
+        width - xMargin - levelArrowWidth, 
+        height/2, 
+        levelArrowWidth, 
+        levelArrowHeight, 
+        false, 
+        true
+    );
+    m_TitleScreenArrow.init(
+        m_Game,
+        m_TitleArrowTexture,
+        xMargin,
+        yMargin,
+        titleArrowWidth,
+        titleArrowHeight
+    );
+    m_EnterLevel.init(
+        m_Game,
+        width/2,
+        height/2 - 350,
+        1000,
+        300,
+        {.r=0, .g=0, .b=0, .a=100},
+        true
+    );
     m_PlaySound = Mix_LoadWAV("res/sfx/playSound.ogg");
 }
 
 void LevelSelect::destroy() {
-    SDL_DestroyTexture(m_Corner);
-    SDL_DestroyTexture(m_Top);
-    SDL_DestroyTexture(m_LevelArrow);
-    SDL_DestroyTexture(m_TitleArrow);
-    TTF_CloseFont(m_Font);
-    TTF_CloseFont(m_FontOutline);
+    SDL_DestroyTexture(m_CornerTexture);
+    SDL_DestroyTexture(m_TopTexture);
+    SDL_DestroyTexture(m_LevelArrowTexture);
+    SDL_DestroyTexture(m_TitleArrowTexture);
     Mix_FreeChunk(m_PlaySound);
 }
 
 void LevelSelect::enter() {
-    const int WIDTH = m_Game->getWidth();
-    const int HEIGHT = m_Game->getHeight();
-    m_LeftCornerDST = {0, HEIGHT - 282, 285, 282};
-    m_RightCornerDST = {WIDTH - 285, HEIGHT - 282, 285, 282};
-    m_TopDST = {WIDTH/2 - 1226/2*3/4, 0, 1226*3/4, 144*3/4};
-    m_LeftLevelArrowDST = {40, HEIGHT/2 - 238/2, 106, 238};
-    m_RightLevelArrowDST = {WIDTH - 40 - 106, HEIGHT/2 - 238/2, 106, 238};
-    m_TitleArrowDST = {40, 20, 124, 150};
     m_IsMouseHeld = false;
     m_IsEscapeHeld = false;
     m_IsSpaceHeld = false;
     m_Game->setLevelSelected(0);
-    m_LevelStrings.clear();
-    m_LevelStrings.push_back("Test level1");
-    m_LevelStrings.push_back("Test Level2");
-    m_RectWithLevelName.w = 1000;
-    m_RectWithLevelName.h = 300;
-    m_RectWithLevelName.x = WIDTH / 2 - 1000/2;
-    m_RectWithLevelName.y = HEIGHT / 2 - 350;
 }
 
 void LevelSelect::exit() {
@@ -69,56 +119,30 @@ void LevelSelect::update(float deltaTime) {
     ground.setOnTop(false);
     background.setMoving(false);
 
-    const bool isMouseHeld = m_Game->isMouseHeld();
-    const bool isMouseReleased = m_IsMouseHeld && !isMouseHeld;
-    if (isMouseReleased) {  
-        SDL_Point mousePosition = m_Game->getMousePosition();
-        float wScale = m_Game->getScreenWidth() / (float) m_Game->getWidth();
-        float hScale = m_Game->getScreenHeight() / (float) m_Game->getHeight();
-        SDL_Rect scaledTitleArrow = m_TitleArrowDST;
-        SDL_Rect scaledLeft = m_LeftLevelArrowDST;
-        SDL_Rect scaledRight = m_RightLevelArrowDST;
-        SDL_Rect scaledLevelRect = m_RectWithLevelName;
-        scaledTitleArrow.x *= wScale;
-        scaledTitleArrow.y *= hScale;
-        scaledTitleArrow.w *= wScale;
-        scaledTitleArrow.h *= hScale;
-        scaledLeft.x *= wScale;
-        scaledLeft.y *= hScale;
-        scaledLeft.w *= wScale;
-        scaledLeft.h *= hScale;
-        scaledRight.x *= wScale;
-        scaledRight.y *= hScale;
-        scaledRight.w *= wScale;
-        scaledRight.h *= hScale;
-        scaledLevelRect.x *= wScale;
-        scaledLevelRect.y *= hScale;
-        scaledLevelRect.w *= wScale;
-        scaledLevelRect.h *= hScale;
-
-        if (SDL_PointInRect(&mousePosition, &scaledTitleArrow)) {
-            m_Game->popState();
-        } else if (SDL_PointInRect(&mousePosition, &scaledLeft)) {
-            m_Game->decreaseLevelSelected();
-            if (m_Game->getLevelSelected() < 0) {
-                m_Game->setLevelSelected(m_Game->LEVEL_COUNT - 1);
-            }
-        } else if (SDL_PointInRect(&mousePosition, &scaledRight)) {
-            m_Game->increaseLevelSelected();
-            if (m_Game->getLevelSelected() == m_Game->LEVEL_COUNT) {
-                m_Game->setLevelSelected(0);
-            }
-        } else if (SDL_PointInRect(&mousePosition, &scaledLevelRect)) {
-            Mix_PlayChannel(0, m_PlaySound, 0);
-            m_Game->pushState(PlayingState::get());
-        }
-    }
-    m_IsMouseHeld = isMouseHeld;
-
     const bool isSpaceHeld = m_Game->isSpaceHeld();
     const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
     m_IsSpaceHeld = isSpaceHeld;
-    if (spaceReleased) {
+
+    m_TitleScreenArrow.update();
+    if (m_TitleScreenArrow.isPressed()) {
+        m_Game->popState();
+    }
+    m_LeftLevelArrow.update();
+    if (m_LeftLevelArrow.isPressed()) {
+        m_Game->decreaseLevelSelected();
+        if (m_Game->getLevelSelected() < 0) {
+            m_Game->setLevelSelected(m_Game->LEVEL_COUNT - 1);
+        }
+    }
+    m_RightLevelArrow.update();
+    if (m_RightLevelArrow.isPressed()) {
+        m_Game->increaseLevelSelected();
+        if (m_Game->getLevelSelected() == m_Game->LEVEL_COUNT) {
+            m_Game->setLevelSelected(0);
+        }
+    }
+    m_EnterLevel.update();
+    if (m_EnterLevel.isPressed() || spaceReleased) {
         Mix_PlayChannel(0, m_PlaySound, 0);
         m_Game->pushState(PlayingState::get());
     }
@@ -126,46 +150,16 @@ void LevelSelect::update(float deltaTime) {
 
 void LevelSelect::render() {
     // render textures
-    SDL_RenderCopyEx(m_Renderer, m_Corner, NULL, &m_LeftCornerDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(m_Renderer, m_Corner, NULL, &m_RightCornerDST, 0, NULL, SDL_FLIP_HORIZONTAL);
-    SDL_RenderCopyEx(m_Renderer, m_Top, NULL, &m_TopDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(m_Renderer, m_LevelArrow, NULL, &m_LeftLevelArrowDST, 0, NULL, SDL_FLIP_HORIZONTAL);
-    SDL_RenderCopyEx(m_Renderer, m_LevelArrow, NULL, &m_RightLevelArrowDST, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(m_Renderer, m_TitleArrow, NULL, &m_TitleArrowDST, 0, NULL, SDL_FLIP_NONE);
-
-    // render the rectangle with the level name
-    SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 100);
-    SDL_SetRenderDrawBlendMode(m_Renderer, SDL_BLENDMODE_BLEND);
-    SDL_RenderFillRect(m_Renderer, &m_RectWithLevelName);
+    SDL_RenderCopyEx(m_Renderer, m_CornerTexture, NULL, &m_LeftCornerRect, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(m_Renderer, m_CornerTexture, NULL, &m_RightCornerRect, 0, NULL, SDL_FLIP_HORIZONTAL);
+    SDL_RenderCopyEx(m_Renderer, m_TopTexture, NULL, &m_TopRect, 0, NULL, SDL_FLIP_NONE);
+    m_TitleScreenArrow.render();
+    m_LeftLevelArrow.render();
+    m_RightLevelArrow.render();
+    m_EnterLevel.render();
 
     // render level name
-    std::string levelName = m_LevelStrings[m_Game->getLevelSelected()];
-    SDL_Surface *levelShadowSurface = TTF_RenderText_Blended(m_Font, levelName.c_str(), {0, 0, 0, 100});
-    SDL_Surface *levelStringSurface = TTF_RenderText_Blended(m_Font, levelName.c_str(), {255, 255, 255});
-    SDL_Surface *levelStringOutline = TTF_RenderText_Blended(
-        m_FontOutline,
-        m_LevelStrings[m_Game->getLevelSelected()].c_str(),
-        {0, 0, 0}
-    );
-    SDL_SetSurfaceBlendMode(levelStringSurface, SDL_BLENDMODE_BLEND);
-    SDL_Rect rect = {4, 4, levelStringSurface->w, levelStringSurface->h};
-    SDL_BlitSurface(levelStringSurface, NULL, levelStringOutline, &rect);
-    SDL_FreeSurface(levelStringSurface);
-    SDL_Texture *levelShadowTexture = SDL_CreateTextureFromSurface(m_Renderer, levelShadowSurface);
-    SDL_Texture *levelStringTexture = SDL_CreateTextureFromSurface(m_Renderer, levelStringOutline);
-    SDL_Rect stringDST = {
-        m_Game->getWidth()/2 - levelStringOutline->w/2,
-        m_RectWithLevelName.y + m_RectWithLevelName.h/2 - levelStringOutline->h/2, 
-        levelStringOutline->w, 
-        levelStringOutline->h
-    };
-    SDL_Rect shadowDST = stringDST;
-    shadowDST.x += 5;
-    shadowDST.y += 5;
-    SDL_RenderCopy(m_Renderer, levelShadowTexture, NULL, &shadowDST);
-    SDL_RenderCopy(m_Renderer, levelStringTexture, NULL, &stringDST);
-    SDL_FreeSurface(levelShadowSurface);
-    SDL_DestroyTexture(levelShadowTexture);
-    SDL_FreeSurface(levelStringOutline);
-    SDL_DestroyTexture(levelStringTexture);
+    const std::vector<std::string> &levelStrings = m_Game->getLevelStrings();
+    std::string levelName = levelStrings[m_Game->getLevelSelected()];
+    Text::renderText(m_Renderer, levelName, m_Game->getWidth()/2, m_EnterLevel.getY() + m_EnterLevel.getH()/2, true, true);
 }
