@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <SDL_image.h>
+#include <cmath>
 #include "Player.h"
 #include "Game.h"
 #include "GameObject.h"
@@ -13,16 +14,14 @@ void Player::init(Game *game) {
 }
 
 void Player::reset() {
-    m_Position = {-m_Game->TILE_SIZE, m_Game->getHeight() - 300.0f - m_Game->TILE_SIZE};
+    m_Position = {-m_Game->TILE_SIZE, static_cast<float>(m_Game->getHeight() - 4*m_Game->TILE_SIZE)};
     m_PreviousPosition = m_Position;
     m_XVelocity = 17.31;
     m_YVelocity = 0;
-    m_JumpStrength = -37.2671;
-    m_PadStrength = -52.61467;
-    m_Gravity = 2.874767;
-    m_RotationAdder = 6.92308;
-    m_ShipUpAdder = 1.4373;
-    m_ShipDownAdder = 1.3798;
+    m_JumpStrength = -37.266667;
+    m_PadStrength = -53.333333;
+    m_Gravity = 2.88;
+    m_RotationAdder = 7;
     m_Rotation = 0;
     m_TargetRotation = 0;
     m_HazardHitbox = {
@@ -110,39 +109,19 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
         }
         break;
     case Gamemode::SHIP: {
-        double shipUp = m_ShipUpAdder;
-        double shipDown = m_ShipDownAdder;
-        double lessHelpUp = 0.9;
-        double lessHelpDown = 0.667;
-
-        if (m_GravityMultiplier == -1) {
-            double t1 = shipUp;
-            shipUp = shipDown;
-            shipDown = t1;
-            double t2 = lessHelpUp;
-            lessHelpUp = lessHelpDown;
-            lessHelpDown = t2;
+        // i stole this from https://github.com/Open-GD/OpenGD
+        float shipAccel = 0.8f;
+        if (m_IsMouseHeld) {
+            shipAccel = -1.0f;
+        } else if (m_YVelocity < -m_Gravity) {
+            shipAccel = 1.2f;
         }
-
-        if (isMouseHeld) {
-            if (m_YVelocity > -7) {
-                m_YVelocity -= shipUp * delta;
-            } else {
-                m_YVelocity -= shipUp * lessHelpUp * delta;
-            }
-        } else {
-            if (m_YVelocity < -7) {
-                m_YVelocity += shipDown * delta;
-            } else {
-                m_YVelocity += shipDown * lessHelpDown * delta;
-            }
+        float extraBoost = 0.4f;
+        if (m_IsMouseHeld && m_YVelocity >= -m_Gravity) {
+            extraBoost = 0.5f;
         }
-
-        if (m_YVelocity < -80.0 / 3.0) {
-            m_YVelocity = -80.0f / 3.0f;
-        } else if (m_YVelocity > 64.0 / 3.0) {
-            m_YVelocity = 64.0 / 3.0;
-        }
+        m_YVelocity += m_Gravity * delta * shipAccel * extraBoost;
+        std::clamp(m_YVelocity, -26.666667, 21.333333);
         break;
     }
     }
@@ -281,22 +260,24 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                     m_YVelocity *= -1;
                 }
                 break;
-            case ObjectType::SHIP_PORTAL:
+            case ObjectType::SHIP_PORTAL: {
                 m_Gamemode = Gamemode::SHIP;
                 m_Rotation = 0;
 
                 if (m_Gamemode != Gamemode::SHIP) {
                     m_YVelocity /= 2;
                 }
+                const int BOUNDS_HEIGHT = (m_Game->getHeight() - 10*m_Game->TILE_SIZE)/2;
                 m_Game->setCameraY(std::clamp(
-                    // I forgot what this does lmfao
-                    static_cast<float>(((static_cast<int>(object.getPos().y / m_Game->TILE_SIZE)) - 3) * m_Game->TILE_SIZE),
+                    // why does gd do this lmao
+                    (std::round(object.getPos().y/m_Game->TILE_SIZE)-3)*m_Game->TILE_SIZE - BOUNDS_HEIGHT,
                     -10000.0f, 
                     -260.0f
                 ));
-                m_Bounds.first = m_Game->getCameraPosition().y + 40;
+                m_Bounds.first = m_Game->getCameraPosition().y + BOUNDS_HEIGHT;
                 m_Bounds.second = m_Bounds.first + 10 * m_Game->TILE_SIZE;
                 break;
+            }
             case ObjectType::CUBE_PORTAL:
                 m_Gamemode = Gamemode::CUBE;
                 if (m_Gamemode != Gamemode::CUBE) {

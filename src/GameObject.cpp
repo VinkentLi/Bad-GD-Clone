@@ -23,18 +23,10 @@ ObjectType GameObject::getType() {
 
 void GameObject::render() {
     SDL_Rect dst;
-    dst.x = (int) (m_Position.x) - m_Game->getCameraPosition().x;
-    dst.y = (int) (m_Position.y) - m_Game->getCameraPosition().y;
-    dst.w = m_Game->TILE_SIZE;
-    dst.h = m_Game->TILE_SIZE;
+    dst.x = static_cast<int>(m_Position.x) - m_Game->getCameraPosition().x;
+    dst.y = static_cast<int>(m_Position.y) - m_Game->getCameraPosition().y;
+    SDL_QueryTexture(m_ObjectTexture, NULL, NULL, &dst.w, &dst.h);
 
-    if (m_Type == ObjectType::SHIP_PORTAL ||
-        m_Type == ObjectType::CUBE_PORTAL ||
-        m_Type == ObjectType::UPSIDE_DOWN_PORTAL ||
-        m_Type == ObjectType::NORMAL_PORTAL) {
-
-        dst.h *= 3;
-    }
     if (SDL_RenderCopyEx(m_Renderer, m_ObjectTexture, NULL, &dst, m_Rotation * 90.0, NULL, SDL_FLIP_NONE) != 0) {
         std::cerr << "GameObject failed to render texture! " << SDL_GetError() << std::endl;
     }
