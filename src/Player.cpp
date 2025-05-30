@@ -113,15 +113,15 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
         float shipAccel = 0.8f;
         if (m_IsMouseHeld) {
             shipAccel = -1.0f;
-        } else if (m_YVelocity < -m_Gravity) {
+        } else if (m_YVelocity <= - 5*m_Gravity) {
             shipAccel = 1.2f;
         }
         float extraBoost = 0.4f;
-        if (m_IsMouseHeld && m_YVelocity >= -m_Gravity) {
+        if (m_IsMouseHeld && m_YVelocity > -5*m_Gravity) {
             extraBoost = 0.5f;
         }
         m_YVelocity += m_Gravity * delta * shipAccel * extraBoost;
-        std::clamp(m_YVelocity, -26.666667, 21.333333);
+        m_YVelocity = std::clamp(m_YVelocity, -26.666667, 21.333333);
         break;
     }
     }
