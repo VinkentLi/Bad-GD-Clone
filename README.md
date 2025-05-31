@@ -45,9 +45,8 @@ Then use this html code
 
 ## TODO
 - Keep track of highest percentage
-- Progress bar
 - Practice mode
 - Loading screen
 - Make ship rotation more accurate
-- Make it read from the actual game files
+- Make it read from the actual game files?
 - Tidy up code

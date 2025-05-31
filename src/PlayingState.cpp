@@ -5,6 +5,7 @@
 #include "Text.h"
 #include <SDL_image.h>
 #include <string>
+#include <algorithm>
 #include <iostream>
 
 PlayingState PlayingState::m_PlayingState;
@@ -75,6 +76,7 @@ void PlayingState::enter() {
     m_LevelEndBlocksX = m_ObjectManager.getFurthestX() + 12*m_Game->TILE_SIZE;
     m_TimeEndingLevel = 0;
     m_IsLevelComplete = false;
+    m_LevelPercent = 0;
 }
 
 void PlayingState::exit() {
@@ -84,6 +86,9 @@ void PlayingState::exit() {
 }
 
 void PlayingState::update(float deltaTime) {
+    m_LevelPercent = 10000 * m_Player.getPosition().x / m_LevelEndBlocksX;
+    m_LevelPercent = std::clamp(m_LevelPercent, 0, 10000);
+
     const bool isEscapeHeld = m_Game->isEscapeHeld();
     const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
     m_IsEscapeHeld = isEscapeHeld;
@@ -180,6 +185,15 @@ void PlayingState::render() {
     m_Player.render();
     m_ObjectManager.render();
     renderEndBlocks();
+    Text::renderText(
+        m_Renderer, 
+        std::to_string(m_LevelPercent/100) + "." + std::to_string(m_LevelPercent % 100), 
+        m_Game->getWidth()/2, 
+        10, 
+        true,
+        false,
+        0.5f
+    );
     if (m_IsPaused) {
         renderPause();
     }

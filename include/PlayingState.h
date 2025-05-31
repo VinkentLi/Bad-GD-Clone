@@ -43,6 +43,7 @@ private:
     int m_LevelEndBlocksX;
     float m_TimeEndingLevel;
     bool m_IsLevelComplete;
+    int m_LevelPercent; // ex: 3692 = 36.92%
     std::vector<Mix_Music *> m_Songs;
 
     void updatePause(bool isEscapeReleased);

@@ -28,16 +28,14 @@ void renderText(SDL_Renderer *renderer, const std::string &text, int x, int y, b
     SDL_Texture *levelShadowTexture = SDL_CreateTextureFromSurface(renderer, shadowSurface);
     SDL_Texture *levelStringTexture = SDL_CreateTextureFromSurface(renderer, outlineSurface);
     SDL_Rect textRect = { x, y, outlineSurface->w, outlineSurface->h };
-    if (xCentered) {
-        textRect.x -= outlineSurface->w/2;
-    }
-    if (yCentered) {
-        textRect.y -= outlineSurface->h/2;
-    }
-    textRect.x *= scale;
-    textRect.y *= scale;
     textRect.w *= scale;
     textRect.h *= scale;
+    if (xCentered) {
+        textRect.x -= textRect.w/2;
+    }
+    if (yCentered) {
+        textRect.y -= textRect.h/2;
+    }
     SDL_Rect shadowRect = textRect;
     shadowRect.x += 5 * scale;
     shadowRect.y += 5 * scale;
