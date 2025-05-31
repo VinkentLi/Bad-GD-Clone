@@ -44,7 +44,6 @@ Then use this html code
 ```
 
 ## TODO
-- Keep track of highest percentage
 - Practice mode
 - Loading screen
 - Make ship rotation more accurate

@@ -40,6 +40,7 @@ private:
     bool m_IsSpaceHeld;
     bool m_IsPaused;
     bool m_ShouldEndLevel;
+    bool m_JustSetNewBest;
     int m_LevelEndBlocksX;
     float m_TimeEndingLevel;
     bool m_IsLevelComplete;

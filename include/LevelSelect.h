@@ -17,6 +17,8 @@ public:
     void exit() override;
     void update(float deltaTime) override;
     void render() override;
+    inline int getBestPercentage(int levelIndex) { return m_BestLevelPercentages[levelIndex]; }
+    inline void setBestPercentage(int levelIndex, int value) { m_BestLevelPercentages[levelIndex] = value; }
     inline static LevelSelect *get() { return &m_LevelSelect; }
 
 private:
@@ -33,6 +35,7 @@ private:
     SDL_Texture *m_LevelArrowTexture;
     SDL_Texture *m_TitleArrowTexture;
     Mix_Chunk *m_PlaySound;
+    std::vector<int> m_BestLevelPercentages;
     bool m_IsMouseHeld;
     bool m_IsEscapeHeld;
     bool m_IsSpaceHeld;

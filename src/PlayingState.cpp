@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Player.h"
 #include "ObjectManager.h"
+#include "LevelSelect.h"
 #include "Text.h"
 #include <SDL_image.h>
 #include <string>
@@ -76,6 +77,7 @@ void PlayingState::enter() {
     m_LevelEndBlocksX = m_ObjectManager.getFurthestX() + 12*m_Game->TILE_SIZE;
     m_TimeEndingLevel = 0;
     m_IsLevelComplete = false;
+    m_JustSetNewBest = false;
     m_LevelPercent = 0;
 }
 
@@ -112,6 +114,7 @@ void PlayingState::update(float deltaTime) {
 
     Background &background = m_Game->getBackground();
     Ground &ground = m_Game->getGround();
+    // TODO: fix magic number
     ground.setPosition({ground.getPosition().x, m_Game->getHeight() - 300.0f});
     background.update(deltaTime);
 
@@ -125,17 +128,28 @@ void PlayingState::update(float deltaTime) {
     }
 
     if (m_Timer > 0) {
-        m_Timer--;
+        m_Timer -= deltaTime;
         return;
     }
     m_IsTimerFinished = true;
+
+    bool playerJustDied = !m_IsPlayerDead && m_Player.isDead();
     bool playerJustRevived = m_IsPlayerDead && !m_Player.isDead();
-    if (!m_IsSongPlaying || playerJustRevived)
-    {
+    m_IsPlayerDead = m_Player.isDead();
+
+    if (playerJustDied) {
+        int currentBest = LevelSelect::get()->getBestPercentage(m_Game->getLevelSelected());
+        int possibleBest = m_LevelPercent / 100;
+        if (possibleBest > currentBest) {
+            LevelSelect::get()->setBestPercentage(m_Game->getLevelSelected(), possibleBest);
+            m_JustSetNewBest = true;
+        }
+    }
+    if (!m_IsSongPlaying || playerJustRevived) {
         Mix_PlayMusic(m_Songs[m_Game->getLevelSelected()], 0);
+        m_JustSetNewBest = false;
         m_IsSongPlaying = true;
     }
-    m_IsPlayerDead = m_Player.isDead();
     m_Player.update(deltaTime, m_Game->isMouseHeld(), m_ObjectManager.getObjects());
     
     if (m_Player.getPosition().x > m_ObjectManager.getFurthestX()) {
@@ -171,6 +185,7 @@ void PlayingState::updateEndLevel(float deltaTime) {
         m_ShouldEndLevel = false;
         m_ExitButton.setPosition(m_Game->getWidth()/2, m_Game->getHeight()/2, true, true);
         Mix_PlayChannel(-1, m_LevelCompleteSound, 0);
+        LevelSelect::get()->setBestPercentage(m_Game->getLevelSelected(), 100);
     }
 }
 
@@ -185,9 +200,20 @@ void PlayingState::render() {
     m_Player.render();
     m_ObjectManager.render();
     renderEndBlocks();
+    if (m_JustSetNewBest) {
+        Text::renderText(
+            m_Renderer, 
+            "New Best!" + std::to_string(m_LevelPercent/100) + "%", 
+            m_Game->getWidth()/2, 
+            m_Game->getHeight()/2, 
+            true, 
+            true,
+            0.5f
+        );
+    }
     Text::renderText(
         m_Renderer, 
-        std::to_string(m_LevelPercent/100) + "." + std::to_string(m_LevelPercent % 100), 
+        std::to_string(m_LevelPercent/100) + "." + std::to_string(m_LevelPercent % 100) + "%", 
         m_Game->getWidth()/2, 
         10, 
         true,
@@ -220,6 +246,7 @@ void PlayingState::renderEndBlocks() {
         m_Game->TILE_SIZE,
         m_Game->TILE_SIZE
     };
+    // TODO: Fix magic number
     for (int i = 0; i < 47; i++) {
         SDL_RenderCopyEx(m_Renderer, m_LevelEndBlockTexture, NULL, &dst, -90.0, NULL, SDL_FLIP_NONE);
         dst.y += m_Game->TILE_SIZE;

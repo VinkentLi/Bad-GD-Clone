@@ -84,6 +84,8 @@ void LevelSelect::init(Game *game) {
         {.r=0, .g=0, .b=0, .a=100},
         true
     );
+    m_BestLevelPercentages.resize(m_Game->LEVEL_COUNT);
+    std::fill(m_BestLevelPercentages.begin(), m_BestLevelPercentages.end(), 0);
     m_PlaySound = Mix_LoadWAV("res/sfx/playSound.ogg");
 }
 
@@ -162,4 +164,17 @@ void LevelSelect::render() {
     const std::vector<std::string> &levelStrings = m_Game->getLevelStrings();
     std::string levelName = levelStrings[m_Game->getLevelSelected()];
     Text::renderText(m_Renderer, levelName, m_Game->getWidth()/2, m_EnterLevel.getY() + m_EnterLevel.getH()/2, true, true);
+
+    // render best percentage
+    constexpr int MARGIN = 50;
+    const int bestPercentY = m_EnterLevel.getY() + m_EnterLevel.getH() + MARGIN;
+    Text::renderText(
+        m_Renderer, 
+        "Best: " + std::to_string(m_BestLevelPercentages[m_Game->getLevelSelected()]) + "%",
+        m_Game->getWidth()/2, 
+        bestPercentY, 
+        true, 
+        false,
+        0.5f
+    );
 }
