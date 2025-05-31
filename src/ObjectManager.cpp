@@ -82,6 +82,7 @@ void ObjectManager::loadTextures() {
 }
 
 void ObjectManager::loadLevelData() {
+    m_FurthestX = 0;
     std::ifstream in;
     in.open("res/leveldata/" + std::to_string(m_Game->getLevelSelected()) + ".level");
     int lines;
@@ -99,6 +100,7 @@ void ObjectManager::loadLevelData() {
                 SDL_FPoint pos = {objectPos.x + h*m_Game->TILE_SIZE, objectPos.y + v*m_Game->TILE_SIZE};
                 SDL_FRect hitbox = {hitboxOffset.x + pos.x, hitboxOffset.y + pos.y, hitboxOffset.w, hitboxOffset.h};
                 m_Objects.emplace_back(m_Game, objectType, rotation, pos, hitbox, m_StringToTexture[objectName]);
+                m_FurthestX = std::max(m_FurthestX, static_cast<int>(m_Objects.back().getPos().x + m_Objects.back().getWidth()));
             }
         }
     }

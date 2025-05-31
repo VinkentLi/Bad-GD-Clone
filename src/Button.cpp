@@ -78,3 +78,14 @@ void Button::render() {
         SDL_RenderFillRect(m_Renderer, &m_Rect);
     }
 }
+
+void Button::setPosition(int x, int y, bool xCentered, bool yCentered) {
+    m_Rect.x = x;
+    m_Rect.y = y;
+    if (xCentered) {
+        m_Rect.x -= m_Rect.w/2;
+    }
+    if (yCentered) {
+        m_Rect.y -= m_Rect.h/2;
+    }
+}

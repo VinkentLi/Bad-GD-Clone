@@ -36,6 +36,7 @@ public:
     inline int getY() { return m_Rect.y; }
     inline int getW() { return m_Rect.w; }
     inline int getH() { return m_Rect.h; }
+    void setPosition(int x, int y, bool xCentered = false, bool yCentered = false);
 
 private:
     Game *m_Game;

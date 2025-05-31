@@ -21,12 +21,15 @@ public:
     void reset();
     void update(float delta, bool IsMouseHeld, std::vector<GameObject> &objects);
     void handleCollisions(std::vector<GameObject> &objects);
+    inline void moveX(float dist) { m_Position.x += dist; }
+    inline void moveY(float dist) { m_Position.y += dist; }
     void die();
     bool isDead();
     // SDL_FRect getHazardHitbox();
     // SDL_FRect getSolidHitbox();
     void render();
     Gamemode getGamemode();
+    inline SDL_FPoint getPosition() { return m_Position; }
 
 private:
     Game *m_Game;

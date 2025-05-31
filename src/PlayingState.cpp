@@ -17,6 +17,10 @@ void PlayingState::init(Game *game) {
     for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
         m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".wav").c_str()));
     }
+    m_LevelEndBlockTexture = IMG_LoadTexture(m_Renderer, "res/gfx/objects/2.png");
+    if (m_LevelEndBlockTexture == nullptr) {
+        std::cerr << "Failed to load 2.png! " << SDL_GetError() << std::endl;
+    }
     m_ResumeTexture = IMG_LoadTexture(m_Renderer, "res/gfx/resume.png");
     if (m_ResumeTexture == nullptr) {
         std::cerr << "Failed to load resume.png! " << SDL_GetError() << std::endl;
@@ -24,6 +28,10 @@ void PlayingState::init(Game *game) {
     m_ExitTexture = IMG_LoadTexture(m_Renderer, "res/gfx/exitLevel.png");
     if (m_ExitTexture == nullptr) {
         std::cerr << "Failed to load exitLevel.png! " << SDL_GetError() << std::endl;
+    }
+    m_LevelCompleteSound = Mix_LoadWAV("res/sfx/levelComplete.wav");
+    if (m_LevelCompleteSound == nullptr) {
+        std::cerr << "Failed to load levelComplete.wav! " << SDL_GetError() << std::endl;
     }
     int resumeWidth = 0;
     int resumeHeight = 0;
@@ -37,18 +45,25 @@ void PlayingState::init(Game *game) {
     int exitX = width/2 + (resumeWidth + MARGIN - exitWidth)/2;
     m_ResumeButton.init(m_Game, m_ResumeTexture, resumeX, height/2, resumeWidth, resumeHeight, false, true);
     m_ExitButton.init(m_Game, m_ExitTexture, exitX, height/2, exitWidth, exitHeight, false, true);
+    m_MinY = m_Game->getHeight() - 50*m_Game->TILE_SIZE; // no idea what the actual game value is lmao
 }
 
 void PlayingState::destroy() {
     for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
         Mix_FreeMusic(m_Songs[i]);
     }
+    SDL_DestroyTexture(m_LevelEndBlockTexture);
+    SDL_DestroyTexture(m_ResumeTexture);
+    SDL_DestroyTexture(m_ExitTexture);
+    Mix_FreeChunk(m_LevelCompleteSound);
 }
 
 void PlayingState::enter() {
     Mix_HaltMusic();
     m_Player.reset();
     m_ObjectManager.reset();
+    int exitX = m_Game->getWidth()/2 + (m_ResumeButton.getW() + MARGIN - m_ExitButton.getW())/2;
+    m_ExitButton.setPosition(exitX, m_Game->getHeight()/2);
     m_Timer = 60;
     m_IsTimerFinished = false;
     m_IsSongPlaying = false;
@@ -56,6 +71,10 @@ void PlayingState::enter() {
     m_IsEscapeHeld = false;
     m_IsSpaceHeld = false;
     m_IsPaused = false;
+    m_ShouldEndLevel = false;
+    m_LevelEndBlocksX = m_ObjectManager.getFurthestX() + 12*m_Game->TILE_SIZE;
+    m_TimeEndingLevel = 0;
+    m_IsLevelComplete = false;
 }
 
 void PlayingState::exit() {
@@ -69,23 +88,19 @@ void PlayingState::update(float deltaTime) {
     const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
     m_IsEscapeHeld = isEscapeHeld;
 
-    if (m_IsPaused) {
-        m_ExitButton.update();
-        if (m_ExitButton.isPressed() || isEscapeReleased) {
-            m_Game->popState();
-            return;
-        }
-        const bool isSpaceHeld = m_Game->isSpaceHeld();
-        const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
-        m_IsSpaceHeld = isSpaceHeld;
-
-        m_ResumeButton.update();
-        if (m_ResumeButton.isPressed() || spaceReleased) {
-            resume();
-        }
+    if (m_IsLevelComplete) {
+        updateLevelComplete(isEscapeReleased);
+        return;
+    }
+    if (m_ShouldEndLevel) {
+        updateEndLevel(deltaTime);
         return;
     }
 
+    if (m_IsPaused) {
+        updatePause(isEscapeReleased);
+        return;
+    }
     if (isEscapeReleased) {
         pause();
     }
@@ -117,13 +132,59 @@ void PlayingState::update(float deltaTime) {
     }
     m_IsPlayerDead = m_Player.isDead();
     m_Player.update(deltaTime, m_Game->isMouseHeld(), m_ObjectManager.getObjects());
+    
+    if (m_Player.getPosition().x > m_ObjectManager.getFurthestX()) {
+        m_ShouldEndLevel = true;
+    }
+}
+
+void PlayingState::updatePause(bool isEscapeReleased) {
+    m_ExitButton.update();
+    if (m_ExitButton.isPressed() || isEscapeReleased) {
+        m_Game->popState();
+        return;
+    }
+    const bool isSpaceHeld = m_Game->isSpaceHeld();
+    const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
+    m_IsSpaceHeld = isSpaceHeld;
+
+    m_ResumeButton.update();
+    if (m_ResumeButton.isPressed() || spaceReleased) {
+        resume();
+    }
+}
+
+void PlayingState::updateEndLevel(float deltaTime) {
+    m_TimeEndingLevel += deltaTime;
+    // i just made this up lmao
+    constexpr float CAM_SPEED = 1.8f;
+    float xAdder = m_TimeEndingLevel / 35.0f;
+    m_Player.moveX(xAdder);
+    m_Game->setCameraX(m_Game->getCameraPosition().x + CAM_SPEED * deltaTime);
+    if (m_Player.getPosition().x > m_LevelEndBlocksX) {
+        m_IsLevelComplete = true;
+        m_ShouldEndLevel = false;
+        m_ExitButton.setPosition(m_Game->getWidth()/2, m_Game->getHeight()/2, true, true);
+        Mix_PlayChannel(-1, m_LevelCompleteSound, 0);
+    }
+}
+
+void PlayingState::updateLevelComplete(bool isEscapeReleased) {
+    m_ExitButton.update();
+    if (m_ExitButton.isPressed() || isEscapeReleased) {
+        m_Game->popState();
+    }
 }
 
 void PlayingState::render() {
-    m_ObjectManager.render();
     m_Player.render();
+    m_ObjectManager.render();
+    renderEndBlocks();
     if (m_IsPaused) {
         renderPause();
+    }
+    if (m_IsLevelComplete) {
+        renderLevelCompleteMenu();
     }
 }
 
@@ -135,6 +196,24 @@ void PlayingState::renderPause() {
     const std::string levelName = m_Game->getLevelStrings()[m_Game->getLevelSelected()];
     Text::renderText(m_Renderer, levelName, m_Game->getWidth()/2, MARGIN, true, true);
     m_ResumeButton.render();
+    m_ExitButton.render();
+}
+
+void PlayingState::renderEndBlocks() {
+    SDL_Rect dst = { 
+        m_LevelEndBlocksX - static_cast<int>(m_Game->getCameraPosition().x),
+        m_MinY - static_cast<int>(m_Game->getCameraPosition().y),
+        m_Game->TILE_SIZE,
+        m_Game->TILE_SIZE
+    };
+    for (int i = 0; i < 47; i++) {
+        SDL_RenderCopyEx(m_Renderer, m_LevelEndBlockTexture, NULL, &dst, -90.0, NULL, SDL_FLIP_NONE);
+        dst.y += m_Game->TILE_SIZE;
+    }
+}
+
+void PlayingState::renderLevelCompleteMenu() {
+    Text::renderText(m_Renderer, "Your did it!", m_Game->getWidth()/2, m_Game->getHeight()/4, true, true);
     m_ExitButton.render();
 }
 

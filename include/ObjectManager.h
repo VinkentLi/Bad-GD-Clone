@@ -21,6 +21,7 @@ public:
     void loadTextures();
     void loadLevelData();
     void render();
+    inline int getFurthestX() { return m_FurthestX; }
 
 private:
     Game *m_Game;
@@ -28,5 +29,6 @@ private:
     std::map<std::string, ObjectType> m_StringToType;
     std::map<std::string, SDL_Texture *> m_StringToTexture;
     std::map<ObjectType, SDL_FRect> m_TypeToHitbox;
+    int m_FurthestX;
 };
 

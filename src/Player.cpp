@@ -2,6 +2,7 @@
 #include <SDL_image.h>
 #include <cmath>
 #include "Player.h"
+#include "PlayingState.h"
 #include "Game.h"
 #include "GameObject.h"
 
@@ -164,7 +165,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
             m_Game->setCameraY(m_Position.y - CAMERA_DOWN_SCROLL);
         }
     }
-    if (m_Position.y < -7 * m_Game->BACKGROUND_SIZE) {
+    if (m_Position.y < PlayingState::get()->getMinY()) {
         die();
     }
     if (m_IsGrounded) {
