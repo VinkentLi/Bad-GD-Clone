@@ -203,7 +203,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
         }
         m_Rotation *= m_GravityMultiplier;
     }
-    constexpr int CAMERA_SCROLL = m_Game->TILE_SIZE * 6;
+    const static int CAMERA_SCROLL = m_Game->TILE_SIZE * 6;
     const static int CAMERA_UP_SCROLL = m_Game->getHeight() / 4;
     const static int CAMERA_DOWN_SCROLL = m_Game->getHeight() - 400;
     

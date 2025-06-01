@@ -231,7 +231,7 @@ void PlayingState::updateEndLevel(float deltaTime) {
     // i just made this up lmao
     constexpr float CAM_SPEED = 1.8f;
     float xAdder = m_TimeEndingLevel / 35.0f;
-    m_Player.moveX(xAdder);
+    m_Player.moveX(xAdder * deltaTime);
     m_Game->setCameraX(m_Game->getCameraPosition().x + CAM_SPEED * deltaTime);
     if (m_Player.getPosition().x > m_LevelEndBlocksX) {
         m_IsLevelComplete = true;

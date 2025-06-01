@@ -15,9 +15,10 @@ set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose build type (Debug or Release):
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -g -O0)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wno-c++11-narrowing -g -O0)
+    # target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
 else()
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -O2)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wno-c++11-narrowing -O3)
 endif()
 
 # Emscripten-specific setup
@@ -27,7 +28,7 @@ if(EMSCRIPTEN)
         "-sUSE_SDL_IMAGE=2"
         "-sSDL2_IMAGE_FORMATS=[\"png\"]"
         "-sUSE_SDL_MIXER=2"
-        "-sSDL2_MIXER_FORMATS=[\"wav\"]"
+        "-sSDL2_MIXER_FORMATS=[\"wav\", \"ogg\"]"
         "-sUSE_SDL_TTF=2"
     )
     target_link_options(${PROJECT_NAME} PRIVATE
@@ -36,13 +37,18 @@ if(EMSCRIPTEN)
         "-sUSE_SDL_IMAGE=2"
         "-sSDL2_IMAGE_FORMATS=[\"png\"]"
         "-sUSE_SDL_MIXER=2"
-        "-sSDL2_MIXER_FORMATS=[\"wav\"]"
+        "-sSDL2_MIXER_FORMATS=[\"wav\", \"ogg\"]"
         "-sUSE_SDL_TTF=2"
         "-sALLOW_MEMORY_GROWTH=1"
         "-sEXIT_RUNTIME=1"
         "--preload-file"
         "../res"
     )
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_link_options(${PROJECT_NAME} PRIVATE "-sASSERTIONS=2")
+    else()
+        target_link_options(${PROJECT_NAME} PRIVATE "-sASSERTIONS=0")
+    endif()
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".js")
 else()
     # Native build

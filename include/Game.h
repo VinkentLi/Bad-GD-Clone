@@ -22,11 +22,16 @@ public:
     void run();
     void quit();
 
+    void update(float deltaTime);
+    void render();
+    void handleEvents();
+
     void pushState(GameState *state);
     void popState();
     void changeState(GameState *state);
     inline GameState *getState() { return m_GameStates.top(); }
     
+    inline bool isGameRunning() { return m_IsGameRunning; }
     inline const std::vector<std::string> &getLevelStrings() { return m_LevelStrings; } 
     inline bool isMouseHeld() { return m_IsMouseHeld; }
     inline bool isEscapeHeld() { return m_IsEscapeHeld; }
@@ -54,6 +59,13 @@ public:
 private:
     SDL_Window *m_Window;
     SDL_Renderer *m_Renderer;
+
+// TODO: FIX BAD CODE
+#ifdef __EMSCRIPTEN__
+public:
+#endif
+    uint64_t m_CurrentTime;
+    uint64_t m_NewTime;
     SDL_Point m_MousePosition;
     SDL_FPoint m_CameraPosition;
     Mix_Music *m_MenuLoop;
@@ -75,12 +87,11 @@ private:
     int m_CurrentFPS = 0;
     int m_LevelSelected = 0;
     int m_Timer = 0;
-#ifdef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
     void mainLoop();
-#else
-    void mainLoop(float deltaTime);
 #endif
-    void update(float deltaTime);
-    void render();
-    void handleEvents();
 };
+
+#ifdef __EMSCRIPTEN__
+extern Game emGame;
+#endif

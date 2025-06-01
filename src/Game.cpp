@@ -13,7 +13,6 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 void emMainLoop();
-Game emGame;
 #endif
 
 int Game::init() {
@@ -97,17 +96,11 @@ void Game::quit() {
 void Game::run() {
     Mix_PlayMusic(m_MenuLoop, -1);
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(emMainLoop, 240, 1);
+    emscripten_set_main_loop(emMainLoop, 0, 1);
 #else
-    float interval = 1000.0f / 60.0f;
-    uint64_t currentTime = SDL_GetTicks64();
-    uint64_t newTime;
+    m_CurrentTime = SDL_GetTicks64();
     while (true) {
-        newTime = SDL_GetTicks64();
-        m_Timer += newTime - currentTime;
-        float delta = (newTime - currentTime) / interval;
-        currentTime = newTime;
-        mainLoop(delta);
+        mainLoop();
     }
 #endif
 }
@@ -119,16 +112,32 @@ void emMainLoop() {
         emGame.quit();
         emscripten_cancel_main_loop();
     }
+    emGame.m_NewTime = SDL_GetTicks64();
+    emGame.m_Timer += emGame.m_NewTime - emGame.m_CurrentTime;
+    constexpr float interval = 1000.0f / 60.0f;
+    float deltaTime = (emGame.m_NewTime - emGame.m_CurrentTime) / interval;
+    emGame.m_CurrentTime = emGame.m_NewTime;
     emGame.handleEvents();
-    emGame.update(0.25);
+    emGame.update(deltaTime);
     emGame.render();
+    emGame.m_Frames++;
+    if (emGame.m_Timer >= 1000) {
+        emGame.m_CurrentFPS = emGame.m_Frames;
+        emGame.m_Frames = 0;
+        emGame.m_Timer -= 1000;
+    }
 }
 #else
-void Game::mainLoop(float deltaTime) {
+void Game::mainLoop() {
     if (!m_IsGameRunning) {
         quit();
         exit(0);
     }
+    m_NewTime = SDL_GetTicks64();
+    m_Timer += m_NewTime - m_CurrentTime;
+    constexpr float interval = 1000.0f / 60.0f;
+    float deltaTime = (m_NewTime - m_CurrentTime) / interval;
+    m_CurrentTime = m_NewTime;
     handleEvents();
     update(deltaTime);
     render();

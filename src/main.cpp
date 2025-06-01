@@ -1,7 +1,12 @@
 #include "Game.h"
 
+#ifdef __EMSCRIPTEN__
+#define game emGame
+#endif
+
+Game game;
+
 int main(int argc, char **argv) {
-    Game game;
     if (game.init() != 0) {
         game.quit();
     }
