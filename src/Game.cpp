@@ -12,6 +12,8 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+void emMainLoop();
+Game emGame;
 #endif
 
 int Game::init() {
@@ -95,7 +97,7 @@ void Game::quit() {
 void Game::run() {
     Mix_PlayMusic(m_MenuLoop, -1);
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(mainLoop, 60, 1);
+    emscripten_set_main_loop(emMainLoop, 240, 1);
 #else
     float interval = 1000.0f / 60.0f;
     uint64_t currentTime = SDL_GetTicks64();
@@ -110,16 +112,16 @@ void Game::run() {
 #endif
 }
 
+// TODO: Fix this lmfao
 #ifdef __EMSCRIPTEN__
-void Game::mainLoop() {
-    if (!m_GameRunning) {
-        quit();
+void emMainLoop() {
+    if (!emGame.isGameRunning()) {
+        emGame.quit();
         emscripten_cancel_main_loop();
     }
-    handleEvents();
-    update(1);
-    render();
-    m_CurrentFPS = 60;
+    emGame.handleEvents();
+    emGame.update(0.25);
+    emGame.render();
 }
 #else
 void Game::mainLoop(float deltaTime) {
@@ -167,6 +169,12 @@ void Game::handleEvents() {
             case SDLK_SPACE:
                 m_IsSpaceHeld = true;
                 break;
+            case SDLK_x:
+                m_IsXHeld = true;
+                break;
+            case SDLK_z:
+                m_IsZHeld = true;
+                break;
             }
             break;
         case SDL_KEYUP:
@@ -176,6 +184,12 @@ void Game::handleEvents() {
                 break;
             case SDLK_SPACE:
                 m_IsSpaceHeld = false;
+                break;
+            case SDLK_x:
+                m_IsXHeld = false;
+                break;
+            case SDLK_z:
+                m_IsZHeld = false;
                 break;
             }
             break;

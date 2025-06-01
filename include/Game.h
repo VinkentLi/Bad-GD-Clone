@@ -31,6 +31,8 @@ public:
     inline bool isMouseHeld() { return m_IsMouseHeld; }
     inline bool isEscapeHeld() { return m_IsEscapeHeld; }
     inline bool isSpaceHeld() { return m_IsSpaceHeld; }
+    inline bool isZHeld() { return m_IsZHeld; }
+    inline bool isXHeld() { return m_IsXHeld; }
     inline SDL_Renderer *getRenderer() { return m_Renderer; }
     inline int getWidth() { return m_Width; }
     inline int getHeight() { return m_Height; }
@@ -63,6 +65,8 @@ private:
     bool m_IsMouseHeld = false;
     bool m_IsEscapeHeld = false;
     bool m_IsSpaceHeld = false;
+    bool m_IsZHeld = false;
+    bool m_IsXHeld = false;
     int m_Width;
     int m_Height = 1080;
     int m_ScreenWidth;

@@ -15,7 +15,7 @@ cd ..
 ./build/GDClone
 ```
 
-Run these commands to build for the web
+Run these commands to build for the web (note: building for web is currently not working)
 ```bash
 mkdir build-web
 cd build-web
@@ -44,8 +44,6 @@ Then use this html code
 ```
 
 ## TODO
-- Practice mode
-- Loading screen
 - Make ship rotation more accurate
 - Make it read from the actual game files?
 - Tidy up code

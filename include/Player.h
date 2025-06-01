@@ -8,6 +8,16 @@ enum class Gamemode {
     SHIP
 };
 
+struct Checkpoint {
+    SDL_FPoint position;
+    SDL_FPoint cameraPosition;
+    double yVelocity;
+    double rotation;
+    double targetRotation;
+    int gravityMultiplier;
+    Gamemode gamemode;
+};
+
 class Game;
 class GameObject;
 
@@ -36,6 +46,7 @@ private:
     SDL_Renderer *m_Renderer;
     SDL_Texture *m_PlayerTexture;
     SDL_Texture *m_ShipTexture;
+    SDL_Texture *m_CheckpointTexture;
     Mix_Chunk *m_DeathSound;
     SDL_FPoint m_Position;
     SDL_FPoint m_PreviousPosition;
@@ -45,14 +56,15 @@ private:
     double m_PadStrength;
     double m_Gravity;
     double m_RotationAdder;
-    double m_ShipUpAdder;
-    double m_ShipDownAdder;
     double m_Rotation;
     double m_TargetRotation;
     SDL_FRect m_HazardHitbox, m_SolidHitbox;
     std::vector<SDL_FRect *> m_PressedOrbs;
+    std::vector<Checkpoint> m_Checkpoints;
     bool m_IsGrounded;
     bool m_IsMouseHeld;
+    bool m_IsZHeld;
+    bool m_IsXHeld;
     bool m_IsDead;
     bool m_HasBufferedOrb;
     float m_DeadTimer;

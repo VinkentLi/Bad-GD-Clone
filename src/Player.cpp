@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <SDL_image.h>
 #include <cmath>
+#include <iostream>
 #include "Player.h"
 #include "PlayingState.h"
 #include "Game.h"
@@ -10,8 +11,21 @@ void Player::init(Game *game) {
     m_Game = game;
     m_Renderer = m_Game->getRenderer();
     m_PlayerTexture = IMG_LoadTexture(m_Renderer, "res/gfx/icon.png");
+    if (m_PlayerTexture == nullptr) {
+        std::cerr << "Failed to load icon.png! " << SDL_GetError() << std::endl;
+    }
     m_ShipTexture = IMG_LoadTexture(m_Renderer, "res/gfx/ship.png");
+    if (m_ShipTexture == nullptr) {
+        std::cerr << "Failed to load ship.png! " << SDL_GetError() << std::endl;
+    }
+    m_CheckpointTexture = IMG_LoadTexture(m_Renderer, "res/gfx/checkpoint.png");
+    if (m_CheckpointTexture == nullptr) {
+        std::cerr << "Failed to load checkpoint.png! " << SDL_GetError() << std::endl;
+    }
     m_DeathSound = Mix_LoadWAV("res/sfx/deathSound.ogg");
+    if (m_DeathSound == nullptr) {
+        std::cerr << "Failed to load deathSound.ogg! " << SDL_GetError() << std::endl;
+    }
 }
 
 void Player::reset() {
@@ -39,39 +53,79 @@ void Player::reset() {
     };
     m_IsGrounded = true;
     m_IsMouseHeld = false;
+    m_IsZHeld = false;
+    m_IsXHeld = false;
     m_HasBufferedOrb = false;
     m_IsDead = false;
     m_DeadTimer = 0;
     m_GravityMultiplier = 1;
     m_Gamemode = Gamemode::CUBE;
+    m_Checkpoints.clear();
 }
 
 Player::~Player() {
     SDL_DestroyTexture(m_PlayerTexture);
     SDL_DestroyTexture(m_ShipTexture);
+    SDL_DestroyTexture(m_CheckpointTexture);
     Mix_FreeChunk(m_DeathSound);
 }
 
 void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &objects) {
     bool mouseClicked = (!m_IsMouseHeld && isMouseHeld);
     bool mouseReleased = (m_IsMouseHeld && !isMouseHeld);
+
+    if (PlayingState::get()->isInPractice()) {
+        bool zReleased = m_IsZHeld && !m_Game->isZHeld();
+        bool xReleased = m_IsXHeld && !m_Game->isXHeld();
+        m_IsZHeld = m_Game->isZHeld();
+        m_IsXHeld = m_Game->isXHeld();
+    
+        if (zReleased) {
+            m_Checkpoints.push_back(Checkpoint {
+                m_Position,
+                m_Game->getCameraPosition(),
+                m_YVelocity,
+                m_Rotation,
+                m_TargetRotation,
+                m_GravityMultiplier,
+                m_Gamemode
+            });
+        }
+        if (xReleased && !m_Checkpoints.empty()) {
+            m_Checkpoints.pop_back();
+        }
+    }
+
     m_IsMouseHeld = isMouseHeld;
     if (m_IsDead) {
         m_DeadTimer -= delta;
         if (m_DeadTimer < 0) {
+            // respawn
             m_Gamemode = Gamemode::CUBE;
             m_PressedOrbs.clear();
             m_IsDead = false;
             m_IsGrounded = true;
-            m_HazardHitbox.x = -m_Game->TILE_SIZE;
-            m_HazardHitbox.y = m_Game->getHeight() - 300.0f - m_Game->TILE_SIZE;
+            if (!PlayingState::get()->isInPractice() || m_Checkpoints.empty()) {
+                m_HazardHitbox.x = -m_Game->TILE_SIZE;
+                m_HazardHitbox.y = m_Game->getHeight() - 300.0f - m_Game->TILE_SIZE;
+                m_Game->setCameraPosition({0, 0});
+                m_Rotation = 0;
+                m_TargetRotation = 0;
+                m_GravityMultiplier = 1;
+                m_YVelocity = 0;
+            } else {
+                m_HazardHitbox.x = m_Checkpoints.back().position.x;
+                m_HazardHitbox.y = m_Checkpoints.back().position.y;
+                m_Game->setCameraPosition(m_Checkpoints.back().cameraPosition);
+                m_Rotation = m_Checkpoints.back().rotation;
+                m_TargetRotation = m_Checkpoints.back().targetRotation;
+                m_GravityMultiplier = m_Checkpoints.back().gravityMultiplier;
+                m_YVelocity = m_Checkpoints.back().yVelocity;
+                m_Gamemode = m_Checkpoints.back().gamemode;
+            }
             m_SolidHitbox.x = m_HazardHitbox.x + m_Game->TILE_SIZE / 3;
             m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
             m_Position = {m_HazardHitbox.x, m_HazardHitbox.y};
-            m_Game->setCameraPosition({0, 0});
-            m_Rotation = 0;
-            m_TargetRotation = 0;
-            m_GravityMultiplier = 1;
         }
         return;
     }
@@ -297,6 +351,16 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
 }
 
 void Player::render() {
+    for (Checkpoint &checkpoint : m_Checkpoints) {
+        SDL_Rect rect = { 
+            static_cast<int>(checkpoint.position.x - m_Game->getCameraPosition().x), 
+            static_cast<int>(checkpoint.position.y - m_Game->getCameraPosition().y),
+            m_Game->TILE_SIZE, 
+            m_Game->TILE_SIZE 
+        };
+        SDL_RenderCopy(m_Renderer, m_CheckpointTexture, NULL, &rect);
+    }
+
     switch (m_Gamemode) {
     case Gamemode::CUBE: {
         SDL_FRect dst = {
@@ -359,7 +423,9 @@ void Player::render() {
 void Player::die() {
     m_IsDead = true;
     m_DeadTimer = 90;
-    Mix_HaltMusic();
+    if (!PlayingState::get()->isInPractice()) {
+        Mix_HaltMusic();
+    }
     Mix_PlayChannel(-1, m_DeathSound, 0);
     m_YVelocity = 0;
 }

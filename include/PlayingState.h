@@ -17,7 +17,8 @@ public:
     void exit() override;
     void update(float deltaTime) override;
     void render() override;
-    int getMinY() { return m_MinY; }
+    inline int getMinY() { return m_MinY; }
+    inline bool isInPractice() { return m_IsInPractice; }
     inline static PlayingState *get() { return &m_PlayingState; } 
 
 private:
@@ -27,11 +28,16 @@ private:
     SDL_Texture *m_LevelEndBlockTexture;
     SDL_Texture *m_ResumeTexture;
     SDL_Texture *m_ExitTexture;
+    SDL_Texture *m_EnterPracticeTexture;
+    SDL_Texture *m_ExitPracticeTexture;
     Mix_Chunk *m_LevelCompleteSound;
+    Mix_Music *m_PracticeMusic;
     static constexpr int MARGIN = 50;
     int m_MinY;
     Button m_ResumeButton;
     Button m_ExitButton;
+    Button m_EnterPracticeButton;
+    Button m_ExitPracticeButton;
     float m_Timer;
     bool m_IsTimerFinished;
     bool m_IsSongPlaying;
@@ -45,6 +51,7 @@ private:
     float m_TimeEndingLevel;
     bool m_IsLevelComplete;
     int m_LevelPercent; // ex: 3692 = 36.92%
+    bool m_IsInPractice;
     std::vector<Mix_Music *> m_Songs;
 
     void updatePause(bool isEscapeReleased);
