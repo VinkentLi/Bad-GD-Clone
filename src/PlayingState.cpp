@@ -96,7 +96,7 @@ void PlayingState::enter() {
     m_IsSpaceHeld = false;
     m_IsPaused = false;
     m_ShouldEndLevel = false;
-    m_LevelEndBlocksX = m_ObjectManager.getFurthestX() + 12*m_Game->TILE_SIZE;
+    m_LevelEndBlocksX = m_ObjectManager.getFurthestX() - 3.5*m_Game->TILE_SIZE + m_Game->getWidth();
     m_TimeEndingLevel = 0;
     m_IsLevelComplete = false;
     m_JustSetNewBest = false;
