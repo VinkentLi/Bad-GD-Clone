@@ -36,7 +36,7 @@ void Player::reset() {
     m_JumpStrength = -37.266667;
     m_PadStrength = -53.333333;
     m_Gravity = 2.88;
-    m_RotationAdder = 7;
+    m_RotationAdder = 6.92308;
     m_Rotation = 0;
     m_TargetRotation = 0;
     m_HazardHitbox = {
@@ -190,18 +190,14 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
     handleCollisions(objects);
 
     if (m_Gamemode == Gamemode::SHIP) {
-        // i tried to make rotations accurate, but i couldn't get it to work
-        if (m_YVelocity == 0.0) {
-            if (m_Rotation < 0) {
-                m_Rotation = std::clamp(m_Rotation + m_RotationAdder, -360.0, 0.0);
-            } else if (m_Rotation > 0) {
-                m_Rotation = std::clamp(m_Rotation - m_RotationAdder, 0.0, 360.0);
-            }
-        } else {
-            m_Rotation = m_YVelocity * 2.0;
-            m_Rotation /= std::clamp(5.0 / std::abs(m_YVelocity), 1.0, 3.0);
+        // special thanks to https://github.com/Open-GD/OpenGD for this
+        if (pow(m_YVelocity, 2) + pow(m_XVelocity, 2) >= 1.2) {
+            m_Rotation /= m_GravityMultiplier;
+            float target = std::atan2(m_YVelocity, m_XVelocity) * 180.0 / M_PI;
+            // exponential interpolation
+            m_Rotation += (target - m_Rotation) * (1.0 - pow(0.85, delta));
+            m_Rotation *= m_GravityMultiplier;
         }
-        m_Rotation *= m_GravityMultiplier;
     }
     const static int CAMERA_SCROLL = m_Game->TILE_SIZE * 6;
     const static int CAMERA_UP_SCROLL = m_Game->getHeight() / 4;
@@ -437,13 +433,3 @@ bool Player::isDead() {
 Gamemode Player::getGamemode() {
     return m_Gamemode;
 }
-
-// SDL_FRect Player::getHazardHitbox()
-// {
-//     return hazardHitbox;
-// }
-
-// SDL_FRect Player::getSolidHitbox()
-// {
-//     return solidHitbox;
-// }

@@ -44,6 +44,5 @@ Then use this html code
 ```
 
 ## TODO
-- Make ship rotation more accurate
-- Make it read from the actual game files?
+- Make it read level data from the game
 - Tidy up code
