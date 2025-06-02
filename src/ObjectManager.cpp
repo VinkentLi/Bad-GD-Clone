@@ -1,5 +1,6 @@
 #include "ObjectManager.h"
 #include "Game.h"
+#include "LevelSelect.h"
 #include <SDL_image.h>
 #include <fstream>
 #include <iostream>
@@ -84,7 +85,7 @@ void ObjectManager::loadTextures() {
 void ObjectManager::loadLevelData() {
     m_FurthestX = 0;
     std::ifstream in;
-    in.open("res/leveldata/" + std::to_string(m_Game->getLevelSelected()) + ".level");
+    in.open("res/leveldata/" + std::to_string(LevelSelect::get()->getLevelSelected()) + ".level");
     int lines;
     in >> lines;
 

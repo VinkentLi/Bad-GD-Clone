@@ -32,7 +32,6 @@ public:
     inline GameState *getState() { return m_GameStates.top(); }
     
     inline bool isGameRunning() { return m_IsGameRunning; }
-    inline const std::vector<std::string> &getLevelStrings() { return m_LevelStrings; } 
     inline bool isMouseHeld() { return m_IsMouseHeld; }
     inline bool isEscapeHeld() { return m_IsEscapeHeld; }
     inline bool isSpaceHeld() { return m_IsSpaceHeld; }
@@ -47,10 +46,6 @@ public:
     inline void setCameraPosition(SDL_FPoint newPosition) { m_CameraPosition = newPosition; } 
     inline void setCameraX(float x) { m_CameraPosition.x = x; }
     inline void setCameraY(float y) { m_CameraPosition.y = y; }
-    inline int getLevelSelected() { return m_LevelSelected; }
-    inline void setLevelSelected(int num) { m_LevelSelected = num; }
-    inline void increaseLevelSelected() { m_LevelSelected++; }
-    inline void decreaseLevelSelected() { m_LevelSelected--; }
     inline SDL_Point getMousePosition() { return m_MousePosition; }
     inline Ground &getGround() { return m_Ground; }
     inline Background &getBackground() { return m_Background; }
@@ -59,6 +54,7 @@ public:
 private:
     SDL_Window *m_Window;
     SDL_Renderer *m_Renderer;
+    SDL_Texture *m_FPSTexture;
 
 // TODO: FIX BAD CODE
 #ifdef __EMSCRIPTEN__
@@ -72,7 +68,6 @@ public:
     Background m_Background;
     Ground m_Ground;
     std::stack<GameState *> m_GameStates;
-    std::vector<std::string> m_LevelStrings;
     bool m_IsGameRunning = true;
     bool m_IsMouseHeld = false;
     bool m_IsEscapeHeld = false;
@@ -85,7 +80,6 @@ public:
     int m_ScreenHeight;
     int m_Frames = 0;
     int m_CurrentFPS = 0;
-    int m_LevelSelected = 0;
     int m_Timer = 0;
 #ifndef __EMSCRIPTEN__
     void mainLoop();

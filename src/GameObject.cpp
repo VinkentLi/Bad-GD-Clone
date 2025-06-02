@@ -29,11 +29,8 @@ ObjectType GameObject::getType() {
 void GameObject::render() {
     m_Rect.x = static_cast<int>(m_Position.x) - m_Game->getCameraPosition().x;
     m_Rect.y = static_cast<int>(m_Position.y) - m_Game->getCameraPosition().y;
-    
 
-    if (SDL_RenderCopyEx(m_Renderer, m_ObjectTexture, NULL, &m_Rect, m_Rotation * 90.0, NULL, SDL_FLIP_NONE) != 0) {
-        std::cerr << "GameObject failed to render texture! " << SDL_GetError() << std::endl;
-    }
+    SDL_RenderCopyEx(m_Renderer, m_ObjectTexture, NULL, &m_Rect, m_Rotation * 90.0, NULL, SDL_FLIP_NONE);
 
     // SDL_FRect temp = hitbox;
     // temp.x -= cameraPos.x;

@@ -17,14 +17,19 @@ public:
     void exit() override;
     void update(float deltaTime) override;
     void render() override;
-    inline int getBestPercentage(int levelIndex) { return m_BestLevelPercentages[levelIndex]; }
-    inline void setBestPercentage(int levelIndex, int value) { m_BestLevelPercentages[levelIndex] = value; }
-    inline int getBestPracticePercentage(int levelIndex) { return m_BestPracticePercentages[levelIndex]; }
-    inline void setBestPracticePercentage(int levelIndex, int value) { m_BestPracticePercentages[levelIndex] = value; }
+    inline std::string getLevelName() { return m_LevelStrings[m_LevelSelected]; }
+    inline int getLevelSelected() { return m_LevelSelected; }
+    int getBestPercentage();
+    void setBestPercentage(int value);
+    int getBestPracticePercentage();
+    void setBestPracticePercentage(int value);
+    inline SDL_Texture *getLevelNameTexture() { return m_LevelNameTexture; }
     inline static LevelSelect *get() { return &m_LevelSelect; }
 
 private:
     static LevelSelect m_LevelSelect;
+    int m_LevelSelected = 0;
+    std::vector<std::string> m_LevelStrings;
     Button m_LeftLevelArrow;
     Button m_RightLevelArrow;
     Button m_TitleScreenArrow;
@@ -36,11 +41,18 @@ private:
     SDL_Texture *m_TopTexture;
     SDL_Texture *m_LevelArrowTexture;
     SDL_Texture *m_TitleArrowTexture;
+    SDL_Texture *m_LevelNameTexture;
+    SDL_Texture *m_BestPercentTexture;
+    SDL_Texture *m_BestPracticePercentTexture;
     Mix_Chunk *m_PlaySound;
     std::vector<int> m_BestLevelPercentages;
     std::vector<int> m_BestPracticePercentages;
     bool m_IsMouseHeld;
     bool m_IsEscapeHeld;
     bool m_IsSpaceHeld;
+
+    void updateLevelNameTexture();
+    void updateBestPercentTexture();
+    void updateBestPracticePercentTexture();
 };
 

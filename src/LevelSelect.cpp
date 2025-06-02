@@ -27,6 +27,10 @@ void LevelSelect::init(Game *game) {
     if (m_TitleArrowTexture == nullptr) {
         std::cerr << "Failed to load toTitleScreen.png!" << SDL_GetError() << std::endl;
     }
+    m_LevelStrings = { "Test Level1", "Test Level2" };
+    m_LevelNameTexture = Text::createTexture(m_Renderer, m_LevelStrings[0]);
+    m_BestPercentTexture = Text::createTexture(m_Renderer, "Normal: 0%");
+    m_BestPracticePercentTexture = Text::createTexture(m_Renderer, "Practice: 0%");
     int cornerWidth = 0;
     int cornerHeight = 0;
     int topWidth = 0;
@@ -96,6 +100,8 @@ void LevelSelect::destroy() {
     SDL_DestroyTexture(m_TopTexture);
     SDL_DestroyTexture(m_LevelArrowTexture);
     SDL_DestroyTexture(m_TitleArrowTexture);
+    SDL_DestroyTexture(m_BestPercentTexture);
+    SDL_DestroyTexture(m_BestPracticePercentTexture);
     Mix_FreeChunk(m_PlaySound);
 }
 
@@ -103,7 +109,7 @@ void LevelSelect::enter() {
     m_IsMouseHeld = false;
     m_IsEscapeHeld = false;
     m_IsSpaceHeld = false;
-    m_Game->setLevelSelected(0);
+    m_LevelSelected = 0;
 }
 
 void LevelSelect::exit() {
@@ -133,17 +139,23 @@ void LevelSelect::update(float deltaTime) {
     }
     m_LeftLevelArrow.update();
     if (m_LeftLevelArrow.isPressed()) {
-        m_Game->decreaseLevelSelected();
-        if (m_Game->getLevelSelected() < 0) {
-            m_Game->setLevelSelected(m_Game->LEVEL_COUNT - 1);
+        m_LevelSelected--;
+        if (m_LevelSelected < 0) {
+            m_LevelSelected = m_Game->LEVEL_COUNT - 1;
         }
+        updateLevelNameTexture();
+        updateBestPercentTexture();
+        updateBestPracticePercentTexture();
     }
     m_RightLevelArrow.update();
     if (m_RightLevelArrow.isPressed()) {
-        m_Game->increaseLevelSelected();
-        if (m_Game->getLevelSelected() == m_Game->LEVEL_COUNT) {
-            m_Game->setLevelSelected(0);
+        m_LevelSelected++;
+        if (m_LevelSelected == m_Game->LEVEL_COUNT) {
+            m_LevelSelected = 0;
         }
+        updateLevelNameTexture();
+        updateBestPercentTexture();
+        updateBestPracticePercentTexture();
     }
     m_EnterLevel.update();
     if (m_EnterLevel.isPressed() || spaceReleased) {
@@ -162,30 +174,42 @@ void LevelSelect::render() {
     m_RightLevelArrow.render();
     m_EnterLevel.render();
 
-    // render level name
-    const std::vector<std::string> &levelStrings = m_Game->getLevelStrings();
-    std::string levelName = levelStrings[m_Game->getLevelSelected()];
-    Text::renderText(m_Renderer, levelName, m_Game->getWidth()/2, m_EnterLevel.getY() + m_EnterLevel.getH()/2, true, true);
-
-    // render best percentage
+    Text::renderTexture(m_Renderer, m_LevelNameTexture, m_Game->getWidth()/2, m_EnterLevel.getY() + m_EnterLevel.getH()/2, true, true);
     constexpr int MARGIN = 50;
     const int bestPercentY = m_EnterLevel.getY() + m_EnterLevel.getH() + MARGIN;
-    Text::renderText(
-        m_Renderer, 
-        "Normal: " + std::to_string(m_BestLevelPercentages[m_Game->getLevelSelected()]) + "%",
-        m_Game->getWidth()/2, 
-        bestPercentY, 
-        true, 
-        false,
-        0.5f
-    );
-    Text::renderText(
-        m_Renderer, 
-        "Practice: " + std::to_string(m_BestPracticePercentages[m_Game->getLevelSelected()]) + "%",
-        m_Game->getWidth()/2, 
-        bestPercentY + 2*MARGIN, 
-        true, 
-        false,
-        0.5f
-    );
+    Text::renderTexture(m_Renderer, m_BestPercentTexture, m_Game->getWidth()/2, bestPercentY, true, false, 0.5f);
+    Text::renderTexture(m_Renderer, m_BestPracticePercentTexture, m_Game->getWidth()/2, bestPercentY + 2*MARGIN, true, false, 0.5f);
+}
+
+int LevelSelect::getBestPercentage() {
+    return m_BestLevelPercentages[m_LevelSelected];
+}
+
+void LevelSelect::setBestPercentage(int value) {
+    m_BestLevelPercentages[m_LevelSelected] = value;
+    updateBestPercentTexture();
+}
+
+int LevelSelect::getBestPracticePercentage() {
+    return m_BestPracticePercentages[m_LevelSelected];
+}
+
+void LevelSelect::setBestPracticePercentage(int value) {
+    m_BestPracticePercentages[m_LevelSelected] = value;
+    updateBestPracticePercentTexture();
+}
+
+void LevelSelect::updateLevelNameTexture() {
+    SDL_DestroyTexture(m_LevelNameTexture);
+    m_LevelNameTexture = Text::createTexture(m_Renderer, m_LevelStrings[m_LevelSelected]);
+}
+
+void LevelSelect::updateBestPercentTexture() {
+    SDL_DestroyTexture(m_BestPercentTexture);
+    m_BestPercentTexture = Text::createTexture(m_Renderer, "Normal: " + std::to_string(m_BestLevelPercentages[m_LevelSelected]) + "%");
+}
+
+void LevelSelect::updateBestPracticePercentTexture() {
+    SDL_DestroyTexture(m_BestPracticePercentTexture);
+    m_BestPracticePercentTexture = Text::createTexture(m_Renderer, "Practice: " + std::to_string(m_BestPracticePercentages[m_LevelSelected]) + "%");
 }

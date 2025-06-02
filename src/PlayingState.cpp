@@ -39,6 +39,9 @@ void PlayingState::init(Game *game) {
     if (m_ExitPracticeTexture == nullptr) {
         std::cerr << "Failed to load exitPractice.png! " << SDL_GetError() << std::endl;
     } 
+    m_NewBestTexture = Text::createTexture(m_Renderer, "New Best! 0%");
+    m_LevelPercentTexture = Text::createTexture(m_Renderer, "0.00%");
+    m_LevelCompleteTextTexture = Text::createTexture(m_Renderer, "Your did it!");
     m_LevelCompleteSound = Mix_LoadWAV("res/sfx/levelComplete.wav");
     if (m_LevelCompleteSound == nullptr) {
         std::cerr << "Failed to load levelComplete.wav! " << SDL_GetError() << std::endl;
@@ -78,6 +81,9 @@ void PlayingState::destroy() {
     SDL_DestroyTexture(m_ExitTexture);
     SDL_DestroyTexture(m_EnterPracticeTexture);
     SDL_DestroyTexture(m_ExitPracticeTexture);
+    SDL_DestroyTexture(m_NewBestTexture);
+    SDL_DestroyTexture(m_LevelPercentTexture);
+    SDL_DestroyTexture(m_LevelCompleteTextTexture);
     Mix_FreeChunk(m_LevelCompleteSound);
     Mix_FreeMusic(m_PracticeMusic);
 }
@@ -111,8 +117,13 @@ void PlayingState::exit() {
 }
 
 void PlayingState::update(float deltaTime) {
-    m_LevelPercent = 10000 * m_Player.getPosition().x / m_LevelEndBlocksX;
-    m_LevelPercent = std::clamp(m_LevelPercent, 0, 10000);
+    int newLevelPercent = 10000 * m_Player.getPosition().x / m_LevelEndBlocksX;
+    newLevelPercent = std::clamp(newLevelPercent, 0, 10000);
+    // optimization so it doesn't recreate text texture every frame
+    if (newLevelPercent != m_LevelPercent) {
+        m_LevelPercent = newLevelPercent;
+        updateLevelPercentTexture();
+    }
 
     const bool isEscapeHeld = m_Game->isEscapeHeld();
     const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
@@ -161,24 +172,25 @@ void PlayingState::update(float deltaTime) {
     m_IsPlayerDead = m_Player.isDead();
 
     if (playerJustDied) {
-        if (!m_IsInPractice) {
-            int currentBest = LevelSelect::get()->getBestPercentage(m_Game->getLevelSelected());
+        if (m_IsInPractice) {
+            int currentBest = LevelSelect::get()->getBestPracticePercentage();
             int possibleBest = m_LevelPercent / 100;
             if (possibleBest > currentBest) {
-                LevelSelect::get()->setBestPercentage(m_Game->getLevelSelected(), possibleBest);
+                LevelSelect::get()->setBestPracticePercentage(possibleBest);
                 m_JustSetNewBest = true;
             }
         } else {
-            int currentBest = LevelSelect::get()->getBestPracticePercentage(m_Game->getLevelSelected());
+            int currentBest = LevelSelect::get()->getBestPercentage();
             int possibleBest = m_LevelPercent / 100;
             if (possibleBest > currentBest) {
-                LevelSelect::get()->setBestPracticePercentage(m_Game->getLevelSelected(), possibleBest);
+                LevelSelect::get()->setBestPercentage(possibleBest);
                 m_JustSetNewBest = true;
+                updateNewBestTexture();
             }
         }
     }
     if (!PlayingState::get()->isInPractice() && (!m_IsSongPlaying || playerJustRevived)) {
-        Mix_PlayMusic(m_Songs[m_Game->getLevelSelected()], 0);
+        Mix_PlayMusic(m_Songs[LevelSelect::get()->getLevelSelected()], 0);
         m_JustSetNewBest = false;
         m_IsSongPlaying = true;
     }
@@ -212,6 +224,7 @@ void PlayingState::updatePause(bool isEscapeReleased) {
             resume();
             Mix_HaltMusic();
             m_IsSongPlaying = false;
+            updateLevelCompleteTextTexture();
         }
     } else {
         m_EnterPracticeButton.update();
@@ -222,6 +235,7 @@ void PlayingState::updatePause(bool isEscapeReleased) {
             resume();
             Mix_HaltMusic();
             Mix_PlayMusic(m_PracticeMusic, -1);
+            updateLevelCompleteTextTexture();
         }
     }
 }
@@ -239,9 +253,9 @@ void PlayingState::updateEndLevel(float deltaTime) {
         m_ExitButton.setPosition(m_Game->getWidth()/2, m_Game->getHeight()/2, true, true);
         Mix_PlayChannel(-1, m_LevelCompleteSound, 0);
         if (m_IsInPractice) {
-            LevelSelect::get()->setBestPracticePercentage(m_Game->getLevelSelected(), 100);
+            LevelSelect::get()->setBestPracticePercentage(100);
         } else {
-            LevelSelect::get()->setBestPercentage(m_Game->getLevelSelected(), 100);
+            LevelSelect::get()->setBestPercentage(100);
         }
     }
 }
@@ -258,24 +272,9 @@ void PlayingState::render() {
     m_ObjectManager.render();
     renderEndBlocks();
     if (m_JustSetNewBest && !m_IsInPractice) {
-        Text::renderText(
-            m_Renderer, 
-            "New Best! " + std::to_string(m_LevelPercent/100) + "%", 
-            m_Game->getWidth()/2, 
-            m_Game->getHeight()/2, 
-            true, 
-            true
-        );
+        Text::renderTexture(m_Renderer, m_NewBestTexture, m_Game->getWidth()/2, m_Game->getHeight()/2, true, true);
     }
-    Text::renderText(
-        m_Renderer, 
-        std::to_string(m_LevelPercent/100) + "." + std::to_string(m_LevelPercent % 100) + "%", 
-        m_Game->getWidth()/2, 
-        10, 
-        true,
-        false,
-        0.5f
-    );
+    Text::renderTexture(m_Renderer, m_LevelPercentTexture, m_Game->getWidth()/2, 10, true, false, 0.5f);
     if (m_IsPaused) {
         renderPause();
     }
@@ -289,8 +288,7 @@ void PlayingState::renderPause() {
     SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 100);
     SDL_SetRenderDrawBlendMode(m_Renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderFillRect(m_Renderer, &screen);
-    const std::string levelName = m_Game->getLevelStrings()[m_Game->getLevelSelected()];
-    Text::renderText(m_Renderer, levelName, m_Game->getWidth()/2, MARGIN, true, true);
+    Text::renderTexture(m_Renderer, LevelSelect::get()->getLevelNameTexture(), m_Game->getWidth()/2, MARGIN, true, true);
     if (m_IsInPractice) {
         m_ExitPracticeButton.render();
     } else {
@@ -307,7 +305,7 @@ void PlayingState::renderEndBlocks() {
         m_Game->TILE_SIZE,
         m_Game->TILE_SIZE
     };
-    // TODO: Fix magic number
+    // TODO: Fix magic numbers
     for (int i = 0; i < 47; i++) {
         SDL_RenderCopyEx(m_Renderer, m_LevelEndBlockTexture, NULL, &dst, -90.0, NULL, SDL_FLIP_NONE);
         dst.y += m_Game->TILE_SIZE;
@@ -315,8 +313,7 @@ void PlayingState::renderEndBlocks() {
 }
 
 void PlayingState::renderLevelCompleteMenu() {
-    const std::string text = m_IsInPractice ? "Practice done" : "Your did it!";
-    Text::renderText(m_Renderer, text, m_Game->getWidth()/2, m_Game->getHeight()/4, true, true);
+    Text::renderTexture(m_Renderer, m_LevelCompleteTextTexture, m_Game->getWidth()/2, m_Game->getHeight()/4, true, true);
     m_ExitButton.render();
 }
 
@@ -339,4 +336,26 @@ void PlayingState::attemptResetTimer() {
         return;
     }
     m_Timer = 60;
+}
+
+void PlayingState::updateNewBestTexture() {
+    SDL_DestroyTexture(m_NewBestTexture);
+    m_NewBestTexture = Text::createTexture(m_Renderer, "New Best! " + std::to_string(m_LevelPercent/100) + "%");
+}
+
+void PlayingState::updateLevelPercentTexture() {
+    SDL_DestroyTexture(m_LevelPercentTexture);
+    m_LevelPercentTexture = Text::createTexture(
+        m_Renderer, 
+        std::to_string(m_LevelPercent/100) + "." + std::to_string(m_LevelPercent % 100) + "%"
+    );
+}
+
+void PlayingState::updateLevelCompleteTextTexture() {
+    SDL_DestroyTexture(m_LevelCompleteTextTexture);
+    if (m_IsInPractice) {
+        m_LevelCompleteTextTexture = Text::createTexture(m_Renderer, "Practice done");
+    } else {
+        m_LevelCompleteTextTexture = Text::createTexture(m_Renderer, "Your did it!");
+    }
 }

@@ -30,6 +30,9 @@ private:
     SDL_Texture *m_ExitTexture;
     SDL_Texture *m_EnterPracticeTexture;
     SDL_Texture *m_ExitPracticeTexture;
+    SDL_Texture *m_NewBestTexture;
+    SDL_Texture *m_LevelPercentTexture;
+    SDL_Texture *m_LevelCompleteTextTexture;
     Mix_Chunk *m_LevelCompleteSound;
     Mix_Music *m_PracticeMusic;
     static constexpr int MARGIN = 50;
@@ -64,4 +67,7 @@ private:
     void resume();
     void resetMusic();
     void attemptResetTimer();
+    void updateNewBestTexture();
+    void updateLevelPercentTexture();
+    void updateLevelCompleteTextTexture();
 };

@@ -56,10 +56,9 @@ int Game::init() {
     m_Width = (static_cast<float>(m_ScreenWidth) / static_cast<float>(m_ScreenHeight)) * m_Height;
     SDL_RenderSetLogicalSize(m_Renderer, m_Width, m_Height); // render a WIDTHx1080 screen and scale it for the actual window
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");   // anti-aliasing
-    Text::init();
 
-    m_LevelStrings.push_back("Test level1");
-    m_LevelStrings.push_back("Test Level2");
+    Text::init();
+    m_FPSTexture = Text::createTexture(m_Renderer, "FPS: " + std::to_string(m_CurrentFPS));
 
     m_Background.init(this, 0, 0, 255);
     m_Background.setMoving(true);
@@ -85,6 +84,7 @@ void Game::quit() {
     PlayingState::get()->destroy();
     SDL_DestroyRenderer(m_Renderer);
     SDL_DestroyWindow(m_Window);
+    SDL_DestroyTexture(m_FPSTexture);
     Mix_FreeMusic(m_MenuLoop);
     Text::destroy();
     TTF_Quit();
@@ -146,6 +146,8 @@ void Game::mainLoop() {
         m_CurrentFPS = m_Frames;
         m_Frames = 0;
         m_Timer -= 1000;
+        SDL_DestroyTexture(m_FPSTexture);
+        m_FPSTexture = Text::createTexture(m_Renderer, "FPS: " + std::to_string(m_CurrentFPS));
     }
 }
 #endif
@@ -159,7 +161,7 @@ void Game::render() {
     m_Background.render();
     m_Ground.render();
     m_GameStates.top()->render();
-    Text::renderText(m_Renderer, ("FPS: " + std::to_string(m_CurrentFPS)).c_str(), 20, 20, false, false, 0.5f);
+    Text::renderTexture(m_Renderer, m_FPSTexture, 20, 20, false, false, 0.5f);
     SDL_RenderPresent(m_Renderer);
 }
 
