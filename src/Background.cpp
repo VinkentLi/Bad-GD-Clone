@@ -10,10 +10,17 @@ void Background::init(Game* game, uint8_t r, uint8_t g, uint8_t b) {
     m_Blue = b;
     m_Renderer = m_Game->getRenderer();
     m_BGTexture = IMG_LoadTexture(m_Renderer, "res/gfx/background.png");
+    if (m_BGTexture == nullptr) {
+        std::cerr << "Failed to load background.png! " << SDL_GetError() << std::endl;
+    }
     m_EmptyBG = IMG_LoadTexture(m_Renderer, "res/gfx/emptyBG.png");
+    if (m_EmptyBG == nullptr) {
+        std::cerr << "Failed to load emptyBG.png! " << SDL_GetError() << std::endl;
+    }
+    SDL_QueryTexture(m_BGTexture, NULL, NULL, &m_BackgroundSize, NULL);
     SDL_SetTextureColorMod(m_BGTexture, r, g, b);
     SDL_SetTextureColorMod(m_EmptyBG, r, g, b);
-    m_BGCount = m_Game->getWidth() / m_Game->BACKGROUND_SIZE + 2;
+    m_BGCount = m_Game->getWidth() / m_BackgroundSize + 2;
     m_Position = {0, 0};
     m_IsMoving = false;
     m_IsFading = false;
@@ -50,8 +57,8 @@ void Background::setMoving(bool value) {
 void Background::update(float delta) {
     if (m_IsMoving) {
         m_Position.x -= 2 * delta;
-        if (m_Position.x < -m_Game->BACKGROUND_SIZE) {
-            m_Position.x += m_Game->BACKGROUND_SIZE;
+        if (m_Position.x < -m_BackgroundSize) {
+            m_Position.x += m_BackgroundSize;
         }
     }
     if (m_IsFading) {
@@ -76,13 +83,13 @@ void Background::render() {
         const int height = m_Game->getHeight();
         const SDL_FPoint cameraPosition = m_Game->getCameraPosition();
         SDL_FRect dst = { 
-            m_Position.x + i * m_Game->BACKGROUND_SIZE,
-            m_Position.y - (m_Game->BACKGROUND_SIZE - height) - cameraPosition.y/10,
-            m_Game->BACKGROUND_SIZE,
-            m_Game->BACKGROUND_SIZE
+            m_Position.x + i * m_BackgroundSize,
+            m_Position.y - (m_BackgroundSize - height) - cameraPosition.y/10,
+            static_cast<float>(m_BackgroundSize),
+            static_cast<float>(m_BackgroundSize)
         };
         if (m_Game->getState()->getName() == "LevelSelect") {
-            dst.y += (m_Game->BACKGROUND_SIZE - height);
+            dst.y += (m_BackgroundSize - height);
             SDL_RenderCopyExF(m_Renderer, m_EmptyBG, NULL, &dst, 0, NULL, SDL_FLIP_VERTICAL);
             continue;
         }

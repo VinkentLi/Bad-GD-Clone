@@ -12,8 +12,7 @@
 class Game {
 public:
     constexpr static int LEVEL_COUNT = 2;
-    constexpr static int TILE_SIZE = 100;
-    constexpr static int BACKGROUND_SIZE = 2048;
+    constexpr static int TILE_SIZE = 120;
     Game() {}
     ~Game() = default;
     Game(const Game &) = delete;
@@ -75,7 +74,7 @@ public:
     bool m_IsZHeld = false;
     bool m_IsXHeld = false;
     int m_Width;
-    int m_Height = 1080;
+    int m_Height = 1296;
     int m_ScreenWidth;
     int m_ScreenHeight;
     int m_Frames = 0;

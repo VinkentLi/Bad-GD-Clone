@@ -1,5 +1,6 @@
 #include "Ground.h"
 #include "Game.h"
+#include <iostream>
 #include <SDL_image.h>
 
 void Ground::init(Game *game, uint8_t r, uint8_t g, uint8_t b) {
@@ -9,10 +10,14 @@ void Ground::init(Game *game, uint8_t r, uint8_t g, uint8_t b) {
     m_Blue = b;
     m_Renderer = m_Game->getRenderer();
     m_GroundTexture = IMG_LoadTexture(m_Renderer, "res/gfx/ground.png");
+    if (m_GroundTexture == nullptr) {
+        std::cerr << "Failed to load ground.png! " << SDL_GetError() << std::endl;
+    }
     SDL_SetTextureColorMod(m_GroundTexture, r, g, b);
-    m_SquareCount = m_Game->getWidth() / GROUND_SIZE + 2;
-    m_Source = {0, 0, GROUND_SIZE, GROUND_SIZE};
-    m_Position = {0, m_Game->getHeight() - 300.0f};
+    SDL_QueryTexture(m_GroundTexture, NULL, NULL, &m_GroundSize, NULL);
+    m_SquareCount = m_Game->getWidth() / m_GroundSize + 2;
+    m_Source = {0, 0, m_GroundSize, m_GroundSize};
+    m_Position = {0, static_cast<float>(m_Game->getHeight() - 3*m_Game->TILE_SIZE)};
     m_ShouldRenderOnTop = false;
 }
 
@@ -37,8 +42,8 @@ void Ground::resetPosition() {
 }
 
 void Ground::update() {
-    if (m_Position.x < -GROUND_SIZE) {
-        m_Position.x += GROUND_SIZE;
+    if (m_Position.x < -m_GroundSize) {
+        m_Position.x += m_GroundSize;
     }
 }
 
@@ -46,13 +51,13 @@ void Ground::render() {
     for (int i = 0; i < m_SquareCount; i++) {
         const SDL_FPoint cameraPosition = m_Game->getCameraPosition();
         SDL_FRect dst = {
-            m_Position.x + i * GROUND_SIZE - cameraPosition.x,
+            m_Position.x + i * m_GroundSize - cameraPosition.x,
             m_Position.y - cameraPosition.y, 
-            GROUND_SIZE, 
-            GROUND_SIZE
+            static_cast<float>(m_GroundSize), 
+            static_cast<float>(m_GroundSize)
         };
-        while (dst.x + GROUND_SIZE < 0) {
-            dst.x += m_SquareCount * GROUND_SIZE;
+        while (dst.x + m_GroundSize < 0) {
+            dst.x += m_SquareCount * m_GroundSize;
         }
         SDL_RenderCopyF(m_Renderer, m_GroundTexture, &m_Source, &dst);
         if (m_ShouldRenderOnTop) {

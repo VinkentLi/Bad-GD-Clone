@@ -18,6 +18,7 @@ public:
 
 private:
     Game *m_Game;
+    int m_BackgroundSize;
     int m_BGCount;
     float m_Red;
     float m_Green;

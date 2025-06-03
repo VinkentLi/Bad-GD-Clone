@@ -16,14 +16,14 @@ void ObjectManager::init(Game *game) {
                        {"pUPSD", ObjectType::UPSIDE_DOWN_PORTAL},
                        {"pRGLR", ObjectType::NORMAL_PORTAL} };
     
-    m_TypeToHitbox = { {ObjectType::BLOCK,              {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
-                       {ObjectType::HAZARD,             {36, 31, 27               , 50                 }},
-                       {ObjectType::ORB,                {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
-                       {ObjectType::PAD,                {10, 90, 77               , 10                 }},
-                       {ObjectType::SHIP_PORTAL,        {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {ObjectType::CUBE_PORTAL,        {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {ObjectType::UPSIDE_DOWN_PORTAL, {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {ObjectType::NORMAL_PORTAL,      {0 , 0 , m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}} };
+    m_TypeToHitbox = { {ObjectType::BLOCK,              {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
+                       {ObjectType::HAZARD,             {48, 36, 24               , 48                 }},
+                       {ObjectType::ORB,                {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
+                       {ObjectType::PAD,                {10, 77, 100              , 16             }},
+                       {ObjectType::SHIP_PORTAL,        {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
+                       {ObjectType::CUBE_PORTAL,        {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
+                       {ObjectType::UPSIDE_DOWN_PORTAL, {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
+                       {ObjectType::NORMAL_PORTAL,      {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}} };
 
     loadTextures();
 }

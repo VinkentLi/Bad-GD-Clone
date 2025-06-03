@@ -64,11 +64,11 @@ void TitleScreen::update(float deltaTime) {
     }
     Ground &ground = m_Game->getGround();
     Background &background = m_Game->getBackground();
-    ground.setPosition({ground.getPosition().x, m_Game->getHeight() - 300.0f});
+    ground.setPosition({ground.getPosition().x, static_cast<float>(m_Game->getHeight() - 3*m_Game->TILE_SIZE)});
     background.setMoving(true);
     background.update(deltaTime);
     ground.update();
-    ground.move(-17.31f, deltaTime);
+    ground.move(-20.772f, deltaTime);
 
     const bool isSpaceHeld = m_Game->isSpaceHeld();
     const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;

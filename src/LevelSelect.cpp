@@ -82,9 +82,9 @@ void LevelSelect::init(Game *game) {
     m_EnterLevel.init(
         m_Game,
         width/2,
-        height/2 - 350,
-        1000,
-        300,
+        240,
+        1200,
+        360,
         {.r=0, .g=0, .b=0, .a=100},
         true
     );
@@ -125,7 +125,7 @@ void LevelSelect::update(float deltaTime) {
     }
     Background &background = m_Game->getBackground();
     Ground &ground = m_Game->getGround();
-    ground.setPosition({0, m_Game->getHeight() - 200.0f});
+    ground.setPosition({0, static_cast<float>(m_Game->getHeight() - 2*m_Game->TILE_SIZE)});
     ground.setOnTop(false);
     background.setMoving(false);
 

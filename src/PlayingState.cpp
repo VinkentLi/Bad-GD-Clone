@@ -149,7 +149,7 @@ void PlayingState::update(float deltaTime) {
     Background &background = m_Game->getBackground();
     Ground &ground = m_Game->getGround();
     // TODO: fix magic number
-    ground.setPosition({ground.getPosition().x, m_Game->getHeight() - 300.0f});
+    ground.setPosition({ground.getPosition().x, static_cast<float>(m_Game->getHeight() - 3*m_Game->TILE_SIZE)});
     background.update(deltaTime);
 
     if (m_Game->getCameraPosition().x != 0) {

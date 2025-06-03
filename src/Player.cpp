@@ -18,6 +18,7 @@ void Player::init(Game *game) {
     if (m_ShipTexture == nullptr) {
         std::cerr << "Failed to load ship.png! " << SDL_GetError() << std::endl;
     }
+    SDL_QueryTexture(m_ShipTexture, NULL, NULL, &m_ShipWidth, &m_ShipHeight);
     m_CheckpointTexture = IMG_LoadTexture(m_Renderer, "res/gfx/checkpoint.png");
     if (m_CheckpointTexture == nullptr) {
         std::cerr << "Failed to load checkpoint.png! " << SDL_GetError() << std::endl;
@@ -31,11 +32,11 @@ void Player::init(Game *game) {
 void Player::reset() {
     m_Position = {-m_Game->TILE_SIZE, static_cast<float>(m_Game->getHeight() - 4*m_Game->TILE_SIZE)};
     m_PreviousPosition = m_Position;
-    m_XVelocity = 17.31;
+    m_XVelocity = 20.772;
     m_YVelocity = 0;
-    m_JumpStrength = -37.266667;
-    m_PadStrength = -53.333333;
-    m_Gravity = 2.88;
+    m_JumpStrength = -44.72;
+    m_PadStrength = -64;
+    m_Gravity = 3.456;
     m_RotationAdder = 6.92308;
     m_Rotation = 0;
     m_TargetRotation = 0;
@@ -107,7 +108,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
             m_IsGrounded = true;
             if (!PlayingState::get()->isInPractice() || m_Checkpoints.empty()) {
                 m_HazardHitbox.x = -m_Game->TILE_SIZE;
-                m_HazardHitbox.y = m_Game->getHeight() - 300.0f - m_Game->TILE_SIZE;
+                m_HazardHitbox.y = m_Game->getHeight() - 4 * m_Game->TILE_SIZE;
                 m_Game->setCameraPosition({0, 0});
                 m_Rotation = 0;
                 m_TargetRotation = 0;
@@ -164,19 +165,18 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
         }
         break;
     case Gamemode::SHIP: {
-        // i stole this from https://github.com/Open-GD/OpenGD
-        float shipAccel = 0.8f;
+        // help from https://github.com/Open-GD/OpenGD
+        float shipAccel = m_Gravity * 0.32;
         if (m_IsMouseHeld) {
-            shipAccel = -1.0f;
-        } else if (m_YVelocity <= - 5*m_Gravity) {
-            shipAccel = 1.2f;
+            shipAccel *= -1.25;
+            if (m_YVelocity > -5*m_Gravity) {
+                shipAccel *= 1.25;
+            }
+        } else if (m_YVelocity <= -5*m_Gravity) {
+            shipAccel *= 1.5;
         }
-        float extraBoost = 0.4f;
-        if (m_IsMouseHeld && m_YVelocity > -5*m_Gravity) {
-            extraBoost = 0.5f;
-        }
-        m_YVelocity += m_Gravity * delta * shipAccel * extraBoost;
-        m_YVelocity = std::clamp(m_YVelocity, -26.666667, 21.333333);
+        m_YVelocity += shipAccel * delta;
+        m_YVelocity = std::clamp(m_YVelocity, -32.0, 25.6);
         break;
     }
     }
@@ -201,7 +201,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
     }
     const static int CAMERA_SCROLL = m_Game->TILE_SIZE * 6;
     const static int CAMERA_UP_SCROLL = m_Game->getHeight() / 4;
-    const static int CAMERA_DOWN_SCROLL = m_Game->getHeight() - 400;
+    const static int CAMERA_DOWN_SCROLL = m_Game->getHeight() - 4*m_Game->TILE_SIZE;
     
     if (m_Position.x - m_Game->getCameraPosition().x > CAMERA_SCROLL) {
         m_Game->setCameraX(m_Position.x - CAMERA_SCROLL);
@@ -227,8 +227,8 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
 void Player::handleCollisions(std::vector<GameObject> &objects) {   
     switch (m_Gamemode) {
     case Gamemode::CUBE:    
-        if (m_HazardHitbox.y > m_Game->getHeight() - 300 - m_Game->TILE_SIZE) {
-            m_HazardHitbox.y = m_Game->getHeight() - 300 - m_Game->TILE_SIZE;
+        if (m_HazardHitbox.y > m_Game->getHeight() - 4 * m_Game->TILE_SIZE) {
+            m_HazardHitbox.y = m_Game->getHeight() - 4 * m_Game->TILE_SIZE;
             m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
             m_IsGrounded = true;
             m_YVelocity = 0;
@@ -323,7 +323,7 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                     // why does gd do this lmao
                     (std::round(object.getPos().y/m_Game->TILE_SIZE)-3)*m_Game->TILE_SIZE - BOUNDS_HEIGHT,
                     -10000.0f, 
-                    -260.0f
+                    static_cast<float>(-3*m_Game->TILE_SIZE + BOUNDS_HEIGHT)
                 ));
                 m_Bounds.first = m_Game->getCameraPosition().y + BOUNDS_HEIGHT;
                 m_Bounds.second = m_Bounds.first + 10 * m_Game->TILE_SIZE;
@@ -369,36 +369,32 @@ void Player::render() {
         break;
     }
     case Gamemode::SHIP: {
+        int xDisplacement = (m_ShipWidth - m_Game->TILE_SIZE)/2;
+        float cubeX = m_Position.x - m_Game->getCameraPosition().x + m_Game->TILE_SIZE*6/25;
+        float cubeY = m_Position.y - m_Game->getCameraPosition().y + m_Game->TILE_SIZE/20;
+        float shipX = m_Position.x - m_Game->getCameraPosition().x - xDisplacement;
+        float shipY = m_Position.y - m_Game->getCameraPosition().y + m_Game->TILE_SIZE - m_ShipHeight;
+        if (m_GravityMultiplier == -1) {
+            cubeY = m_Position.y - m_Game->getCameraPosition().y + m_Game->TILE_SIZE*2/5;
+            shipY = m_Position.y - m_Game->getCameraPosition().y;
+        }
+        SDL_FRect cubeDST = {
+            cubeX,
+            cubeY, 
+            m_Game->TILE_SIZE*14/25, 
+            m_Game->TILE_SIZE*14/25
+        };
+        SDL_FRect shipDST = {
+            shipX, 
+            shipY, 
+            static_cast<float>(m_ShipWidth), 
+            static_cast<float>(m_ShipHeight)
+        };
+        SDL_FPoint cubeCenter = {shipDST.x + shipDST.w / 2 - cubeDST.x, shipDST.y + shipDST.h / 2 - cubeDST.y};
         if (m_GravityMultiplier == 1) {
-            SDL_FRect cubeDST = {
-                m_Position.x - m_Game->getCameraPosition().x + m_Game->TILE_SIZE / 4,
-                m_Position.y - m_Game->getCameraPosition().y, 
-                m_Game->TILE_SIZE * 3 / 5, 
-                m_Game->TILE_SIZE * 3 / 5
-            };
-            SDL_FRect shipDST = {
-                m_Position.x - m_Game->getCameraPosition().x - 14, 
-                m_Position.y - m_Game->getCameraPosition().y + 22, 
-                132, 
-                78
-            };
-            SDL_FPoint cubeCenter = {shipDST.x + shipDST.w / 2 - cubeDST.x, shipDST.y + shipDST.h / 2 - cubeDST.y};
             SDL_RenderCopyExF(m_Renderer, m_PlayerTexture, NULL, &cubeDST, m_Rotation, &cubeCenter, SDL_FLIP_NONE);
             SDL_RenderCopyExF(m_Renderer, m_ShipTexture, NULL, &shipDST, m_Rotation, NULL, SDL_FLIP_NONE);
         } else {
-            SDL_FRect cubeDST = {
-                m_Position.x - m_Game->getCameraPosition().x + m_Game->TILE_SIZE / 4,
-                m_Position.y - m_Game->getCameraPosition().y + m_Game->TILE_SIZE * 2 / 5, 
-                m_Game->TILE_SIZE * 3 / 5, 
-                m_Game->TILE_SIZE * 3 / 5
-            };
-            SDL_FRect shipDST = {
-                m_Position.x - m_Game->getCameraPosition().x - 14, 
-                m_Position.y - m_Game->getCameraPosition().y, 
-                132, 
-                78
-            };
-            SDL_FPoint cubeCenter = {shipDST.x + shipDST.w / 2 - cubeDST.x, shipDST.y + shipDST.h / 2 - cubeDST.y};
             SDL_RenderCopyExF(m_Renderer, m_PlayerTexture, NULL, &cubeDST, m_Rotation, &cubeCenter, SDL_FLIP_VERTICAL);
             SDL_RenderCopyExF(m_Renderer, m_ShipTexture, NULL, &shipDST, m_Rotation, NULL, SDL_FLIP_VERTICAL);
         }
@@ -406,14 +402,16 @@ void Player::render() {
     }
     }
 
-    // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 125);
-    // SDL_FRect temp = hazardHitbox;
-    // temp.x -= cameraPos.x;
-    // SDL_RenderFillRectF(renderer, &temp);
-    // SDL_SetRenderDrawColor(renderer, 0, 0, 255, 125);
-    // SDL_FRect temp2 = solidHitbox;
-    // temp2.x -= cameraPos.x;
-    // SDL_RenderFillRectF(renderer, &temp2);
+    SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 125);
+    SDL_FRect temp = m_HazardHitbox;
+    temp.x -= m_Game->getCameraPosition().x;
+    temp.y -= m_Game->getCameraPosition().y;
+    SDL_RenderFillRectF(m_Renderer, &temp);
+    SDL_SetRenderDrawColor(m_Renderer, 0, 0, 255, 125);
+    SDL_FRect temp2 = m_SolidHitbox;
+    temp2.x -= m_Game->getCameraPosition().x;
+    temp2.y -= m_Game->getCameraPosition().y;
+    SDL_RenderFillRectF(m_Renderer, &temp2);
 }
 
 void Player::die() {

@@ -7,8 +7,8 @@ TTF_Font *font = nullptr;
 TTF_Font *fontOutline = nullptr;
 
 void init() {
-    font = TTF_OpenFont("res/fonts/pusab.ttf", 100);
-    fontOutline = TTF_OpenFont("res/fonts/pusab.ttf", 100);
+    font = TTF_OpenFont("res/fonts/pusab.ttf", 120);
+    fontOutline = TTF_OpenFont("res/fonts/pusab.ttf", 120);
     TTF_SetFontOutline(fontOutline, OUTLINE_SIZE);
 }
 

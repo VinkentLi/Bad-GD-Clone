@@ -54,7 +54,7 @@ int Game::init() {
 
     m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED);
     m_Width = (static_cast<float>(m_ScreenWidth) / static_cast<float>(m_ScreenHeight)) * m_Height;
-    SDL_RenderSetLogicalSize(m_Renderer, m_Width, m_Height); // render a WIDTHx1080 screen and scale it for the actual window
+    SDL_RenderSetLogicalSize(m_Renderer, m_Width, m_Height); // render a WIDTHx1296 screen and scale it for the actual window
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");   // anti-aliasing
 
     Text::init();

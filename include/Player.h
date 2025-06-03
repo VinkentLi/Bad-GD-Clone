@@ -46,6 +46,8 @@ private:
     SDL_Renderer *m_Renderer;
     SDL_Texture *m_PlayerTexture;
     SDL_Texture *m_ShipTexture;
+    int m_ShipWidth;
+    int m_ShipHeight;
     SDL_Texture *m_CheckpointTexture;
     Mix_Chunk *m_DeathSound;
     SDL_FPoint m_Position;

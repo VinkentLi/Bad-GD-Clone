@@ -18,8 +18,8 @@ public:
     void setOnTop(bool value);
 
 private:
-    constexpr static int GROUND_SIZE = 432;
     Game *m_Game;
+    int m_GroundSize;
     int m_SquareCount;
     uint8_t m_Red;
     uint8_t m_Green;
