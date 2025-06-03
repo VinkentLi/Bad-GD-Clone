@@ -335,6 +335,8 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                     m_YVelocity /= 2;
                 }
                 break;
+            default:
+                break;
             }
         }
     }

@@ -5,6 +5,13 @@
 #include <SDL.h>
 #include "GameObject.h"
 
+struct ObjectData {
+    ObjectType type;
+    SDL_FRect hitbox;
+    SDL_FPoint offset;
+    SDL_Texture *texture;
+};
+
 class Game;
 
 class ObjectManager {
@@ -26,9 +33,7 @@ public:
 private:
     Game *m_Game;
     std::vector<GameObject> m_Objects;
-    std::map<std::string, ObjectType> m_StringToType;
-    std::map<std::string, SDL_Texture *> m_StringToTexture;
-    std::map<ObjectType, SDL_FRect> m_TypeToHitbox;
+    std::map<int, ObjectData> m_IDToObjectData;
     int m_FurthestX;
 };
 

@@ -11,7 +11,10 @@ enum class ObjectType {
     SHIP_PORTAL,
     CUBE_PORTAL,
     UPSIDE_DOWN_PORTAL,
-    NORMAL_PORTAL
+    NORMAL_PORTAL,
+    DECO,
+    BG_TRIGGER,
+    G_TRIGGER
 };
 
 class GameObject {

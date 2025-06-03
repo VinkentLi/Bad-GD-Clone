@@ -7,23 +7,86 @@
 
 void ObjectManager::init(Game *game) {
     m_Game = game;
-    m_StringToType = { {"BLOCK", ObjectType::BLOCK},
-                       {"SPIKE", ObjectType::HAZARD},
-                       {"ywORB", ObjectType::ORB},
-                       {"ywPAD", ObjectType::PAD},
-                       {"pSHIP", ObjectType::SHIP_PORTAL},
-                       {"pCUBE", ObjectType::CUBE_PORTAL},
-                       {"pUPSD", ObjectType::UPSIDE_DOWN_PORTAL},
-                       {"pRGLR", ObjectType::NORMAL_PORTAL} };
-    
-    m_TypeToHitbox = { {ObjectType::BLOCK,              {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
-                       {ObjectType::HAZARD,             {48, 36, 24               , 48                 }},
-                       {ObjectType::ORB,                {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE  }},
-                       {ObjectType::PAD,                {10, 77, 100              , 16             }},
-                       {ObjectType::SHIP_PORTAL,        {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {ObjectType::CUBE_PORTAL,        {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {ObjectType::UPSIDE_DOWN_PORTAL, {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}},
-                       {ObjectType::NORMAL_PORTAL,      {0,  0,  m_Game->TILE_SIZE, m_Game->TILE_SIZE*3}} };
+    SDL_Renderer *renderer = m_Game->getRenderer();
+    for (int i = 1; i <= 7; i++) {
+        m_IDToObjectData[i].type = ObjectType::BLOCK;
+        m_IDToObjectData[i].hitbox = { 0, 0, static_cast<float>(m_Game->TILE_SIZE), static_cast<float>(m_Game->TILE_SIZE) };
+        m_IDToObjectData[i].offset = {0, 0};
+    }
+    m_IDToObjectData[8] = {
+        ObjectType::HAZARD,
+        { 48, 24, 24, 48 },
+        { 0, 0 },
+        nullptr
+    };
+    m_IDToObjectData[9] = {
+        ObjectType::HAZARD,
+        { 42, 30.4, 36, 43.2 },
+        { 0, m_Game->TILE_SIZE/2 },
+        nullptr
+    };
+    m_IDToObjectData[10] = {
+        ObjectType::NORMAL_PORTAL,
+        { 10, -4, 100, 300 },
+        { 37, 34 },
+        nullptr
+    };
+    m_IDToObjectData[11] = m_IDToObjectData[10];
+    m_IDToObjectData[11].type = ObjectType::UPSIDE_DOWN_PORTAL;
+    m_IDToObjectData[12] = {
+        ObjectType::CUBE_PORTAL,
+        { -4, -4, 136, 344 },
+        { -6, 12 },
+        nullptr
+    };
+    m_IDToObjectData[13] = m_IDToObjectData[12];
+    m_IDToObjectData[13].type = ObjectType::SHIP_PORTAL;
+    m_IDToObjectData[15] = {
+        ObjectType::DECO,
+        { 0, 0, 0, 0 },
+        { 48, 72 },
+        nullptr
+    };
+    m_IDToObjectData[16] = m_IDToObjectData[15];
+    m_IDToObjectData[16].offset.y = 16;
+    m_IDToObjectData[17] = m_IDToObjectData[15];
+    m_IDToObjectData[17].offset.x = 50;
+    m_IDToObjectData[18] = m_IDToObjectData[15];
+    m_IDToObjectData[18].offset = { -194, -40 };
+    m_IDToObjectData[19] = m_IDToObjectData[15];
+    m_IDToObjectData[19].offset = { -148, -27 };
+    m_IDToObjectData[20] = m_IDToObjectData[15];
+    m_IDToObjectData[20].offset = { -84, 12 };
+    m_IDToObjectData[21] = m_IDToObjectData[15];
+    m_IDToObjectData[21].offset = { -24, 68 };
+    m_IDToObjectData[29].type = ObjectType::BG_TRIGGER;
+    m_IDToObjectData[30].type = ObjectType::G_TRIGGER;
+    m_IDToObjectData[35] = {
+        ObjectType::PAD,
+        { 10, 104, 100, 16 },
+        { 10, 104 },
+        nullptr
+    };
+    m_IDToObjectData[36] = {
+        ObjectType::ORB,
+        { -12, -12, 144, 144 },
+        { 0, 0 },
+        nullptr
+    };
+    m_IDToObjectData[39] = {
+        ObjectType::HAZARD,
+        { 48, 15.8, 24, 22.4 },
+        { 0, 69 },
+        nullptr
+    };
+    m_IDToObjectData[40] = {
+        ObjectType::BLOCK,
+        { 0, 0, 120, 54 },
+        { 0, 0 },
+        nullptr
+    };
+    m_IDToObjectData[41] = m_IDToObjectData[15];
+    m_IDToObjectData[41].offset = { 21, 82 };
 
     loadTextures();
 }
@@ -34,8 +97,8 @@ void ObjectManager::reset() {
 }
 
 ObjectManager::~ObjectManager() {
-    for (auto &[_, texture] : m_StringToTexture) {
-        SDL_DestroyTexture(texture);
+    for (auto &[_, data] : m_IDToObjectData) {
+        SDL_DestroyTexture(data.texture);
     }
 }
 
@@ -74,10 +137,13 @@ SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
 }
 
 void ObjectManager::loadTextures() {
-    for (auto &[blockName, _] : m_StringToType) {
-        m_StringToTexture[blockName] = IMG_LoadTexture(m_Game->getRenderer(), ("res/gfx/" + blockName + ".png").c_str());
-        if (m_StringToTexture[blockName] == nullptr) {
-            std::cerr << "Failed to load " << blockName << "! " << SDL_GetError() << std::endl;
+    for (auto &[id, data] : m_IDToObjectData) {
+        if (data.type == ObjectType::BG_TRIGGER || data.type == ObjectType::G_TRIGGER) {
+            continue;
+        }
+        data.texture = IMG_LoadTexture(m_Game->getRenderer(), ("res/gfx/objects/" + std::to_string(id) + ".png").c_str());
+        if (data.texture == nullptr) {
+            std::cerr << "Failed to load " << id << ".png! " << SDL_GetError() << '\n';
         }
     }
 }
@@ -94,6 +160,11 @@ void ObjectManager::loadLevelData() {
         SDL_FPoint objectPos;
         int horizontalRepeats, verticalRepeats, rotation;
         in >> objectName >> objectPos.x >> objectPos.y >> horizontalRepeats >> verticalRepeats >> rotation;
+        objectPos.x += 15;
+        objectPos.y += 15;
+        objectPos.x *= 4;
+        objectPos.y *= 4;
+        objectPos.y = m_Game->getHeight() - 3*m_Game->TILE_SIZE - objectPos.y;
         ObjectType objectType = m_StringToType.at(objectName);
         SDL_FRect hitboxOffset = rotateHitbox(m_TypeToHitbox.at(objectType), rotation);
         for (int h = 0; h < horizontalRepeats; h++) {
