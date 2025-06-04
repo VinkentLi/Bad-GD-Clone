@@ -334,12 +334,13 @@ void Player::collideWithGround() {
 }
 
 void Player::snapToObject(GameObject &object) {
-    if (m_GravityMultiplier == 1) {
+    if (m_GravityMultiplier == 1 || m_Gamemode == Gamemode::SHIP) {
         if (m_YVelocity > 0 && m_SolidHitbox.y + m_SolidHitbox.h < object.getHitbox()->y) {
             m_HazardHitbox.y = object.getPos().y - m_Game->TILE_SIZE;
             m_YVelocity = 0;
         }
-    } else {
+    }
+    if (m_GravityMultiplier == -1 || m_Gamemode == Gamemode::SHIP) {
         if (m_YVelocity < 0 && m_SolidHitbox.y > object.getHitbox()->y + object.getHitbox()->h) {
             m_HazardHitbox.y = object.getPos().y + object.getHitbox()->h;
             m_YVelocity = 0;
