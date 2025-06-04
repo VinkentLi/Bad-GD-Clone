@@ -87,6 +87,7 @@ std::vector<GameObject> &ObjectManager::getTriggers() {
 
 void ObjectManager::clearObjects() {
     m_Objects.clear();
+    m_Triggers.clear();
 }
 
 SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
