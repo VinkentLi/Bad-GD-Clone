@@ -23,7 +23,15 @@ else()
 endif()
 
 if(EMSCRIPTEN)
-    set(EM_FLAGS
+    target_compile_options(${PROJECT_NAME} PRIVATE 
+        "-sUSE_SDL=2"
+        "-sUSE_SDL_IMAGE=2"
+        "-sSDL2_IMAGE_FORMATS=[\"png\"]"
+        "-sUSE_SDL_MIXER=2"
+        "-sSDL2_MIXER_FORMATS=[\"wav\", \"ogg\"]"
+        "-sUSE_SDL_TTF=2"
+    )
+    target_link_options(${PROJECT_NAME} PRIVATE 
         "-sUSE_SDL=2"
         "-sUSE_SDL_IMAGE=2"
         "-sSDL2_IMAGE_FORMATS=[\"png\"]"
@@ -31,25 +39,20 @@ if(EMSCRIPTEN)
         "-sSDL2_MIXER_FORMATS=[\"wav\", \"ogg\"]"
         "-sUSE_SDL_TTF=2"
         "-sWASM=1"
-        "-sMODULARIZE=1"
-        "-sEXPORT_ES6=1"
         "-sENVIRONMENT=web"
         "-sALLOW_MEMORY_GROWTH=1"
         "--bind"
         "--preload-file" "../res"
     )
-    target_compile_options(${PROJECT_NAME} PRIVATE ${EM_FLAGS})
-    target_link_options(${PROJECT_NAME} PRIVATE ${EM_FLAGS})
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        target_link_options(${PROJECT_NAME} PRIVATE "-g4" "-O0" "-sASSERTIONS=2" "-sDEMANGLE_SUPPORT=1")
+        target_link_options(${PROJECT_NAME} PRIVATE "-gsource-map" "-O0" "-sASSERTIONS=2")
     else()
         target_link_options(${PROJECT_NAME} PRIVATE
             "-O3"
             "-flto"
             "-sASSERTIONS=0"
             "-sEXIT_RUNTIME=0"
-            "-sDEMANGLE_SUPPORT=0"
             "--closure=1"
         )
     endif()

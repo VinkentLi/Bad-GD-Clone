@@ -21,6 +21,14 @@ void Ground::init(Game *game, uint8_t r, uint8_t g, uint8_t b) {
     m_ShouldRenderOnTop = false;
 }
 
+void Ground::fade(uint8_t r, uint8_t g, uint8_t b, float time) {
+    m_TargetRed = r;
+    m_TargetGreen = g;
+    m_TargetBlue = b;
+    m_FadeTime = time * 60;
+    m_IsFading = true;
+}
+
 void Ground::destroy() {
     SDL_DestroyTexture(m_GroundTexture);
 }
@@ -41,9 +49,24 @@ void Ground::resetPosition() {
     m_Position.x = 0;
 }
 
-void Ground::update() {
+void Ground::update(float delta) {
     if (m_Position.x < -m_GroundSize) {
         m_Position.x += m_GroundSize;
+    }
+    if (m_IsFading) {
+        m_FadeTime -= delta;
+        m_Red += delta * (m_TargetRed - m_Red) / m_FadeTime;
+        m_Green += delta * (m_TargetGreen - m_Green) / m_FadeTime;
+        m_Blue += delta * (m_TargetBlue - m_Blue) / m_FadeTime;
+
+        if (m_FadeTime <= 0) {
+            m_Red = m_TargetRed;
+            m_Green = m_TargetGreen;
+            m_Blue = m_TargetBlue;
+            m_FadeTime = 0;
+            m_IsFading = false;
+        }
+        SDL_SetTextureColorMod(m_GroundTexture, m_Red, m_Green, m_Blue);
     }
 }
 

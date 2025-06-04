@@ -31,6 +31,7 @@ public:
     void reset();
     void update(float delta, bool IsMouseHeld, std::vector<GameObject> &objects);
     void handleCollisions(std::vector<GameObject> &objects);
+    void activateTriggers(std::vector<GameObject> &objects);
     inline void moveX(float dist) { m_Position.x += dist; }
     inline void moveY(float dist) { m_Position.y += dist; }
     void die();

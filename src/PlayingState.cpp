@@ -151,6 +151,7 @@ void PlayingState::update(float deltaTime) {
     // TODO: fix magic number
     ground.setPosition({ground.getPosition().x, static_cast<float>(m_Game->getHeight() - 3*m_Game->TILE_SIZE)});
     background.update(deltaTime);
+    ground.update(deltaTime);
 
     if (m_Game->getCameraPosition().x != 0) {
         background.setMoving(true);

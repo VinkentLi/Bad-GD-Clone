@@ -7,9 +7,11 @@
 
 struct ObjectData {
     ObjectType type;
-    SDL_FRect hitbox;
-    SDL_FPoint offset;
-    SDL_Texture *texture;
+    SDL_FRect hitbox = { 0, 0, 0, 0 };
+    SDL_FPoint offset = { 0, 0 };
+    SDL_Texture *texture = nullptr;
+    int width = 0;
+    int height = 0;
 };
 
 class Game;
@@ -34,6 +36,6 @@ private:
     Game *m_Game;
     std::vector<GameObject> m_Objects;
     std::map<int, ObjectData> m_IDToObjectData;
-    int m_FurthestX;
+    int m_FurthestX = 0;
 };
 

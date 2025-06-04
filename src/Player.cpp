@@ -105,7 +105,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
             m_Gamemode = Gamemode::CUBE;
             m_PressedOrbs.clear();
             m_IsDead = false;
-            m_IsGrounded = true;
+            m_IsGrounded = false;
             if (!PlayingState::get()->isInPractice() || m_Checkpoints.empty()) {
                 m_HazardHitbox.x = -m_Game->TILE_SIZE;
                 m_HazardHitbox.y = m_Game->getHeight() - 4 * m_Game->TILE_SIZE;
@@ -182,12 +182,20 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
     }
     m_YVelocity *= m_GravityMultiplier;
     m_HazardHitbox.x += m_XVelocity * delta;
-    m_HazardHitbox.y += m_YVelocity * delta;
+    m_HazardHitbox.y += m_YVelocity * delta * 0.9; // why the fuck does gd multiply by 0.9?
     m_SolidHitbox.x += m_XVelocity * delta;
-    m_SolidHitbox.y += m_YVelocity * delta;
+    m_SolidHitbox.y += m_YVelocity * delta * 0.9;
     m_YVelocity /= m_GravityMultiplier;
 
     handleCollisions(objects);
+
+    m_IsGrounded = m_YVelocity == 0 && (!m_IsMouseHeld || m_Gamemode != Gamemode::SHIP);
+    m_SolidHitbox.x = m_HazardHitbox.x + m_Game->TILE_SIZE / 3;
+    m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
+    m_Position.x = m_HazardHitbox.x;
+    m_Position.y = m_HazardHitbox.y;
+
+    activateTriggers(objects);
 
     if (m_Gamemode == Gamemode::SHIP) {
         // special thanks to https://github.com/Open-GD/OpenGD for this
@@ -340,12 +348,16 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
             }
         }
     }
+}
 
-    m_IsGrounded = m_YVelocity == 0 && (!m_IsMouseHeld || m_Gamemode != Gamemode::SHIP);
-    m_SolidHitbox.x = m_HazardHitbox.x + m_Game->TILE_SIZE / 3;
-    m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
-    m_Position.x = m_HazardHitbox.x;
-    m_Position.y = m_HazardHitbox.y;
+void Player::activateTriggers(std::vector<GameObject> &objects) {
+    for (GameObject &object : objects) {
+        bool isTrigger = object.getType() == ObjectType::BG_TRIGGER || object.getType() == ObjectType::G_TRIGGER;
+        bool passedTrigger = m_Position.x > object.getPos().x + m_Game->TILE_SIZE/2;
+        if (isTrigger && passedTrigger) {
+            object.activate();
+        }
+    }
 }
 
 void Player::render() {
@@ -404,16 +416,16 @@ void Player::render() {
     }
     }
 
-    SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 125);
-    SDL_FRect temp = m_HazardHitbox;
-    temp.x -= m_Game->getCameraPosition().x;
-    temp.y -= m_Game->getCameraPosition().y;
-    SDL_RenderFillRectF(m_Renderer, &temp);
-    SDL_SetRenderDrawColor(m_Renderer, 0, 0, 255, 125);
-    SDL_FRect temp2 = m_SolidHitbox;
-    temp2.x -= m_Game->getCameraPosition().x;
-    temp2.y -= m_Game->getCameraPosition().y;
-    SDL_RenderFillRectF(m_Renderer, &temp2);
+    // SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 125);
+    // SDL_FRect temp = m_HazardHitbox;
+    // temp.x -= m_Game->getCameraPosition().x;
+    // temp.y -= m_Game->getCameraPosition().y;
+    // SDL_RenderFillRectF(m_Renderer, &temp);
+    // SDL_SetRenderDrawColor(m_Renderer, 0, 0, 255, 125);
+    // SDL_FRect temp2 = m_SolidHitbox;
+    // temp2.x -= m_Game->getCameraPosition().x;
+    // temp2.y -= m_Game->getCameraPosition().y;
+    // SDL_RenderFillRectF(m_Renderer, &temp2);
 }
 
 void Player::die() {
