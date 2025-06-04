@@ -68,9 +68,9 @@ void GameObject::render() {
     }
     SDL_RenderCopyEx(m_Renderer, m_ObjectTexture, NULL, &m_Rect, m_Rotation * 90.0, NULL, flip);
 
-    // SDL_FRect temp = m_Hitbox;
-    // temp.x -= m_Game->getCameraPosition().x;
-    // temp.y -= m_Game->getCameraPosition().y;
-    // SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 125);
-    // SDL_RenderFillRectF(m_Renderer, &temp);
+    SDL_FRect temp = m_Hitbox;
+    temp.x -= m_Game->getCameraPosition().x;
+    temp.y -= m_Game->getCameraPosition().y;
+    SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 125);
+    SDL_RenderFillRectF(m_Renderer, &temp);
 }

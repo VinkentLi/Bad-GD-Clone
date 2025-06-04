@@ -85,6 +85,9 @@ SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
     if (rotations == 0) {
         return hitbox;
     }
+    while (rotations < 0) {
+        rotations += 4;
+    }
     SDL_FRect rotated = hitbox;
     SDL_FPoint center = {rotated.x + rotated.w/2, rotated.y + rotated.h/2};
     rotated.x -= center.x;
@@ -132,8 +135,6 @@ void ObjectManager::loadLevelData() {
     // ignore pre-level properties for now
     objectProperties.erase(objectProperties.begin());
 
-    std::cout << "m_FurthestX: " << m_FurthestX << '\n';
-
     for (std::string &properties : objectProperties) {
         std::vector<std::string> splitProperties = Util::splitString(properties, ',');
         int objectID = 1;
@@ -148,41 +149,46 @@ void ObjectManager::loadLevelData() {
         // also i love gd cologne https://github.com/GDColon/GDBrowser/blob/master/misc/analysis/objectProperties.json
         for (std::size_t i = 0; i+1 < splitProperties.size(); i += 2) {
             int propertyID = std::stoi(splitProperties[i]);
+            std::string propertyValue = splitProperties[i+1];
             switch (propertyID) {
             case 1: // ID
-                objectID = std::stoi(splitProperties[i+1]);
+                objectID = std::stoi(propertyValue);
                 data = m_IDToObjectData[objectID];
                 break;
             case 2: // x
-                objectPos.x = std::stof(splitProperties[i+1])*4 - data.width/2;
+                objectPos.x = std::stof(propertyValue)*4 - data.width/2;
                 break;
             case 3: // y
-                objectPos.y = m_Game->getHeight() - 3*m_Game->TILE_SIZE - (std::stof(splitProperties[i+1])*4 + data.height/2) + data.offset.y;
+                objectPos.y = m_Game->getHeight() - 3*m_Game->TILE_SIZE - (std::stof(propertyValue)*4 + data.height/2) + data.offset.y;
                 break;
             case 4: // flipX
-                flipX = std::stoi(splitProperties[i+1]) == 1;
+                flipX = std::stoi(propertyValue) == 1;
                 break;
             case 5: // flipY
-                flipY = std::stoi(splitProperties[i+1]) == 1;
+                flipY = std::stoi(propertyValue) == 1;
                 break;
             case 6: // rotation
-                rotation = std::stoi(splitProperties[i+1]) / 90;
+                rotation = std::stoi(propertyValue) / 90;
                 break;
             case 7: // red
-                color.r = std::stoi(splitProperties[i+1]);
+                color.r = std::stoi(propertyValue);
                 break;
             case 8: // green
-                color.g = std::stoi(splitProperties[i+1]);
+                color.g = std::stoi(propertyValue);
                 break;
             case 9: // blue
-                color.b = std::stoi(splitProperties[i+1]);
+                color.b = std::stoi(propertyValue);
                 break;
             case 10: // duration
-                duration = std::stoi(splitProperties[i+1]);
+                duration = std::stoi(propertyValue);
                 break;
             default:
                 break;
             }
+        }
+        // if the object doesn't exist
+        if (m_IDToObjectData.count(objectID) == 0) {
+            continue;
         }
         SDL_FRect hitboxOffset = rotateHitbox(data.hitbox, rotation);
         if (flipX) {
@@ -195,8 +201,6 @@ void ObjectManager::loadLevelData() {
         m_Objects.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
         m_FurthestX = std::max(m_FurthestX, static_cast<int>(m_Objects.back().getPos().x + m_Objects.back().getWidth()));
     }
-
-    std::cout << "m_FurthestX: " << m_FurthestX << '\n';
 }
 
 void ObjectManager::render() {

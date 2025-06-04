@@ -75,6 +75,7 @@ void Background::update(float delta) {
             m_IsFading = false;
         }
         SDL_SetTextureColorMod(m_BGTexture, m_Red, m_Green, m_Blue);
+        SDL_SetTextureColorMod(m_EmptyBG, m_Red, m_Green, m_Blue);
     }
 }
 

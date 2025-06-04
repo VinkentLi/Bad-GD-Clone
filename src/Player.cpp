@@ -282,13 +282,13 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                 die();
                 break;
             case ObjectType::PAD:
-                m_YVelocity = m_PadStrength;
+                m_YVelocity = m_PadStrength * m_GravityMultiplier;
                 break;
             case ObjectType::ORB: {
                 const bool orbNotInPressedOrbs = std::find(m_PressedOrbs.begin(), m_PressedOrbs.end(), object.getHitbox()) == m_PressedOrbs.end();
                 const bool orbHasNotBeenPressed = m_PressedOrbs.empty() || orbNotInPressedOrbs;
                 if (m_HasBufferedOrb && orbHasNotBeenPressed) {
-                    m_YVelocity = m_JumpStrength;
+                    m_YVelocity = m_JumpStrength * m_GravityMultiplier;
                     m_PressedOrbs.push_back(object.getHitbox());
                 }
                 break;
