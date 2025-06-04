@@ -92,6 +92,8 @@ void PlayingState::enter() {
     Mix_HaltMusic();
     m_Player.reset();
     m_ObjectManager.reset();
+    m_Game->getBackground().fade(m_InitialBackground.r, m_InitialBackground.g, m_InitialBackground.b, 0);
+    m_Game->getGround().fade(m_InitialGround.r, m_InitialGround.g, m_InitialGround.b, 0);
     int exitX = m_Game->getWidth()/2 + (m_EnterPracticeButton.getW() + MARGIN + m_ResumeButton.getW() + MARGIN - m_ExitButton.getW())/2;
     m_ExitButton.setPosition(exitX, m_Game->getHeight()/2, false, true);
     m_Timer = 60;
@@ -190,12 +192,13 @@ void PlayingState::update(float deltaTime) {
             }
         }
     }
+
     if (!PlayingState::get()->isInPractice() && (!m_IsSongPlaying || playerJustRevived)) {
         Mix_PlayMusic(m_Songs[LevelSelect::get()->getLevelSelected()], 0);
         m_JustSetNewBest = false;
         m_IsSongPlaying = true;
     }
-    m_Player.update(deltaTime, m_Game->isMouseHeld(), m_ObjectManager.getObjects());
+    m_Player.update(deltaTime);
     
     if (m_Player.getPosition().x > m_ObjectManager.getFurthestX()) {
         m_ShouldEndLevel = true;
@@ -222,6 +225,8 @@ void PlayingState::updatePause(bool isEscapeReleased) {
             m_IsInPractice = false;
             m_Player.reset();
             m_Game->setCameraPosition({0, 0});
+            m_Game->getBackground().fade(m_InitialBackground.r, m_InitialBackground.g, m_InitialBackground.b, 0);
+            m_Game->getGround().fade(m_InitialGround.r, m_InitialGround.g, m_InitialGround.b, 0);
             resume();
             Mix_HaltMusic();
             m_IsSongPlaying = false;
@@ -233,6 +238,8 @@ void PlayingState::updatePause(bool isEscapeReleased) {
             m_IsInPractice = true;
             m_Player.reset();
             m_Game->setCameraPosition({0, 0});
+            m_Game->getBackground().fade(m_InitialBackground.r, m_InitialBackground.g, m_InitialBackground.b, 0);
+            m_Game->getGround().fade(m_InitialGround.r, m_InitialGround.g, m_InitialGround.b, 0);
             resume();
             Mix_HaltMusic();
             Mix_PlayMusic(m_PracticeMusic, -1);
@@ -272,6 +279,8 @@ void PlayingState::render() {
     m_Player.render();
     m_ObjectManager.render();
     renderEndBlocks();
+    // render ground so it appears above blocks but below text
+    m_Game->getGround().render();
     if (m_JustSetNewBest && !m_IsInPractice) {
         Text::renderTexture(m_Renderer, m_NewBestTexture, m_Game->getWidth()/2, m_Game->getHeight()/2, true, true);
     }

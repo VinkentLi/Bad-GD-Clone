@@ -62,6 +62,9 @@ void Player::reset() {
     m_GravityMultiplier = 1;
     m_Gamemode = Gamemode::CUBE;
     m_Checkpoints.clear();
+    for (GameObject &trigger : PlayingState::get()->getTriggers()) {
+        trigger.reset();
+    }
 }
 
 Player::~Player() {
@@ -71,9 +74,9 @@ Player::~Player() {
     Mix_FreeChunk(m_DeathSound);
 }
 
-void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &objects) {
-    bool mouseClicked = (!m_IsMouseHeld && isMouseHeld);
-    bool mouseReleased = (m_IsMouseHeld && !isMouseHeld);
+void Player::update(float delta) {
+    bool mouseClicked = (!m_IsMouseHeld && m_Game->isMouseHeld());
+    bool mouseReleased = (m_IsMouseHeld && !m_Game->isMouseHeld());
 
     if (PlayingState::get()->isInPractice()) {
         bool zReleased = m_IsZHeld && !m_Game->isZHeld();
@@ -89,7 +92,13 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
                 m_Rotation,
                 m_TargetRotation,
                 m_GravityMultiplier,
-                m_Gamemode
+                m_Gamemode,
+                m_Game->getBackground().getColor(),
+                m_Game->getGround().getColor(),
+                m_Game->getBackground().getTargetColor(),
+                m_Game->getGround().getTargetColor(),
+                m_Game->getBackground().getFadeTime(),
+                m_Game->getGround().getFadeTime()
             });
         }
         if (xReleased && !m_Checkpoints.empty()) {
@@ -97,7 +106,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
         }
     }
 
-    m_IsMouseHeld = isMouseHeld;
+    m_IsMouseHeld = m_Game->isMouseHeld();
     if (m_IsDead) {
         m_DeadTimer -= delta;
         if (m_DeadTimer < 0) {
@@ -114,6 +123,13 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
                 m_TargetRotation = 0;
                 m_GravityMultiplier = 1;
                 m_YVelocity = 0;
+                for (GameObject &trigger : PlayingState::get()->getTriggers()) {
+                    trigger.reset();
+                }
+                SDL_Color initialBackground = PlayingState::get()->getInitialBackground();
+                SDL_Color initialGround = PlayingState::get()->getInitialGround();
+                m_Game->getBackground().fade(initialBackground.r, initialBackground.g, initialBackground.b, 0);
+                m_Game->getGround().fade(initialGround.r, initialGround.g, initialGround.b, 0);
             } else {
                 m_HazardHitbox.x = m_Checkpoints.back().position.x;
                 m_HazardHitbox.y = m_Checkpoints.back().position.y;
@@ -123,10 +139,22 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
                 m_GravityMultiplier = m_Checkpoints.back().gravityMultiplier;
                 m_YVelocity = m_Checkpoints.back().yVelocity;
                 m_Gamemode = m_Checkpoints.back().gamemode;
+                m_Game->getBackground().setColor(m_Checkpoints.back().backgroundColor);
+                m_Game->getGround().setColor(m_Checkpoints.back().groundColor);
+                m_Game->getBackground().setTargetColor(m_Checkpoints.back().backgroundTargetColor);
+                m_Game->getGround().setTargetColor(m_Checkpoints.back().groundTargetColor);
+                m_Game->getBackground().setFadeTime(m_Checkpoints.back().backgroundFadeTime);
+                m_Game->getGround().setFadeTime(m_Checkpoints.back().groundFadeTime);
+                for (GameObject &trigger : PlayingState::get()->getTriggers()) {
+                    bool passedBeforeCheckpoint = m_HazardHitbox.x > trigger.getPos().x + m_Game->TILE_SIZE/2;
+                    if (!passedBeforeCheckpoint) {
+                        trigger.reset();
+                    }
+                }
             }
             m_SolidHitbox.x = m_HazardHitbox.x + m_Game->TILE_SIZE / 3;
             m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
-            m_Position = {m_HazardHitbox.x, m_HazardHitbox.y};
+            m_Position = { m_HazardHitbox.x, m_HazardHitbox.y };
         }
         return;
     }
@@ -143,22 +171,23 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
         }
         m_YVelocity += m_Gravity * m_GravityMultiplier * delta;
         m_Rotation += m_GravityMultiplier == 1 ? m_RotationAdder * delta : -m_RotationAdder * delta;
+        m_Rotation = fmod(m_Rotation, 360.0);
 
         if (m_GravityMultiplier == 1) {
             if (!m_IsGrounded && m_Rotation > m_TargetRotation) {
-                m_TargetRotation = ((int)m_Rotation / 90) * 90 + 90;
-                // std::cout << targetRotation << ' ';
+                m_TargetRotation = std::trunc(m_Rotation / 90) * 90 + 90;
             } else if (m_Rotation > m_TargetRotation) {
                 m_Rotation = m_TargetRotation;
             }
         } else {
             if (!m_IsGrounded && m_Rotation < m_TargetRotation) {
-                m_TargetRotation = ((int)m_Rotation / 90) * 90 - 90;
+                m_TargetRotation = std::trunc(m_Rotation / 90) * 90 - 90;
                 // std::cout << targetRotation << ' ';
             } else if (m_Rotation < m_TargetRotation) {
                 m_Rotation = m_TargetRotation;
             }
         }
+        m_TargetRotation = fmod(m_TargetRotation, 360.0);
         m_YVelocity = std::clamp(m_YVelocity, static_cast<double>(-m_Game->TILE_SIZE/2), static_cast<double>(m_Game->TILE_SIZE/2));
         break;
     case Gamemode::SHIP: {
@@ -182,7 +211,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
     m_SolidHitbox.x += m_XVelocity * delta;
     m_SolidHitbox.y += m_YVelocity * delta * 0.9;
 
-    handleCollisions(objects);
+    handleCollisions(PlayingState::get()->getObjects());
 
     m_IsGrounded = m_YVelocity == 0 && (!m_IsMouseHeld || m_Gamemode != Gamemode::SHIP);
     m_SolidHitbox.x = m_HazardHitbox.x + m_Game->TILE_SIZE / 3;
@@ -190,7 +219,7 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
     m_Position.x = m_HazardHitbox.x;
     m_Position.y = m_HazardHitbox.y;
 
-    activateTriggers(objects);
+    activateTriggers(PlayingState::get()->getTriggers());
 
     if (m_Gamemode == Gamemode::SHIP) {
         // special thanks to https://github.com/Open-GD/OpenGD for this
@@ -338,12 +367,11 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
     }
 }
 
-void Player::activateTriggers(std::vector<GameObject> &objects) {
-    for (GameObject &object : objects) {
-        bool isTrigger = object.getType() == ObjectType::BG_TRIGGER || object.getType() == ObjectType::G_TRIGGER;
-        bool passedTrigger = m_Position.x > object.getPos().x + m_Game->TILE_SIZE/2;
-        if (isTrigger && passedTrigger) {
-            object.activate();
+void Player::activateTriggers(std::vector<GameObject> &triggers) {
+    for (GameObject &trigger : triggers) {
+        bool passedTrigger = m_Position.x > trigger.getPos().x + m_Game->TILE_SIZE/2;
+        if (passedTrigger) {
+            trigger.activate();
         }
     }
 }

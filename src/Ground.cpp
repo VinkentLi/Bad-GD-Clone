@@ -94,3 +94,32 @@ void Ground::render() {
 void Ground::setOnTop(bool value) {
     m_ShouldRenderOnTop = value;
 }
+
+std::array<float, 3> Ground::getColor() {
+    return { m_Red, m_Green, m_Blue };
+}
+
+void Ground::setColor(std::array<float, 3> color) {
+    m_Red = color[0];
+    m_Green = color[1];
+    m_Blue = color[2];
+    SDL_SetTextureColorMod(m_GroundTexture, m_Red, m_Green, m_Blue);
+}
+
+SDL_Color Ground::getTargetColor() {
+    return { m_TargetRed, m_TargetGreen, m_TargetBlue };
+}
+
+void Ground::setTargetColor(SDL_Color color) {
+    m_TargetRed = color.r;
+    m_TargetGreen = color.g;
+    m_TargetBlue = color.b;
+}
+
+float Ground::getFadeTime() {
+    return m_FadeTime;
+}
+
+void Ground::setFadeTime(float fadeTime) {
+    m_FadeTime = fadeTime;
+}

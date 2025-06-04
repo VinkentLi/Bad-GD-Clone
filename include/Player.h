@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <vector>
+#include <array>
 
 enum class Gamemode {
     CUBE,
@@ -16,6 +17,12 @@ struct Checkpoint {
     double targetRotation;
     int gravityMultiplier;
     Gamemode gamemode;
+    std::array<float, 3> backgroundColor;
+    std::array<float, 3> groundColor;
+    SDL_Color backgroundTargetColor;
+    SDL_Color groundTargetColor;
+    float backgroundFadeTime = 0;
+    float groundFadeTime = 0;
 };
 
 class Game;
@@ -29,9 +36,9 @@ public:
     Player &operator=(const Player &) = delete;
     void init(Game *game);
     void reset();
-    void update(float delta, bool IsMouseHeld, std::vector<GameObject> &objects);
+    void update(float deltaTime);
     void handleCollisions(std::vector<GameObject> &objects);
-    void activateTriggers(std::vector<GameObject> &objects);
+    void activateTriggers(std::vector<GameObject> &triggers);
     inline void moveX(float dist) { m_Position.x += dist; }
     inline void moveY(float dist) { m_Position.y += dist; }
     void die();

@@ -99,3 +99,33 @@ void Background::render() {
         }
     }
 }
+
+std::array<float, 3> Background::getColor() {
+    return { m_Red, m_Green, m_Blue };
+}
+
+void Background::setColor(std::array<float, 3> color) {
+    m_Red = color[0];
+    m_Green = color[1];
+    m_Blue = color[2];
+    SDL_SetTextureColorMod(m_BGTexture, m_Red, m_Green, m_Blue);
+    SDL_SetTextureColorMod(m_EmptyBG, m_Red, m_Green, m_Blue);
+}
+
+SDL_Color Background::getTargetColor() {
+    return { m_TargetRed, m_TargetGreen, m_TargetBlue };
+}
+
+void Background::setTargetColor(SDL_Color color) {
+    m_TargetRed = color.r;
+    m_TargetGreen = color.g;
+    m_TargetBlue = color.b;
+}
+
+float Background::getFadeTime() {
+    return m_FadeTime;
+}
+
+void Background::setFadeTime(float fadeTime) {
+    m_FadeTime = fadeTime;
+}

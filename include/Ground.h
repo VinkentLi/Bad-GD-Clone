@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL.h>
 #include <cstdint>
+#include <array>
 
 class Game;
 
@@ -17,6 +18,12 @@ public:
     void move(float distance, float delta);
     void render();
     void setOnTop(bool value);
+    std::array<float, 3> getColor();
+    void setColor(std::array<float, 3> color);
+    SDL_Color getTargetColor();
+    void setTargetColor(SDL_Color color);
+    float getFadeTime();
+    void setFadeTime(float fadeTime);
 
 private:
     Game *m_Game;

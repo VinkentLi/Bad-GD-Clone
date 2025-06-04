@@ -44,5 +44,4 @@ Then use this html code
 ```
 
 ## TODO
-- Make it read level data from the game
 - Tidy up code

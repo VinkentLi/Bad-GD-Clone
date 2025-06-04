@@ -1,6 +1,7 @@
 #include "ObjectManager.h"
 #include "Game.h"
 #include "LevelSelect.h"
+#include "PlayingState.h"
 #include <SDL_image.h>
 #include <fstream>
 #include "Util.h"
@@ -56,7 +57,7 @@ void ObjectManager::init(Game *game) {
         ObjectType::BLOCK,
         { 0, 0, 120, 54 },
     };
-    m_IDToObjectData[41] = m_IDToObjectData[15];
+    m_IDToObjectData[41].type = ObjectType::DECO;
 
     loadTextures();
 }
@@ -77,6 +78,10 @@ std::vector<GameObject> &ObjectManager::getObjects() {
     return m_Objects;
 }
 
+std::vector<GameObject> &ObjectManager::getTriggers() {
+    return m_Triggers;
+}
+
 void ObjectManager::clearObjects() {
     m_Objects.clear();
 }
@@ -94,16 +99,11 @@ SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
     rotated.y -= center.y;
     for (int i = 0; i < rotations; i++)
     {
-        // (x, y) -> (y - h, -x)
         float newX = -rotated.y - rotated.h;
         float newY = rotated.x;
-        // std::cout << newX + center.x << ", " << newY + center.y << '\n';
         rotated.x = newX;
         rotated.y = newY;
-        // swap w & h
-        float temp = rotated.h;
-        rotated.h = rotated.w;
-        rotated.w = temp;
+        std::swap(rotated.w, rotated.h);
     }
     rotated.x += center.x;
     rotated.y += center.y;
@@ -118,6 +118,7 @@ void ObjectManager::loadTextures() {
         data.texture = IMG_LoadTexture(m_Game->getRenderer(), ("res/gfx/objects/" + std::to_string(id) + ".png").c_str());
         if (data.texture == nullptr) {
             std::cerr << "Failed to load " << id << ".png! " << SDL_GetError() << '\n';
+            continue;
         }
         SDL_QueryTexture(data.texture, NULL, NULL, &data.width, &data.height);
     }
@@ -132,7 +133,32 @@ void ObjectManager::loadLevelData() {
     std::string levelData = buffer.str();
     in.close();
     std::vector<std::string> objectProperties = Util::splitString(levelData, ';');
-    // ignore pre-level properties for now
+    
+    // read initial properties from before the level starts
+    std::string initialProperties = objectProperties[0];
+    std::vector<std::string> splitIntialProperties = Util::splitString(initialProperties, ',');
+    for (std::size_t i = 0; i+1 < splitIntialProperties.size(); i += 2) {
+        std::string property = splitIntialProperties[i];
+        std::string propertyValue = splitIntialProperties[i+1];
+        // i love gd cologne https://github.com/GDColon/GDBrowser/blob/master/misc/analysis/initialProperties.json
+        if (property == "kS29") {
+            std::vector<std::string> splitPropertyValue = Util::splitString(propertyValue, '_');
+            uint8_t red = static_cast<uint8_t>(std::stoi(splitPropertyValue[1]));
+            uint8_t blue = static_cast<uint8_t>(std::stoi(splitPropertyValue[3]));
+            uint8_t green = static_cast<uint8_t>(std::stoi(splitPropertyValue[5]));
+            SDL_Color color = { red, blue, green };
+            PlayingState::get()->setInitialBackground(color);
+        } else if (property == "kS30") {
+            std::vector<std::string> splitPropertyValue = Util::splitString(propertyValue, '_');
+            uint8_t red = static_cast<uint8_t>(std::stoi(splitPropertyValue[1]));
+            uint8_t blue = static_cast<uint8_t>(std::stoi(splitPropertyValue[3]));
+            uint8_t green = static_cast<uint8_t>(std::stoi(splitPropertyValue[5]));
+            SDL_Color color = { red, blue, green };
+            PlayingState::get()->setInitialGround(color);
+        }
+        // i'm not doing any more initial properties because i'm lazy as hell
+    }
+
     objectProperties.erase(objectProperties.begin());
 
     for (std::string &properties : objectProperties) {
@@ -144,8 +170,8 @@ void ObjectManager::loadLevelData() {
         bool flipY = false;
         int rotation = 0;
         SDL_Color color = { 0, 0, 0 };
-        int duration = 0;
-        // i'm just gonna assume properties are listed in order cuz otherwise there's gonna be some issues
+        float duration = 0;
+        // i'm just gonna assume id is always listed first cuz otherwise there's gonna be some issues
         // also i love gd cologne https://github.com/GDColon/GDBrowser/blob/master/misc/analysis/objectProperties.json
         for (std::size_t i = 0; i+1 < splitProperties.size(); i += 2) {
             int propertyID = std::stoi(splitProperties[i]);
@@ -153,7 +179,12 @@ void ObjectManager::loadLevelData() {
             switch (propertyID) {
             case 1: // ID
                 objectID = std::stoi(propertyValue);
-                data = m_IDToObjectData[objectID];
+                // if the object actually exists
+                if (m_IDToObjectData.count(objectID) > 0) {
+                    data = m_IDToObjectData[objectID];
+                } else {
+                    continue;
+                }
                 break;
             case 2: // x
                 objectPos.x = std::stof(propertyValue)*4 - data.width/2;
@@ -180,7 +211,7 @@ void ObjectManager::loadLevelData() {
                 color.b = std::stoi(propertyValue);
                 break;
             case 10: // duration
-                duration = std::stoi(propertyValue);
+                duration = std::stof(propertyValue);
                 break;
             default:
                 break;
@@ -198,8 +229,13 @@ void ObjectManager::loadLevelData() {
             hitboxOffset.y = data.height - hitboxOffset.y - hitboxOffset.h;
         }
         SDL_FRect hitbox = {hitboxOffset.x + objectPos.x, hitboxOffset.y + objectPos.y, hitboxOffset.w, hitboxOffset.h};
-        m_Objects.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
-        m_FurthestX = std::max(m_FurthestX, static_cast<int>(m_Objects.back().getPos().x + m_Objects.back().getWidth()));
+        // separate triggers
+        if (data.type == ObjectType::BG_TRIGGER || data.type == ObjectType::G_TRIGGER) {
+            m_Triggers.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
+        } else {
+            m_Objects.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
+        }
+        m_FurthestX = std::max(m_FurthestX, static_cast<int>(objectPos.x + data.width));
     }
 }
 

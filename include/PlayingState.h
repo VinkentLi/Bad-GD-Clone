@@ -19,6 +19,12 @@ public:
     void render() override;
     inline int getMinY() { return m_MinY; }
     inline bool isInPractice() { return m_IsInPractice; }
+    inline std::vector<GameObject> &getObjects() { return m_ObjectManager.getObjects(); }
+    inline std::vector<GameObject> &getTriggers() { return m_ObjectManager.getTriggers(); }
+    inline void setInitialBackground(SDL_Color color) { m_InitialBackground = color; }
+    inline SDL_Color getInitialBackground() { return m_InitialBackground; }
+    inline SDL_Color getInitialGround() { return m_InitialGround; }
+    inline void setInitialGround(SDL_Color color) { m_InitialGround = color; }
     inline static PlayingState *get() { return &m_PlayingState; } 
 
 private:
@@ -56,6 +62,8 @@ private:
     int m_LevelPercent; // ex: 3692 = 36.92%
     bool m_IsInPractice;
     std::vector<Mix_Music *> m_Songs;
+    SDL_Color m_InitialBackground = { 0, 0, 255 };
+    SDL_Color m_InitialGround = { 0, 0, 255 }; 
 
     void updatePause(bool isEscapeReleased);
     void updateEndLevel(float deltaTime);

@@ -159,7 +159,10 @@ void Game::update(float deltaTime) {
 void Game::render() {
     SDL_RenderClear(m_Renderer);
     m_Background.render();
-    m_Ground.render();
+    // PlayingState will render ground itself to fix layering issues
+    if (m_GameStates.top()->getName() != "PlayingState") {
+        m_Ground.render();
+    }
     m_GameStates.top()->render();
     Text::renderTexture(m_Renderer, m_FPSTexture, 20, 20, false, false, 0.5f);
     SDL_RenderPresent(m_Renderer);

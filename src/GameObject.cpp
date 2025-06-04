@@ -3,7 +3,7 @@
 #include "Game.h"
 #include "GameObject.h"
 
-GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture, SDL_Color color, int duration)
+GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture, SDL_Color color, float duration)
     : m_Game(game), m_Type(type), m_Rotation(rotation), m_Position(pos), m_Hitbox(hitbox), m_FlipX(xFlip), m_FlipY(yFlip), m_ObjectTexture(objectTexture), m_Color(color), m_Duration(duration) {
     
     m_Renderer = m_Game->getRenderer();
@@ -68,9 +68,9 @@ void GameObject::render() {
     }
     SDL_RenderCopyEx(m_Renderer, m_ObjectTexture, NULL, &m_Rect, m_Rotation * 90.0, NULL, flip);
 
-    SDL_FRect temp = m_Hitbox;
-    temp.x -= m_Game->getCameraPosition().x;
-    temp.y -= m_Game->getCameraPosition().y;
-    SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 125);
-    SDL_RenderFillRectF(m_Renderer, &temp);
+    // SDL_FRect temp = m_Hitbox;
+    // temp.x -= m_Game->getCameraPosition().x;
+    // temp.y -= m_Game->getCameraPosition().y;
+    // SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 125);
+    // SDL_RenderFillRectF(m_Renderer, &temp);
 }

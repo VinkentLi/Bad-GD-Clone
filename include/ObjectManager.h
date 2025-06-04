@@ -25,6 +25,7 @@ public:
     void init(Game *game);
     void reset();
     std::vector<GameObject> &getObjects();
+    std::vector<GameObject> &getTriggers();
     SDL_FRect rotateHitbox(SDL_FRect hitbox, int rotations);
     void clearObjects();
     void loadTextures();
@@ -35,6 +36,7 @@ public:
 private:
     Game *m_Game;
     std::vector<GameObject> m_Objects;
+    std::vector<GameObject> m_Triggers;
     std::map<int, ObjectData> m_IDToObjectData;
     int m_FurthestX = 0;
 };

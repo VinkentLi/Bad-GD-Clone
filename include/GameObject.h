@@ -19,7 +19,7 @@ enum class ObjectType {
 
 class GameObject {
 public:
-    GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture, SDL_Color color, int duration);
+    GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture, SDL_Color color, float duration);
     void activate();
     void reset();
     SDL_FRect *getHitbox();
@@ -41,7 +41,7 @@ private:
     bool m_FlipY;
     SDL_Texture *m_ObjectTexture;
     SDL_Color m_Color;
-    int m_Duration;
+    float m_Duration;
     bool m_IsActivated = false;
 };
 
