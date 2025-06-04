@@ -138,10 +138,10 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
             m_HasBufferedOrb = false;
         }
         if (m_IsGrounded && m_IsMouseHeld) {
-            m_YVelocity = m_JumpStrength;
+            m_YVelocity = m_JumpStrength * m_GravityMultiplier;
             m_IsGrounded = false;
         }
-        m_YVelocity += m_Gravity * delta;
+        m_YVelocity += m_Gravity * m_GravityMultiplier * delta;
         m_Rotation += m_GravityMultiplier == 1 ? m_RotationAdder * delta : -m_RotationAdder * delta;
 
         if (m_GravityMultiplier == 1) {
@@ -159,33 +159,28 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
                 m_Rotation = m_TargetRotation;
             }
         }
-
-        if (m_YVelocity > m_Game->TILE_SIZE / 2) {
-            m_YVelocity = m_Game->TILE_SIZE / 2;
-        }
+        m_YVelocity = std::clamp(m_YVelocity, static_cast<double>(-m_Game->TILE_SIZE/2), static_cast<double>(m_Game->TILE_SIZE/2));
         break;
     case Gamemode::SHIP: {
         // help from https://github.com/Open-GD/OpenGD
         float shipAccel = m_Gravity * 0.32;
         if (m_IsMouseHeld) {
             shipAccel *= -1.25;
-            if (m_YVelocity > -5*m_Gravity) {
+            if (m_YVelocity * m_GravityMultiplier > -5*m_Gravity) {
                 shipAccel *= 1.25;
             }
-        } else if (m_YVelocity <= -5*m_Gravity) {
+        } else if (m_YVelocity * m_GravityMultiplier <= -5*m_Gravity) {
             shipAccel *= 1.5;
         }
-        m_YVelocity += shipAccel * delta;
-        m_YVelocity = std::clamp(m_YVelocity, -32.0, 25.6);
+        m_YVelocity += shipAccel * m_GravityMultiplier * delta;
+        m_YVelocity = std::clamp(m_YVelocity / m_GravityMultiplier, -32.0, 25.6) * m_GravityMultiplier;
         break;
     }
     }
-    m_YVelocity *= m_GravityMultiplier;
     m_HazardHitbox.x += m_XVelocity * delta;
     m_HazardHitbox.y += m_YVelocity * delta * 0.9; // why the fuck does gd multiply by 0.9?
     m_SolidHitbox.x += m_XVelocity * delta;
     m_SolidHitbox.y += m_YVelocity * delta * 0.9;
-    m_YVelocity /= m_GravityMultiplier;
 
     handleCollisions(objects);
 
@@ -200,11 +195,9 @@ void Player::update(float delta, bool isMouseHeld, std::vector<GameObject> &obje
     if (m_Gamemode == Gamemode::SHIP) {
         // special thanks to https://github.com/Open-GD/OpenGD for this
         if (pow(m_YVelocity, 2) + pow(m_XVelocity, 2) >= 1.2) {
-            m_Rotation /= m_GravityMultiplier;
             float target = std::atan2(m_YVelocity, m_XVelocity) * 180.0 / M_PI;
             // exponential interpolation
             m_Rotation += (target - m_Rotation) * (1.0 - pow(0.85, delta));
-            m_Rotation *= m_GravityMultiplier;
         }
     }
     const static int CAMERA_SCROLL = m_Game->TILE_SIZE * 6;
@@ -272,11 +265,12 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                             m_YVelocity = 0;
                         }
                     } else {
-                        if (m_YVelocity > 0 && m_SolidHitbox.y > object.getHitbox()->y + object.getHitbox()->h) {
-                            m_HazardHitbox.y = object.getPos().y + m_Game->TILE_SIZE;
+                        if (m_YVelocity < 0 && m_SolidHitbox.y > object.getHitbox()->y + object.getHitbox()->h) {
+                            m_HazardHitbox.y = object.getPos().y + object.getHitbox()->h;
                             m_YVelocity = 0;
                         }
                     }
+                    // Might need fix
                     if (m_Gamemode == Gamemode::SHIP) {
                         if (m_YVelocity < 0 && m_SolidHitbox.y > object.getHitbox()->y + object.getHitbox()->h) {
                             m_HazardHitbox.y = object.getPos().y + m_Game->TILE_SIZE;
@@ -305,9 +299,6 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                 }
                 m_YVelocity /= 2;
                 m_GravityMultiplier = -1;
-                if (m_YVelocity < 0) {
-                    m_YVelocity *= -1;
-                }
                 break;
             case ObjectType::NORMAL_PORTAL:
                 if (m_GravityMultiplier == 1) {
@@ -315,9 +306,6 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
                 }
                 m_YVelocity /= 2;
                 m_GravityMultiplier = 1;
-                if (m_YVelocity < 0) {
-                    m_YVelocity *= -1;
-                }
                 break;
             case ObjectType::SHIP_PORTAL: {
                 m_Gamemode = Gamemode::SHIP;

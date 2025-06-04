@@ -27,7 +27,7 @@ void LevelSelect::init(Game *game) {
     if (m_TitleArrowTexture == nullptr) {
         std::cerr << "Failed to load toTitleScreen.png!" << SDL_GetError() << std::endl;
     }
-    m_LevelStrings = { "Test Level1" };
+    m_LevelStrings = { "Stereo Madness", "Back on Track", "Polargeist", "Dry Out", "Base After Base", "Cant Let Go", "Jumper" };
     m_LevelNameTexture = Text::createTexture(m_Renderer, m_LevelStrings[0]);
     m_BestPercentTexture = Text::createTexture(m_Renderer, "Normal: 0%");
     m_BestPracticePercentTexture = Text::createTexture(m_Renderer, "Practice: 0%");

@@ -42,7 +42,7 @@ void ObjectManager::init(Game *game) {
     m_IDToObjectData[30].type = ObjectType::G_TRIGGER;
     m_IDToObjectData[35] = {
         ObjectType::PAD,
-        { 10, 104, 100, 16 },
+        { -10, 0, 100, 16 },
     };
     m_IDToObjectData[36] = {
         ObjectType::ORB,

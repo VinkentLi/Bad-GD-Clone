@@ -11,7 +11,7 @@
 
 class Game {
 public:
-    constexpr static int LEVEL_COUNT = 1;
+    constexpr static int LEVEL_COUNT = 7;
     constexpr static int TILE_SIZE = 120;
     Game() {}
     ~Game() = default;
