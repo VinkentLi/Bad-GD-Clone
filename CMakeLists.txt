@@ -53,7 +53,6 @@ if(EMSCRIPTEN)
             "-flto"
             "-sASSERTIONS=0"
             "-sEXIT_RUNTIME=0"
-            "--closure=1"
         )
     endif()
 
