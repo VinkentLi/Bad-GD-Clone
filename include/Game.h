@@ -18,18 +18,18 @@ public:
     Game(const Game &) = delete;
     Game &operator=(const Game &) = delete;
     int init();
-    void run();
     void quit();
 
     void update(float deltaTime);
     void render();
     void handleEvents();
+    void incrementFrames();
+    void updateFPS();
 
     void pushState(GameState *state);
     void popState();
     void changeState(GameState *state);
     inline GameState *getState() { return m_GameStates.top(); }
-    
     inline bool isGameRunning() { return m_IsGameRunning; }
     inline bool isMouseHeld() { return m_IsMouseHeld; }
     inline bool isEscapeHeld() { return m_IsEscapeHeld; }
@@ -54,13 +54,6 @@ private:
     SDL_Window *m_Window;
     SDL_Renderer *m_Renderer;
     SDL_Texture *m_FPSTexture;
-
-// TODO: FIX BAD CODE
-#ifdef __EMSCRIPTEN__
-public:
-#endif
-    uint64_t m_CurrentTime;
-    uint64_t m_NewTime;
     SDL_Point m_MousePosition;
     SDL_FPoint m_CameraPosition;
     Mix_Music *m_MenuLoop;
@@ -79,12 +72,4 @@ public:
     int m_ScreenHeight;
     int m_Frames = 0;
     int m_CurrentFPS = 0;
-    int m_Timer = 0;
-#ifndef __EMSCRIPTEN__
-    void mainLoop();
-#endif
 };
-
-#ifdef __EMSCRIPTEN__
-extern Game emGame;
-#endif

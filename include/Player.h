@@ -37,8 +37,6 @@ public:
     void init(Game *game);
     void reset();
     void update(float deltaTime);
-    void handleCollisions(std::vector<GameObject> &objects);
-    void activateTriggers(std::vector<GameObject> &triggers);
     inline void moveX(float dist) { m_Position.x += dist; }
     inline void moveY(float dist) { m_Position.y += dist; }
     void die();
@@ -81,4 +79,19 @@ private:
     int m_GravityMultiplier;
     Gamemode m_Gamemode;
     std::pair<float, float> m_Bounds;
+
+    void updatePractice();
+    void respawn();
+    void updatePhysics(float deltaTime, bool mouseClicked, bool mouseReleased);
+    void handleCollisions(std::vector<GameObject> &objects);
+    void collideWithGround();
+    void collideWithObject(GameObject &object);
+    void snapToObject(GameObject &object);
+    void setShipBounds(GameObject &shipPortal);
+    void activateTriggers(std::vector<GameObject> &triggers);
+    void updateCubeRotation(float deltaTime);
+    void updateShipRotation(float deltaTime);
+    void scrollCamera();
+    void renderCube();
+    void renderShip();
 };

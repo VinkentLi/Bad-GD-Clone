@@ -1,6 +1,6 @@
 # Bad-GD-Clone
 
-The name speaks for itself. Clone of GD 1.0 written in my terrible C++ code.
+Clone of Geometry Dash 1.0
 
 ## How to build
 
@@ -15,7 +15,7 @@ cd ..
 ./build/GDClone
 ```
 
-Run these commands to build for the web (note: building for web is currently not working)
+Run these commands to build for the web
 ```bash
 mkdir build-web
 cd build-web
@@ -44,4 +44,4 @@ Then use this html code
 ```
 
 ## TODO
-- Tidy up code
+- A lot of things, none of which are worth doing

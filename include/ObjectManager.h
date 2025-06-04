@@ -27,9 +27,6 @@ public:
     std::vector<GameObject> &getObjects();
     std::vector<GameObject> &getTriggers();
     SDL_FRect rotateHitbox(SDL_FRect hitbox, int rotations);
-    void clearObjects();
-    void loadTextures();
-    void loadLevelData();
     void render();
     inline int getFurthestX() { return m_FurthestX; }
 
@@ -39,5 +36,12 @@ private:
     std::vector<GameObject> m_Triggers;
     std::map<int, ObjectData> m_IDToObjectData;
     int m_FurthestX = 0;
+
+    void initBlocks();
+    void clearObjects();
+    void loadTextures();
+    void loadLevelData();
+    void setInitialProperties(const std::vector<std::string> &splitInitialProperties);
+    void addObject(const std::string &properties);
 };
 

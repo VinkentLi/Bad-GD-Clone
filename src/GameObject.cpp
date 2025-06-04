@@ -8,6 +8,7 @@ GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos
     
     m_Renderer = m_Game->getRenderer();
     SDL_QueryTexture(m_ObjectTexture, NULL, NULL, &m_Rect.w, &m_Rect.h);
+    // in sdl you can't do both flips at the same time ¯\_(ツ)_/¯
     if (m_FlipX && m_FlipY) {
         m_FlipX = false;
         m_FlipY = false;
@@ -67,7 +68,8 @@ void GameObject::render() {
         flip = SDL_FLIP_VERTICAL;
     }
     SDL_RenderCopyEx(m_Renderer, m_ObjectTexture, NULL, &m_Rect, m_Rotation * 90.0, NULL, flip);
-
+    
+    // this just draws hitboxes for debugging
     // SDL_FRect temp = m_Hitbox;
     // temp.x -= m_Game->getCameraPosition().x;
     // temp.y -= m_Game->getCameraPosition().y;

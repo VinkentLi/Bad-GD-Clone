@@ -96,7 +96,7 @@ void PlayingState::enter() {
     m_Game->getGround().fade(m_InitialGround.r, m_InitialGround.g, m_InitialGround.b, 0);
     int exitX = m_Game->getWidth()/2 + (m_EnterPracticeButton.getW() + MARGIN + m_ResumeButton.getW() + MARGIN - m_ExitButton.getW())/2;
     m_ExitButton.setPosition(exitX, m_Game->getHeight()/2, false, true);
-    m_Timer = 60;
+    m_LevelBeginTimer = 60;
     m_IsTimerFinished = false;
     m_IsSongPlaying = false;
     m_IsPlayerDead = false;
@@ -146,6 +146,7 @@ void PlayingState::update(float deltaTime) {
     }
     if (isEscapeReleased) {
         pause();
+        return;
     }
 
     Background &background = m_Game->getBackground();
@@ -164,8 +165,8 @@ void PlayingState::update(float deltaTime) {
         ground.setOnTop(false);
     }
 
-    if (m_Timer > 0) {
-        m_Timer -= deltaTime;
+    if (m_LevelBeginTimer > 0) {
+        m_LevelBeginTimer -= deltaTime;
         return;
     }
     m_IsTimerFinished = true;
@@ -175,22 +176,7 @@ void PlayingState::update(float deltaTime) {
     m_IsPlayerDead = m_Player.isDead();
 
     if (playerJustDied) {
-        if (m_IsInPractice) {
-            int currentBest = LevelSelect::get()->getBestPracticePercentage();
-            int possibleBest = m_LevelPercent / 100;
-            if (possibleBest > currentBest) {
-                LevelSelect::get()->setBestPracticePercentage(possibleBest);
-                m_JustSetNewBest = true;
-            }
-        } else {
-            int currentBest = LevelSelect::get()->getBestPercentage();
-            int possibleBest = m_LevelPercent / 100;
-            if (possibleBest > currentBest) {
-                LevelSelect::get()->setBestPercentage(possibleBest);
-                m_JustSetNewBest = true;
-                updateNewBestTexture();
-            }
-        }
+        updateNewBest();
     }
 
     if (!PlayingState::get()->isInPractice() && (!m_IsSongPlaying || playerJustRevived)) {
@@ -275,6 +261,26 @@ void PlayingState::updateLevelComplete(bool isEscapeReleased) {
     }
 }
 
+void PlayingState::updateNewBest() {
+    LevelSelect *levelSelect = LevelSelect::get();
+    if (m_IsInPractice) {
+        int currentBest = levelSelect->getBestPracticePercentage();
+        int possibleBest = m_LevelPercent / 100;
+        if (possibleBest > currentBest) {
+            levelSelect->setBestPracticePercentage(possibleBest);
+            m_JustSetNewBest = true;
+        }
+    } else {
+        int currentBest = levelSelect->getBestPercentage();
+        int possibleBest = m_LevelPercent / 100;
+        if (possibleBest > currentBest) {
+            levelSelect->setBestPercentage(possibleBest);
+            m_JustSetNewBest = true;
+            updateNewBestTexture();
+        }
+    }
+}
+
 void PlayingState::render() {
     m_Player.render();
     m_ObjectManager.render();
@@ -345,7 +351,7 @@ void PlayingState::attemptResetTimer() {
     if (m_IsTimerFinished) {
         return;
     }
-    m_Timer = 60;
+    m_LevelBeginTimer = 60;
 }
 
 void PlayingState::updateNewBestTexture() {

@@ -47,7 +47,7 @@ private:
     Button m_ExitButton;
     Button m_EnterPracticeButton;
     Button m_ExitPracticeButton;
-    float m_Timer;
+    float m_LevelBeginTimer;
     bool m_IsTimerFinished;
     bool m_IsSongPlaying;
     bool m_IsPlayerDead;
@@ -68,6 +68,7 @@ private:
     void updatePause(bool isEscapeReleased);
     void updateEndLevel(float deltaTime);
     void updateLevelComplete(bool isEscapeReleased);
+    void updateNewBest();
     void renderPause();
     void renderEndBlocks();
     void renderLevelCompleteMenu();

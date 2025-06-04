@@ -10,11 +10,6 @@
 #include "Player.h"
 #include "Text.h"
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-void emMainLoop();
-#endif
-
 int Game::init() {
     // prevent scaling issues on windows
     SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
@@ -73,6 +68,8 @@ int Game::init() {
     m_MenuLoop = Mix_LoadMUS("res/sfx/menuLoop.wav");
     m_CameraPosition = {0, 0};
 
+    Mix_PlayMusic(m_MenuLoop, -1);
+
     return 0;
 }
 
@@ -92,65 +89,6 @@ void Game::quit() {
     IMG_Quit();
     SDL_Quit();
 }
-
-void Game::run() {
-    Mix_PlayMusic(m_MenuLoop, -1);
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(emMainLoop, 0, 1);
-#else
-    m_CurrentTime = SDL_GetTicks64();
-    while (true) {
-        mainLoop();
-    }
-#endif
-}
-
-// TODO: Fix this lmfao
-#ifdef __EMSCRIPTEN__
-void emMainLoop() {
-    if (!emGame.isGameRunning()) {
-        emGame.quit();
-        emscripten_cancel_main_loop();
-    }
-    emGame.m_NewTime = SDL_GetTicks64();
-    emGame.m_Timer += emGame.m_NewTime - emGame.m_CurrentTime;
-    constexpr float interval = 1000.0f / 60.0f;
-    float deltaTime = (emGame.m_NewTime - emGame.m_CurrentTime) / interval;
-    emGame.m_CurrentTime = emGame.m_NewTime;
-    emGame.handleEvents();
-    emGame.update(deltaTime);
-    emGame.render();
-    emGame.m_Frames++;
-    if (emGame.m_Timer >= 1000) {
-        emGame.m_CurrentFPS = emGame.m_Frames;
-        emGame.m_Frames = 0;
-        emGame.m_Timer -= 1000;
-    }
-}
-#else
-void Game::mainLoop() {
-    if (!m_IsGameRunning) {
-        quit();
-        exit(0);
-    }
-    m_NewTime = SDL_GetTicks64();
-    m_Timer += m_NewTime - m_CurrentTime;
-    constexpr float interval = 1000.0f / 60.0f;
-    float deltaTime = (m_NewTime - m_CurrentTime) / interval;
-    m_CurrentTime = m_NewTime;
-    handleEvents();
-    update(deltaTime);
-    render();
-    m_Frames++;
-    if (m_Timer >= 1000) {
-        m_CurrentFPS = m_Frames;
-        m_Frames = 0;
-        m_Timer -= 1000;
-        SDL_DestroyTexture(m_FPSTexture);
-        m_FPSTexture = Text::createTexture(m_Renderer, "FPS: " + std::to_string(m_CurrentFPS));
-    }
-}
-#endif
 
 void Game::update(float deltaTime) {
     m_GameStates.top()->update(deltaTime);
@@ -217,6 +155,17 @@ void Game::handleEvents() {
             break;
         }
     }
+}
+
+void Game::incrementFrames() {
+    m_Frames++;
+}
+
+void Game::updateFPS() {
+    m_CurrentFPS = m_Frames;
+    SDL_DestroyTexture(m_FPSTexture);
+    m_FPSTexture = Text::createTexture(m_Renderer, "FPS: " + std::to_string(m_CurrentFPS));
+    m_Frames = 0;
 }
 
 void Game::pushState(GameState *state) {

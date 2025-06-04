@@ -9,6 +9,11 @@
 
 void ObjectManager::init(Game *game) {
     m_Game = game;
+    initBlocks();
+    loadTextures();
+}
+
+void ObjectManager::initBlocks() {
     // i found hitbox values in the gd programming discord
     for (int i = 1; i <= 7; i++) {
         if (i == 5) continue;
@@ -58,8 +63,6 @@ void ObjectManager::init(Game *game) {
         { 0, 0, 120, 54 },
     };
     m_IDToObjectData[41].type = ObjectType::DECO;
-
-    loadTextures();
 }
 
 void ObjectManager::reset() {
@@ -97,8 +100,7 @@ SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
     SDL_FPoint center = {rotated.x + rotated.w/2, rotated.y + rotated.h/2};
     rotated.x -= center.x;
     rotated.y -= center.y;
-    for (int i = 0; i < rotations; i++)
-    {
+    for (int i = 0; i < rotations; i++) {
         float newX = -rotated.y - rotated.h;
         float newY = rotated.x;
         rotated.x = newX;
@@ -129,6 +131,7 @@ void ObjectManager::loadLevelData() {
     std::ifstream in;
     in.open("res/leveldata/" + std::to_string(LevelSelect::get()->getLevelSelected()) + ".level");
     std::stringstream buffer;
+    // read entire file
     buffer << in.rdbuf();
     std::string levelData = buffer.str();
     in.close();
@@ -136,10 +139,96 @@ void ObjectManager::loadLevelData() {
     
     // read initial properties from before the level starts
     std::string initialProperties = objectProperties[0];
-    std::vector<std::string> splitIntialProperties = Util::splitString(initialProperties, ',');
-    for (std::size_t i = 0; i+1 < splitIntialProperties.size(); i += 2) {
-        std::string property = splitIntialProperties[i];
-        std::string propertyValue = splitIntialProperties[i+1];
+    std::vector<std::string> splitInitialProperties = Util::splitString(initialProperties, ',');
+    setInitialProperties(splitInitialProperties);
+    objectProperties.erase(objectProperties.begin());
+
+    for (std::string &properties : objectProperties) {
+        addObject(properties);
+    }
+}
+
+void ObjectManager::addObject(const std::string &properties) {
+    std::vector<std::string> splitProperties = Util::splitString(properties, ',');
+    int objectID = 1;
+    SDL_FPoint objectPos = { 0, 0 };
+    ObjectData data = m_IDToObjectData[objectID];
+    bool flipX = false;
+    bool flipY = false;
+    int rotation = 0;
+    SDL_Color color = { 0, 0, 0 };
+    float duration = 0;
+    // i'm just gonna assume id is always listed first cuz otherwise there's gonna be some issues
+    // also i love gd cologne https://github.com/GDColon/GDBrowser/blob/master/misc/analysis/objectProperties.json
+    for (std::size_t i = 0; i+1 < splitProperties.size(); i += 2) {
+        int propertyID = std::stoi(splitProperties[i]);
+        std::string propertyValue = splitProperties[i+1];
+        switch (propertyID) {
+        case 1: // ID
+            objectID = std::stoi(propertyValue);
+            // if the object actually exists
+            if (m_IDToObjectData.count(objectID) > 0) {
+                data = m_IDToObjectData[objectID];
+            } else {
+                continue;
+            }
+            break;
+        case 2: // x
+            objectPos.x = std::stof(propertyValue)*4 - data.width/2;
+            break;
+        case 3: // y
+            objectPos.y = m_Game->getHeight() - 3*m_Game->TILE_SIZE - (std::stof(propertyValue)*4 + data.height/2) + data.offset.y;
+            break;
+        case 4: // flipX
+            flipX = std::stoi(propertyValue) == 1;
+            break;
+        case 5: // flipY
+            flipY = std::stoi(propertyValue) == 1;
+            break;
+        case 6: // rotation
+            rotation = std::stoi(propertyValue) / 90;
+            break;
+        case 7: // red
+            color.r = std::stoi(propertyValue);
+            break;
+        case 8: // green
+            color.g = std::stoi(propertyValue);
+            break;
+        case 9: // blue
+            color.b = std::stoi(propertyValue);
+            break;
+        case 10: // duration
+            duration = std::stof(propertyValue);
+            break;
+        default:
+            break;
+        }
+    }
+    // if the object doesn't exist
+    if (m_IDToObjectData.count(objectID) == 0) {
+        return;
+    }
+    SDL_FRect hitboxOffset = rotateHitbox(data.hitbox, rotation);
+    if (flipX) {
+        hitboxOffset.x = data.width - hitboxOffset.x - hitboxOffset.w;
+    }
+    if (flipY) {
+        hitboxOffset.y = data.height - hitboxOffset.y - hitboxOffset.h;
+    }
+    SDL_FRect hitbox = {hitboxOffset.x + objectPos.x, hitboxOffset.y + objectPos.y, hitboxOffset.w, hitboxOffset.h};
+    // separate triggers
+    if (data.type == ObjectType::BG_TRIGGER || data.type == ObjectType::G_TRIGGER) {
+        m_Triggers.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
+    } else {
+        m_Objects.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
+    }
+    m_FurthestX = std::max(m_FurthestX, static_cast<int>(objectPos.x + data.width));
+}
+
+void ObjectManager::setInitialProperties(const std::vector<std::string> &splitInitialProperties) {
+    for (std::size_t i = 0; i+1 < splitInitialProperties.size(); i += 2) {
+        std::string property = splitInitialProperties[i];
+        std::string propertyValue = splitInitialProperties[i+1];
         // i love gd cologne https://github.com/GDColon/GDBrowser/blob/master/misc/analysis/initialProperties.json
         if (property == "kS29") {
             std::vector<std::string> splitPropertyValue = Util::splitString(propertyValue, '_');
@@ -157,85 +246,6 @@ void ObjectManager::loadLevelData() {
             PlayingState::get()->setInitialGround(color);
         }
         // i'm not doing any more initial properties because i'm lazy as hell
-    }
-
-    objectProperties.erase(objectProperties.begin());
-
-    for (std::string &properties : objectProperties) {
-        std::vector<std::string> splitProperties = Util::splitString(properties, ',');
-        int objectID = 1;
-        SDL_FPoint objectPos = { 0, 0 };
-        ObjectData data = m_IDToObjectData[objectID];
-        bool flipX = false;
-        bool flipY = false;
-        int rotation = 0;
-        SDL_Color color = { 0, 0, 0 };
-        float duration = 0;
-        // i'm just gonna assume id is always listed first cuz otherwise there's gonna be some issues
-        // also i love gd cologne https://github.com/GDColon/GDBrowser/blob/master/misc/analysis/objectProperties.json
-        for (std::size_t i = 0; i+1 < splitProperties.size(); i += 2) {
-            int propertyID = std::stoi(splitProperties[i]);
-            std::string propertyValue = splitProperties[i+1];
-            switch (propertyID) {
-            case 1: // ID
-                objectID = std::stoi(propertyValue);
-                // if the object actually exists
-                if (m_IDToObjectData.count(objectID) > 0) {
-                    data = m_IDToObjectData[objectID];
-                } else {
-                    continue;
-                }
-                break;
-            case 2: // x
-                objectPos.x = std::stof(propertyValue)*4 - data.width/2;
-                break;
-            case 3: // y
-                objectPos.y = m_Game->getHeight() - 3*m_Game->TILE_SIZE - (std::stof(propertyValue)*4 + data.height/2) + data.offset.y;
-                break;
-            case 4: // flipX
-                flipX = std::stoi(propertyValue) == 1;
-                break;
-            case 5: // flipY
-                flipY = std::stoi(propertyValue) == 1;
-                break;
-            case 6: // rotation
-                rotation = std::stoi(propertyValue) / 90;
-                break;
-            case 7: // red
-                color.r = std::stoi(propertyValue);
-                break;
-            case 8: // green
-                color.g = std::stoi(propertyValue);
-                break;
-            case 9: // blue
-                color.b = std::stoi(propertyValue);
-                break;
-            case 10: // duration
-                duration = std::stof(propertyValue);
-                break;
-            default:
-                break;
-            }
-        }
-        // if the object doesn't exist
-        if (m_IDToObjectData.count(objectID) == 0) {
-            continue;
-        }
-        SDL_FRect hitboxOffset = rotateHitbox(data.hitbox, rotation);
-        if (flipX) {
-            hitboxOffset.x = data.width - hitboxOffset.x - hitboxOffset.w;
-        }
-        if (flipY) {
-            hitboxOffset.y = data.height - hitboxOffset.y - hitboxOffset.h;
-        }
-        SDL_FRect hitbox = {hitboxOffset.x + objectPos.x, hitboxOffset.y + objectPos.y, hitboxOffset.w, hitboxOffset.h};
-        // separate triggers
-        if (data.type == ObjectType::BG_TRIGGER || data.type == ObjectType::G_TRIGGER) {
-            m_Triggers.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
-        } else {
-            m_Objects.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
-        }
-        m_FurthestX = std::max(m_FurthestX, static_cast<int>(objectPos.x + data.width));
     }
 }
 
