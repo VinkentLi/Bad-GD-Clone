@@ -15,6 +15,10 @@ set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose build type (Debug or Release):
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wno-c++11-narrowing)
 
+if (WIN32 AND NOT EMSCRIPTEN AND CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_link_options(${PROJECT_NAME} PRIVATE -mwindows)
+endif()
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
     target_compile_options(${PROJECT_NAME} PRIVATE -g -O0)
