@@ -17,7 +17,7 @@ void PlayingState::init(Game *game) {
     m_Player.init(m_Game);
     m_ObjectManager.init(m_Game);
     for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
-        m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".wav").c_str()));
+        m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".ogg").c_str()));
     }
     m_LevelEndBlockTexture = IMG_LoadTexture(m_Renderer, "res/gfx/objects/2.png");
     if (m_LevelEndBlockTexture == nullptr) {
@@ -42,13 +42,13 @@ void PlayingState::init(Game *game) {
     m_NewBestTexture = Text::createTexture(m_Renderer, "New Best! 0%");
     m_LevelPercentTexture = Text::createTexture(m_Renderer, "0.00%");
     m_LevelCompleteTextTexture = Text::createTexture(m_Renderer, "Your did it!");
-    m_LevelCompleteSound = Mix_LoadWAV("res/sfx/levelComplete.wav");
+    m_LevelCompleteSound = Mix_LoadWAV("res/sfx/levelComplete.ogg");
     if (m_LevelCompleteSound == nullptr) {
-        std::cerr << "Failed to load levelComplete.wav! " << SDL_GetError() << std::endl;
+        std::cerr << "Failed to load levelComplete.ogg! " << SDL_GetError() << std::endl;
     }
-    m_PracticeMusic = Mix_LoadMUS("res/sfx/practice.wav");
+    m_PracticeMusic = Mix_LoadMUS("res/sfx/practice.ogg");
     if (m_PracticeMusic == nullptr) {
-        std::cerr << "Failed to load practice.wav! " << SDL_GetError() << std::endl;
+        std::cerr << "Failed to load practice.ogg! " << SDL_GetError() << std::endl;
     }
     int resumeWidth = 0;
     int resumeHeight = 0;
@@ -89,6 +89,7 @@ void PlayingState::destroy() {
 }
 
 void PlayingState::enter() {
+    updateLevelCompleteTextTexture();
     Mix_HaltMusic();
     m_Player.reset();
     m_ObjectManager.reset();

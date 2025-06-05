@@ -32,7 +32,7 @@ Then use this html code
     <meta charset="UTF-8" />
 </head>
 <body>
-    <canvas class="relative w-2/5" style="height: 50vh; overflow: hidden;" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <canvas style="height: 80vh; overflow: hidden; display: block; margin: 0 auto;" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     <script>
         var Module = {
             canvas: (function() { return document.getElementById('canvas'); })()

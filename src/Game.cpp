@@ -65,7 +65,7 @@ int Game::init() {
 
     pushState(TitleScreen::get());
 
-    m_MenuLoop = Mix_LoadMUS("res/sfx/menuLoop.wav");
+    m_MenuLoop = Mix_LoadMUS("res/sfx/menuLoop.ogg");
     m_CameraPosition = {0, 0};
 
     Mix_PlayMusic(m_MenuLoop, -1);
