@@ -17,6 +17,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wno-c++11-narrowing)
 
 if (WIN32 AND NOT EMSCRIPTEN AND CMAKE_BUILD_TYPE STREQUAL "Release")
     target_link_options(${PROJECT_NAME} PRIVATE -mwindows)
+elseif (WIN32)
+    target_link_options(${PROJECT_NAME} PRIVATE -mconsole)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")

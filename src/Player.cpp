@@ -74,8 +74,8 @@ void Player::update(float deltaTime) {
                         (!m_IsMouseHeld && m_Game->isSpaceHeld()) || 
                         (!m_IsMouseHeld && m_Game->isUpHeld());
 
-    bool mouseReleased = (m_IsMouseHeld && !m_Game->isMouseHeld()) || 
-                         (m_IsMouseHeld && !m_Game->isSpaceHeld()) || 
+    bool mouseReleased = (m_IsMouseHeld && !m_Game->isMouseHeld()) && 
+                         (m_IsMouseHeld && !m_Game->isSpaceHeld()) && 
                          (m_IsMouseHeld && !m_Game->isUpHeld());
                          
     m_IsMouseHeld = m_Game->isMouseHeld() || m_Game->isSpaceHeld() || m_Game->isUpHeld();
