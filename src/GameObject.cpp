@@ -3,11 +3,16 @@
 #include "Game.h"
 #include "GameObject.h"
 
-GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, SDL_FRect hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture, SDL_Color color, float duration)
-    : m_Game(game), m_Type(type), m_Rotation(rotation), m_Position(pos), m_Hitbox(hitbox), m_FlipX(xFlip), m_FlipY(yFlip), m_ObjectTexture(objectTexture), m_Color(color), m_Duration(duration) {
+GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, std::optional<SDL_FRect> hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture)
+    : m_Game(game), m_Type(type), m_Rotation(rotation), m_Position(pos), m_Hitbox(hitbox), m_FlipX(xFlip), m_FlipY(yFlip), m_ObjectTexture(objectTexture) {
     
     m_Renderer = m_Game->getRenderer();
-    SDL_QueryTexture(m_ObjectTexture, NULL, NULL, &m_Rect.w, &m_Rect.h);
+    if (m_ObjectTexture != nullptr) {
+        SDL_QueryTexture(m_ObjectTexture, NULL, NULL, &m_Rect.w, &m_Rect.h);
+    } else {
+        m_Rect.w = 0;
+        m_Rect.h = 0;
+    }
     // in sdl you can't do both flips at the same time ¯\_(ツ)_/¯
     if (m_FlipX && m_FlipY) {
         m_FlipX = false;
@@ -16,48 +21,32 @@ GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos
     }
 }
 
-void GameObject::activate() {
-    if (m_Type != ObjectType::BG_TRIGGER && m_Type != ObjectType::G_TRIGGER) {
-        std::cout << "You can't activate things that aren't triggers!\n";
-        return;
-    }
-    // can't be activated more than once
-    if (m_IsActivated) {
-        return;
-    }
-    m_IsActivated = true;
-    if (m_Type == ObjectType::BG_TRIGGER) {
-        m_Game->getBackground().fade(m_Color.r, m_Color.g, m_Color.b, m_Duration);
-    } else if (m_Type == ObjectType::G_TRIGGER) {
-        m_Game->getGround().fade(m_Color.r, m_Color.g, m_Color.b, m_Duration);
-    }
+std::optional<SDL_FRect> &GameObject::getHitbox() {
+    return m_Hitbox;
 }
 
-void GameObject::reset() {
-    m_IsActivated = false;
-}
-
-SDL_FRect *GameObject::getHitbox() {
-    return &m_Hitbox;
-}
-
-SDL_FPoint GameObject::getPos() {
+SDL_FPoint GameObject::getPos() const {
     return m_Position;
 }
 
-float GameObject::getWidth() {
+float GameObject::getWidth() const {
     return m_Rect.w;
 }
 
-float GameObject::getHeight() {
+float GameObject::getHeight() const {
     return m_Rect.h;
 }
 
-ObjectType GameObject::getType() {
+ObjectType GameObject::getType() const {
     return m_Type;
 }
 
 void GameObject::render() {
+    // some objects don't have textures
+    if (m_ObjectTexture == nullptr) {
+        return;
+    }
+
     m_Rect.x = static_cast<int>(m_Position.x) - m_Game->getCameraPosition().x;
     m_Rect.y = static_cast<int>(m_Position.y) - m_Game->getCameraPosition().y;
 

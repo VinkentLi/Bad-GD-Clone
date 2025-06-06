@@ -34,6 +34,7 @@ public:
     inline bool isMouseHeld() { return m_IsMouseHeld; }
     inline bool isEscapeHeld() { return m_IsEscapeHeld; }
     inline bool isSpaceHeld() { return m_IsSpaceHeld; }
+    inline bool isUpHeld() { return m_IsUpHeld; }
     inline bool isZHeld() { return m_IsZHeld; }
     inline bool isXHeld() { return m_IsXHeld; }
     inline SDL_Renderer *getRenderer() { return m_Renderer; }
@@ -42,9 +43,10 @@ public:
     inline int getScreenWidth() { return m_ScreenWidth; }
     inline int getScreenHeight() { return m_ScreenHeight; }
     inline SDL_FPoint getCameraPosition() { return m_CameraPosition; }
-    inline void setCameraPosition(SDL_FPoint newPosition) { m_CameraPosition = newPosition; } 
+    inline void setCameraPosition(SDL_FPoint newPosition) { m_CameraPosition = newPosition; m_TargetY = newPosition.y; } 
     inline void setCameraX(float x) { m_CameraPosition.x = x; }
-    inline void setCameraY(float y) { m_CameraPosition.y = y; }
+    inline void setCameraY(float y) { m_CameraPosition.y = y; m_TargetY = y; }
+    inline void smoothCameraYScroll(float targetY) { m_TargetY = targetY; }  
     inline SDL_Point getMousePosition() { return m_MousePosition; }
     inline Ground &getGround() { return m_Ground; }
     inline Background &getBackground() { return m_Background; }
@@ -55,7 +57,8 @@ private:
     SDL_Renderer *m_Renderer;
     SDL_Texture *m_FPSTexture;
     SDL_Point m_MousePosition;
-    SDL_FPoint m_CameraPosition;
+    SDL_FPoint m_CameraPosition = { 0, 0 };
+    float m_TargetY = 0;
     Mix_Music *m_MenuLoop;
     Background m_Background;
     Ground m_Ground;
@@ -64,6 +67,7 @@ private:
     bool m_IsMouseHeld = false;
     bool m_IsEscapeHeld = false;
     bool m_IsSpaceHeld = false;
+    bool m_IsUpHeld = false;
     bool m_IsZHeld = false;
     bool m_IsXHeld = false;
     int m_Width;

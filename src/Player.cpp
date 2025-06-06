@@ -32,12 +32,7 @@ void Player::init(Game *game) {
 void Player::reset() {
     m_Position = {-m_Game->TILE_SIZE, static_cast<float>(m_Game->getHeight() - 4*m_Game->TILE_SIZE)};
     m_PreviousPosition = m_Position;
-    m_XVelocity = 20.772;
     m_YVelocity = 0;
-    m_JumpStrength = -44.72;
-    m_PadStrength = -64;
-    m_Gravity = 3.456;
-    m_RotationAdder = 6.92308;
     m_Rotation = 0;
     m_TargetRotation = 0;
     m_HazardHitbox = {
@@ -62,7 +57,7 @@ void Player::reset() {
     m_GravityMultiplier = 1;
     m_Gamemode = Gamemode::CUBE;
     m_Checkpoints.clear();
-    for (GameObject &trigger : PlayingState::get()->getTriggers()) {
+    for (Trigger &trigger : PlayingState::get()->getTriggers()) {
         trigger.reset();
     }
 }
@@ -75,14 +70,20 @@ Player::~Player() {
 }
 
 void Player::update(float deltaTime) {
-    bool mouseClicked = (!m_IsMouseHeld && m_Game->isMouseHeld());
-    bool mouseReleased = (m_IsMouseHeld && !m_Game->isMouseHeld());
+    bool mouseClicked = (!m_IsMouseHeld && m_Game->isMouseHeld()) ||
+                        (!m_IsMouseHeld && m_Game->isSpaceHeld()) || 
+                        (!m_IsMouseHeld && m_Game->isUpHeld());
+
+    bool mouseReleased = (m_IsMouseHeld && !m_Game->isMouseHeld()) || 
+                         (m_IsMouseHeld && !m_Game->isSpaceHeld()) || 
+                         (m_IsMouseHeld && !m_Game->isUpHeld());
+                         
+    m_IsMouseHeld = m_Game->isMouseHeld() || m_Game->isSpaceHeld() || m_Game->isUpHeld();
 
     if (PlayingState::get()->isInPractice()) {
         updatePractice();
     }
 
-    m_IsMouseHeld = m_Game->isMouseHeld();
     if (m_IsDead) {
         m_DeadTimer -= deltaTime;
         if (m_DeadTimer < 0) {
@@ -104,7 +105,7 @@ void Player::update(float deltaTime) {
         break;
     }
     
-    scrollCamera();
+    scrollCamera(deltaTime);
 
     if (m_Position.y < PlayingState::get()->getMinY()) {
         die();
@@ -160,7 +161,7 @@ void Player::respawn() {
         m_TargetRotation = 0;
         m_GravityMultiplier = 1;
         m_YVelocity = 0;
-        for (GameObject &trigger : PlayingState::get()->getTriggers()) {
+        for (Trigger &trigger : PlayingState::get()->getTriggers()) {
             trigger.reset();
         }
         SDL_Color initialBackground = PlayingState::get()->getInitialBackground();
@@ -183,7 +184,7 @@ void Player::respawn() {
         ground.setTargetColor(latestCheckpoint.groundTargetColor);
         background.setFadeTime(latestCheckpoint.backgroundFadeTime);
         ground.setFadeTime(latestCheckpoint.groundFadeTime);
-        for (GameObject &trigger : PlayingState::get()->getTriggers()) {
+        for (Trigger &trigger : PlayingState::get()->getTriggers()) {
             bool passedBeforeCheckpoint = m_HazardHitbox.x > trigger.getPos().x + m_Game->TILE_SIZE/2;
             if (!passedBeforeCheckpoint) {
                 trigger.reset();
@@ -236,8 +237,12 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
     collideWithGround();
 
     for (GameObject &object : objects) {
+        const std::optional<SDL_FRect> &hitbox = object.getHitbox();
+        if (!hitbox.has_value()) {
+            continue;
+        }
         SDL_FRect intersect; // this is useless but im too lazy to remove it lmfao
-        if (SDL_IntersectFRect(&m_HazardHitbox, object.getHitbox(), &intersect)) {
+        if (SDL_IntersectFRect(&m_HazardHitbox, &hitbox.value(), &intersect)) {
             collideWithObject(object);
         }
     }
@@ -255,7 +260,8 @@ void Player::collideWithObject(GameObject &object) {
         die();
         break;
     case ObjectType::BLOCK:
-        if (SDL_HasIntersectionF(&m_SolidHitbox, object.getHitbox())) {
+        // checking inner hitbox cuz if inner hitbox collides, player dies
+        if (SDL_HasIntersectionF(&m_SolidHitbox, &object.getHitbox().value())) {
             die();
         } else {
             snapToObject(object);
@@ -265,11 +271,11 @@ void Player::collideWithObject(GameObject &object) {
         m_YVelocity = m_PadStrength * m_GravityMultiplier;
         break;
     case ObjectType::ORB: {
-        const bool orbNotInPressedOrbs = std::find(m_PressedOrbs.begin(), m_PressedOrbs.end(), object.getHitbox()) == m_PressedOrbs.end();
+        const bool orbNotInPressedOrbs = std::find(m_PressedOrbs.begin(), m_PressedOrbs.end(), &object.getHitbox().value()) == m_PressedOrbs.end();
         const bool orbHasNotBeenPressed = m_PressedOrbs.empty() || orbNotInPressedOrbs;
         if (m_HasBufferedOrb && orbHasNotBeenPressed) {
             m_YVelocity = m_JumpStrength * m_GravityMultiplier;
-            m_PressedOrbs.push_back(object.getHitbox());
+            m_PressedOrbs.push_back(&object.getHitbox().value());
         }
         break;
     }
@@ -350,18 +356,20 @@ void Player::snapToObject(GameObject &object) {
 
 void Player::setShipBounds(GameObject &shipPortal) {
     const int BOUNDS_HEIGHT = (m_Game->getHeight() - 10*m_Game->TILE_SIZE)/2;
-    m_Game->setCameraY(std::clamp(
+    m_Game->smoothCameraYScroll(
         // why does gd do this lmao
-        (std::round(shipPortal.getPos().y/m_Game->TILE_SIZE)-3)*m_Game->TILE_SIZE - BOUNDS_HEIGHT,
-        -10000.0f, 
-        static_cast<float>(-3*m_Game->TILE_SIZE + BOUNDS_HEIGHT)
-    ));
+        std::clamp(
+            (std::round(shipPortal.getPos().y/m_Game->TILE_SIZE)-3)*m_Game->TILE_SIZE - BOUNDS_HEIGHT, 
+            -10000.0f, 
+            static_cast<float>(-3*m_Game->TILE_SIZE + BOUNDS_HEIGHT)
+        )
+    );
     m_Bounds.first = m_Game->getCameraPosition().y + BOUNDS_HEIGHT;
     m_Bounds.second = m_Bounds.first + 10 * m_Game->TILE_SIZE;
 }
 
-void Player::activateTriggers(std::vector<GameObject> &triggers) {
-    for (GameObject &trigger : triggers) {
+void Player::activateTriggers(std::vector<Trigger> &triggers) {
+    for (Trigger &trigger : triggers) {
         bool passedTrigger = m_Position.x > trigger.getPos().x + m_Game->TILE_SIZE/2;
         if (passedTrigger) {
             trigger.activate();
@@ -371,7 +379,7 @@ void Player::activateTriggers(std::vector<GameObject> &triggers) {
 
 void Player::updateCubeRotation(float deltaTime) {
     m_Rotation += m_GravityMultiplier == 1 ? m_RotationAdder * deltaTime : -m_RotationAdder * deltaTime;
-    m_Rotation = fmod(m_Rotation, 360.0);
+    m_Rotation = std::fmod(m_Rotation, 360.0);
     if (m_GravityMultiplier == 1) {
         if (!m_IsGrounded && m_Rotation > m_TargetRotation) {
             m_TargetRotation = std::trunc(m_Rotation / 90) * 90 + 90;
@@ -386,35 +394,39 @@ void Player::updateCubeRotation(float deltaTime) {
             m_Rotation = m_TargetRotation;
         }
     }
-    m_TargetRotation = fmod(m_TargetRotation, 360.0);
+    m_TargetRotation = std::fmod(m_TargetRotation, 360.0);
 }
 
 void Player::updateShipRotation(float deltaTime) {
     if (m_Gamemode == Gamemode::SHIP) {
         // special thanks to https://github.com/Open-GD/OpenGD for this
-        if (pow(m_YVelocity, 2) + pow(m_XVelocity, 2) >= 1.2) {
-            float target = std::atan2(m_YVelocity, m_XVelocity) * 180.0 / M_PI;
+        if (std::pow(m_YVelocity, 2) + std::pow(m_XVelocity, 2) >= 1.2) {
+            double target = std::atan2(m_YVelocity, m_XVelocity) * 180.0 / M_PI;
             // exponential interpolation
-            m_Rotation += (target - m_Rotation) * (1.0 - pow(0.85, deltaTime));
+            m_Rotation += (target - m_Rotation) * (1.0 - std::pow(0.85, deltaTime));
         }
     }
 }
 
-void Player::scrollCamera() {
+void Player::scrollCamera(float deltaTime) {
     const static int CAMERA_SCROLL = m_Game->TILE_SIZE * 6;
     const static int CAMERA_UP_SCROLL = m_Game->getHeight() / 4;
     const static int CAMERA_DOWN_SCROLL = m_Game->getHeight() - 4*m_Game->TILE_SIZE;
+
+    const SDL_FPoint cameraPosition = m_Game->getCameraPosition();
     
-    if (m_Position.x - m_Game->getCameraPosition().x > CAMERA_SCROLL) {
+    if (m_Position.x - cameraPosition.x > CAMERA_SCROLL) {
         m_Game->setCameraX(m_Position.x - CAMERA_SCROLL);
     }
 
     if (m_Gamemode == Gamemode::CUBE) {
-        if (m_Position.y - m_Game->getCameraPosition().y < CAMERA_UP_SCROLL) {
-            m_Game->setCameraY(m_Position.y - CAMERA_UP_SCROLL);
+        if (m_Position.y - cameraPosition.y < CAMERA_UP_SCROLL) {
+            float target = m_Position.y - CAMERA_UP_SCROLL;
+            m_Game->smoothCameraYScroll(target);
         }
-        if (m_Position.y - m_Game->getCameraPosition().y > CAMERA_DOWN_SCROLL) {
-            m_Game->setCameraY(m_Position.y - CAMERA_DOWN_SCROLL);
+        if (m_Position.y - cameraPosition.y > CAMERA_DOWN_SCROLL) {
+            float target = m_Position.y - CAMERA_DOWN_SCROLL;
+            m_Game->smoothCameraYScroll(target);
         }
     }
 }

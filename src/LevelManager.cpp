@@ -1,4 +1,4 @@
-#include "ObjectManager.h"
+#include "LevelManager.h"
 #include "Game.h"
 #include "LevelSelect.h"
 #include "PlayingState.h"
@@ -7,37 +7,37 @@
 #include "Util.h"
 #include <iostream>
 
-void ObjectManager::init(Game *game) {
+void LevelManager::init(Game *game) {
     m_Game = game;
     initBlocks();
     loadTextures();
 }
 
-void ObjectManager::initBlocks() {
+void LevelManager::initBlocks() {
     // i found hitbox values in the gd programming discord
     for (int i = 1; i <= 7; i++) {
         if (i == 5) continue;
         m_IDToObjectData[i].type = ObjectType::BLOCK;
-        m_IDToObjectData[i].hitbox = { 0, 0, static_cast<float>(m_Game->TILE_SIZE), static_cast<float>(m_Game->TILE_SIZE) };
+        m_IDToObjectData[i].hitbox = SDL_FRect { 0, 0, static_cast<float>(m_Game->TILE_SIZE), static_cast<float>(m_Game->TILE_SIZE) };
     }
     m_IDToObjectData[5].type = ObjectType::DECO;
     m_IDToObjectData[8] = {
         ObjectType::HAZARD,
-        { 48, 36, 24, 48 },
+        SDL_FRect { 48, 36, 24, 48 },
     };
     m_IDToObjectData[9] = {
         ObjectType::HAZARD,
-        { 42, 30.4, 36, 43.2 }
+        SDL_FRect { 42, 30.4, 36, 43.2 }
     };
     m_IDToObjectData[10] = {
         ObjectType::NORMAL_PORTAL,
-        { 10, -4, 100, 300 }
+        SDL_FRect { 10, -4, 100, 300 }
     };
     m_IDToObjectData[11] = m_IDToObjectData[10];
     m_IDToObjectData[11].type = ObjectType::UPSIDE_DOWN_PORTAL;
     m_IDToObjectData[12] = {
         ObjectType::CUBE_PORTAL,
-        { -4, -4, 136, 344 }
+        SDL_FRect { -4, -4, 136, 344 }
     };
     m_IDToObjectData[13] = m_IDToObjectData[12];
     m_IDToObjectData[13].type = ObjectType::SHIP_PORTAL;
@@ -48,49 +48,58 @@ void ObjectManager::initBlocks() {
     m_IDToObjectData[30].type = ObjectType::G_TRIGGER;
     m_IDToObjectData[35] = {
         ObjectType::PAD,
-        { -10, 0, 100, 16 },
+        SDL_FRect { -10, 0, 100, 16 },
     };
     m_IDToObjectData[36] = {
         ObjectType::ORB,
-        { -12, -12, 144, 144 },
+        SDL_FRect { -12, -12, 144, 144 },
     };
     m_IDToObjectData[39] = {
         ObjectType::HAZARD,
-        { 48, 15.8, 24, 22.4 },
+        SDL_FRect { 48, 15.8, 24, 22.4 },
     };
     m_IDToObjectData[40] = {
         ObjectType::BLOCK,
-        { 0, 0, 120, 54 },
+        SDL_FRect { 0, 0, 120, 54 },
     };
     m_IDToObjectData[41].type = ObjectType::DECO;
 }
 
-void ObjectManager::reset() {
+void LevelManager::reset() {
     m_FurthestX = 0;
     clearObjects();
     loadLevelData();
 }
 
-ObjectManager::~ObjectManager() {
+LevelManager::~LevelManager() {
     for (auto &[_, data] : m_IDToObjectData) {
+        // SDL_DestroyTexture checks if texture is null i believe
         SDL_DestroyTexture(data.texture);
     }
 }
 
-std::vector<GameObject> &ObjectManager::getObjects() {
+std::vector<GameObject> &LevelManager::getObjects() {
     return m_Objects;
 }
 
-std::vector<GameObject> &ObjectManager::getTriggers() {
+std::vector<Trigger> &LevelManager::getTriggers() {
     return m_Triggers;
 }
 
-void ObjectManager::clearObjects() {
+SDL_Color LevelManager::getInitialBackground() {
+    return m_InitialBackgroundColor;
+}
+
+SDL_Color LevelManager::getInitialGround() {
+    return m_InitialGroundColor;
+}
+
+void LevelManager::clearObjects() {
     m_Objects.clear();
     m_Triggers.clear();
 }
 
-SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
+SDL_FRect LevelManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
     if (rotations == 0) {
         return hitbox;
     }
@@ -113,7 +122,7 @@ SDL_FRect ObjectManager::rotateHitbox(SDL_FRect hitbox, int rotations) {
     return rotated;
 }
 
-void ObjectManager::loadTextures() {
+void LevelManager::loadTextures() {
     for (auto &[id, data] : m_IDToObjectData) {
         if (data.type == ObjectType::BG_TRIGGER || data.type == ObjectType::G_TRIGGER) {
             continue;
@@ -127,7 +136,7 @@ void ObjectManager::loadTextures() {
     }
 }
 
-void ObjectManager::loadLevelData() {
+void LevelManager::loadLevelData() {
     m_FurthestX = 0;
     std::ifstream in;
     in.open("res/leveldata/" + std::to_string(LevelSelect::get()->getLevelSelected()) + ".level");
@@ -139,9 +148,8 @@ void ObjectManager::loadLevelData() {
     std::vector<std::string> objectProperties = Util::splitString(levelData, ';');
     
     // read initial properties from before the level starts
-    std::string initialProperties = objectProperties[0];
-    std::vector<std::string> splitInitialProperties = Util::splitString(initialProperties, ',');
-    setInitialProperties(splitInitialProperties);
+    const std::string initialProperties = objectProperties[0];
+    setInitialProperties(initialProperties);
     objectProperties.erase(objectProperties.begin());
 
     for (std::string &properties : objectProperties) {
@@ -149,7 +157,7 @@ void ObjectManager::loadLevelData() {
     }
 }
 
-void ObjectManager::addObject(const std::string &properties) {
+void LevelManager::addObject(const std::string &properties) {
     std::vector<std::string> splitProperties = Util::splitString(properties, ',');
     int objectID = 1;
     SDL_FPoint objectPos = { 0, 0 };
@@ -209,24 +217,28 @@ void ObjectManager::addObject(const std::string &properties) {
     if (m_IDToObjectData.count(objectID) == 0) {
         return;
     }
-    SDL_FRect hitboxOffset = rotateHitbox(data.hitbox, rotation);
-    if (flipX) {
-        hitboxOffset.x = data.width - hitboxOffset.x - hitboxOffset.w;
+    std::optional<SDL_FRect> hitbox = {};
+    if (data.hitbox.has_value()) {
+        SDL_FRect hitboxOffset = rotateHitbox(data.hitbox.value(), rotation);
+        if (flipX) {
+            hitboxOffset.x = data.width - hitboxOffset.x - hitboxOffset.w;
+        }
+        if (flipY) {
+            hitboxOffset.y = data.height - hitboxOffset.y - hitboxOffset.h;
+        }
+        hitbox = {hitboxOffset.x + objectPos.x, hitboxOffset.y + objectPos.y, hitboxOffset.w, hitboxOffset.h};
     }
-    if (flipY) {
-        hitboxOffset.y = data.height - hitboxOffset.y - hitboxOffset.h;
-    }
-    SDL_FRect hitbox = {hitboxOffset.x + objectPos.x, hitboxOffset.y + objectPos.y, hitboxOffset.w, hitboxOffset.h};
     // separate triggers
     if (data.type == ObjectType::BG_TRIGGER || data.type == ObjectType::G_TRIGGER) {
-        m_Triggers.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
+        m_Triggers.emplace_back(m_Game, data.type, objectPos, color, duration);
     } else {
-        m_Objects.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture, color, duration);
+        m_Objects.emplace_back(m_Game, data.type, rotation, objectPos, hitbox, flipX, flipY, data.texture);
     }
     m_FurthestX = std::max(m_FurthestX, static_cast<int>(objectPos.x + data.width));
 }
 
-void ObjectManager::setInitialProperties(const std::vector<std::string> &splitInitialProperties) {
+void LevelManager::setInitialProperties(const std::string &initialProperties) {
+    const std::vector<std::string> splitInitialProperties = Util::splitString(initialProperties, ',');
     for (std::size_t i = 0; i+1 < splitInitialProperties.size(); i += 2) {
         std::string property = splitInitialProperties[i];
         std::string propertyValue = splitInitialProperties[i+1];
@@ -236,21 +248,19 @@ void ObjectManager::setInitialProperties(const std::vector<std::string> &splitIn
             uint8_t red = static_cast<uint8_t>(std::stoi(splitPropertyValue[1]));
             uint8_t blue = static_cast<uint8_t>(std::stoi(splitPropertyValue[3]));
             uint8_t green = static_cast<uint8_t>(std::stoi(splitPropertyValue[5]));
-            SDL_Color color = { red, blue, green };
-            PlayingState::get()->setInitialBackground(color);
+            m_InitialBackgroundColor = { red, blue, green };
         } else if (property == "kS30") {
             std::vector<std::string> splitPropertyValue = Util::splitString(propertyValue, '_');
             uint8_t red = static_cast<uint8_t>(std::stoi(splitPropertyValue[1]));
             uint8_t blue = static_cast<uint8_t>(std::stoi(splitPropertyValue[3]));
             uint8_t green = static_cast<uint8_t>(std::stoi(splitPropertyValue[5]));
-            SDL_Color color = { red, blue, green };
-            PlayingState::get()->setInitialGround(color);
+            m_InitialGroundColor = { red, blue, green };
         }
         // i'm not doing any more initial properties because i'm lazy as hell
     }
 }
 
-void ObjectManager::render() {
+void LevelManager::render() {
     for (GameObject &gameObject : m_Objects) {
         // don't render stuff you don't see
         if (gameObject.getPos().x + gameObject.getWidth() < m_Game->getCameraPosition().x ||

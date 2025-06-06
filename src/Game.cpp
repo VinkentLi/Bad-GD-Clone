@@ -1,6 +1,6 @@
 #include <SDL_image.h>
 #include <iostream>
-
+#include <cmath>
 #include "Game.h"
 #include "Background.h"
 #include "Ground.h"
@@ -66,8 +66,9 @@ int Game::init() {
     pushState(TitleScreen::get());
 
     m_MenuLoop = Mix_LoadMUS("res/sfx/menuLoop.ogg");
-    m_CameraPosition = {0, 0};
-
+    if (m_MenuLoop == nullptr) {
+        std::cerr << "Failed to load menuLoop.ogg! " << SDL_GetError() << '\n';
+    }
     Mix_PlayMusic(m_MenuLoop, -1);
 
     return 0;
@@ -92,6 +93,8 @@ void Game::quit() {
 
 void Game::update(float deltaTime) {
     m_GameStates.top()->update(deltaTime);
+    // exponentially interpolate to target
+    m_CameraPosition.y += (m_TargetY - m_CameraPosition.y) * (1.0 - std::pow(0.85, deltaTime));
 }
 
 void Game::render() {
@@ -121,6 +124,9 @@ void Game::handleEvents() {
             case SDLK_SPACE:
                 m_IsSpaceHeld = true;
                 break;
+            case SDLK_UP:
+                m_IsUpHeld = true;
+                break;
             case SDLK_x:
                 m_IsXHeld = true;
                 break;
@@ -136,6 +142,9 @@ void Game::handleEvents() {
                 break;
             case SDLK_SPACE:
                 m_IsSpaceHeld = false;
+                break;
+            case SDLK_UP:
+                m_IsUpHeld = false;
                 break;
             case SDLK_x:
                 m_IsXHeld = false;

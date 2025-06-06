@@ -3,7 +3,7 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include "Player.h"
-#include "ObjectManager.h"
+#include "LevelManager.h"
 #include "GameState.h"
 #include "Button.h"
 
@@ -19,18 +19,16 @@ public:
     void render() override;
     inline int getMinY() { return m_MinY; }
     inline bool isInPractice() { return m_IsInPractice; }
-    inline std::vector<GameObject> &getObjects() { return m_ObjectManager.getObjects(); }
-    inline std::vector<GameObject> &getTriggers() { return m_ObjectManager.getTriggers(); }
-    inline void setInitialBackground(SDL_Color color) { m_InitialBackground = color; }
+    inline std::vector<GameObject> &getObjects() { return m_LevelManager.getObjects(); }
+    inline std::vector<Trigger> &getTriggers() { return m_LevelManager.getTriggers(); }
     inline SDL_Color getInitialBackground() { return m_InitialBackground; }
     inline SDL_Color getInitialGround() { return m_InitialGround; }
-    inline void setInitialGround(SDL_Color color) { m_InitialGround = color; }
     inline static PlayingState *get() { return &m_PlayingState; } 
 
 private:
     static PlayingState m_PlayingState;
     Player m_Player;
-    ObjectManager m_ObjectManager;
+    LevelManager m_LevelManager;
     SDL_Texture *m_LevelEndBlockTexture;
     SDL_Texture *m_ResumeTexture;
     SDL_Texture *m_ExitTexture;

@@ -1,7 +1,7 @@
 #include "PlayingState.h"
 #include "Game.h"
 #include "Player.h"
-#include "ObjectManager.h"
+#include "LevelManager.h"
 #include "LevelSelect.h"
 #include "Text.h"
 #include <SDL_image.h>
@@ -15,7 +15,7 @@ void PlayingState::init(Game *game) {
     GameState::init(game);
     m_Name = "PlayingState";
     m_Player.init(m_Game);
-    m_ObjectManager.init(m_Game);
+    m_LevelManager.init(m_Game);
     for (int i = 0; i < m_Game->LEVEL_COUNT; i++) {
         m_Songs.push_back(Mix_LoadMUS(("res/sfx/" + std::to_string(i) + ".ogg").c_str()));
     }
@@ -92,7 +92,9 @@ void PlayingState::enter() {
     updateLevelCompleteTextTexture();
     Mix_HaltMusic();
     m_Player.reset();
-    m_ObjectManager.reset();
+    m_LevelManager.reset();
+    m_InitialBackground = m_LevelManager.getInitialBackground();
+    m_InitialGround = m_LevelManager.getInitialGround();
     m_Game->getBackground().fade(m_InitialBackground.r, m_InitialBackground.g, m_InitialBackground.b, 0);
     m_Game->getGround().fade(m_InitialGround.r, m_InitialGround.g, m_InitialGround.b, 0);
     int exitX = m_Game->getWidth()/2 + (m_EnterPracticeButton.getW() + MARGIN + m_ResumeButton.getW() + MARGIN - m_ExitButton.getW())/2;
@@ -105,7 +107,7 @@ void PlayingState::enter() {
     m_IsSpaceHeld = false;
     m_IsPaused = false;
     m_ShouldEndLevel = false;
-    m_LevelEndBlocksX = m_ObjectManager.getFurthestX() - 3.5*m_Game->TILE_SIZE + m_Game->getWidth();
+    m_LevelEndBlocksX = m_LevelManager.getFurthestX() - 3.5*m_Game->TILE_SIZE + m_Game->getWidth();
     m_TimeEndingLevel = 0;
     m_IsLevelComplete = false;
     m_JustSetNewBest = false;
@@ -187,7 +189,7 @@ void PlayingState::update(float deltaTime) {
     }
     m_Player.update(deltaTime);
     
-    if (m_Player.getPosition().x > m_ObjectManager.getFurthestX()) {
+    if (m_Player.getPosition().x > m_LevelManager.getFurthestX()) {
         m_ShouldEndLevel = true;
     }
 }
@@ -284,7 +286,7 @@ void PlayingState::updateNewBest() {
 
 void PlayingState::render() {
     m_Player.render();
-    m_ObjectManager.render();
+    m_LevelManager.render();
     renderEndBlocks();
     // render ground so it appears above blocks but below text
     m_Game->getGround().render();

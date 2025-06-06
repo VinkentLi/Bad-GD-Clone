@@ -27,6 +27,7 @@ struct Checkpoint {
 
 class Game;
 class GameObject;
+class Trigger;
 
 class Player {
 public:
@@ -58,12 +59,12 @@ private:
     Mix_Chunk *m_DeathSound;
     SDL_FPoint m_Position;
     SDL_FPoint m_PreviousPosition;
-    double m_XVelocity;
+    double m_XVelocity = 20.772;
     double m_YVelocity;
-    double m_JumpStrength;
-    double m_PadStrength;
-    double m_Gravity;
-    double m_RotationAdder;
+    double m_JumpStrength = -44.72;
+    double m_PadStrength = -64;
+    double m_Gravity = 3.456;
+    double m_RotationAdder = 6.92308;
     double m_Rotation;
     double m_TargetRotation;
     SDL_FRect m_HazardHitbox, m_SolidHitbox;
@@ -88,10 +89,10 @@ private:
     void collideWithObject(GameObject &object);
     void snapToObject(GameObject &object);
     void setShipBounds(GameObject &shipPortal);
-    void activateTriggers(std::vector<GameObject> &triggers);
+    void activateTriggers(std::vector<Trigger> &triggers);
     void updateCubeRotation(float deltaTime);
     void updateShipRotation(float deltaTime);
-    void scrollCamera();
+    void scrollCamera(float deltaTime);
     void renderCube();
     void renderShip();
 };
