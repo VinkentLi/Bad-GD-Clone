@@ -27,7 +27,7 @@ void LevelManager::initBlocks() {
     };
     m_IDToObjectData[9] = {
         ObjectType::HAZARD,
-        SDL_FRect { 42, 30.4, 36, 43.2 }
+        SDL_FRect { 42, 30.4f, 36, 43.2f }
     };
     m_IDToObjectData[10] = {
         ObjectType::NORMAL_PORTAL,
@@ -56,7 +56,7 @@ void LevelManager::initBlocks() {
     };
     m_IDToObjectData[39] = {
         ObjectType::HAZARD,
-        SDL_FRect { 48, 15.8, 24, 22.4 },
+        SDL_FRect { 48, 15.8f, 24, 22.4f },
     };
     m_IDToObjectData[40] = {
         ObjectType::BLOCK,
@@ -198,13 +198,13 @@ void LevelManager::addObject(const std::string &properties) {
             rotation = std::stoi(propertyValue) / 90;
             break;
         case 7: // red
-            color.r = std::stoi(propertyValue);
+            color.r = static_cast<uint8_t>(std::stoi(propertyValue));
             break;
         case 8: // green
-            color.g = std::stoi(propertyValue);
+            color.g = static_cast<uint8_t>(std::stoi(propertyValue));
             break;
         case 9: // blue
-            color.b = std::stoi(propertyValue);
+            color.b = static_cast<uint8_t>(std::stoi(propertyValue));
             break;
         case 10: // duration
             duration = std::stof(propertyValue);

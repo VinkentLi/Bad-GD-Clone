@@ -49,10 +49,10 @@ SDL_Texture *createTexture(SDL_Renderer *renderer, const std::string &text) {
 void renderTexture(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y, bool xCentered, bool yCentered, float scale) {
     SDL_Rect textRect = { x, y, 0, 0 };
     SDL_QueryTexture(texture, NULL, NULL, &textRect.w, &textRect.h);
-    textRect.w *= scale;
-    textRect.h *= scale;
-    const int widthWithoutShadow = textRect.w - SHADOW_SIZE*scale;
-    const int heightWithoutShadow = textRect.h - SHADOW_SIZE*scale;
+    textRect.w = static_cast<int>(textRect.w * scale);
+    textRect.h = static_cast<int>(textRect.h * scale);
+    const int widthWithoutShadow = static_cast<int>(textRect.w - SHADOW_SIZE*scale);
+    const int heightWithoutShadow = static_cast<int>(textRect.h - SHADOW_SIZE*scale);
     if (xCentered) {
         textRect.x -= widthWithoutShadow/2;
     }

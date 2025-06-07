@@ -23,8 +23,8 @@ public:
     GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, std::optional<SDL_FRect> hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture);
     std::optional<SDL_FRect> &getHitbox();
     SDL_FPoint getPos() const;
-    float getWidth() const;
-    float getHeight() const;
+    int getWidth() const;
+    int getHeight() const;
     ObjectType getType() const;
     void render();
 

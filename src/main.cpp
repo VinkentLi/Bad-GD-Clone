@@ -32,7 +32,7 @@ void mainLoop() {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int /*argc*/, char **/*argv*/) {
     if (game.init() != 0) {
         game.quit();
     }

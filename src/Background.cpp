@@ -74,8 +74,8 @@ void Background::update(float delta) {
             m_FadeTime = 0;
             m_IsFading = false;
         }
-        SDL_SetTextureColorMod(m_BGTexture, m_Red, m_Green, m_Blue);
-        SDL_SetTextureColorMod(m_EmptyBG, m_Red, m_Green, m_Blue);
+        SDL_SetTextureColorMod(m_BGTexture, static_cast<uint8_t>(m_Red), static_cast<uint8_t>(m_Green), static_cast<uint8_t>(m_Blue));
+        SDL_SetTextureColorMod(m_EmptyBG, static_cast<uint8_t>(m_Red), static_cast<uint8_t>(m_Green), static_cast<uint8_t>(m_Blue));
     }
 }
 
@@ -108,8 +108,8 @@ void Background::setColor(std::array<float, 3> color) {
     m_Red = color[0];
     m_Green = color[1];
     m_Blue = color[2];
-    SDL_SetTextureColorMod(m_BGTexture, m_Red, m_Green, m_Blue);
-    SDL_SetTextureColorMod(m_EmptyBG, m_Red, m_Green, m_Blue);
+    SDL_SetTextureColorMod(m_BGTexture, static_cast<uint8_t>(m_Red), static_cast<uint8_t>(m_Green), static_cast<uint8_t>(m_Blue));
+    SDL_SetTextureColorMod(m_EmptyBG, static_cast<uint8_t>(m_Red), static_cast<uint8_t>(m_Green), static_cast<uint8_t>(m_Blue));
 }
 
 SDL_Color Background::getTargetColor() {

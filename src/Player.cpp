@@ -30,7 +30,7 @@ void Player::init(Game *game) {
 }
 
 void Player::reset() {
-    m_Position = {-m_Game->TILE_SIZE, static_cast<float>(m_Game->getHeight() - 4*m_Game->TILE_SIZE)};
+    m_Position = {-static_cast<float>(m_Game->TILE_SIZE), static_cast<float>(m_Game->getHeight() - 4*m_Game->TILE_SIZE)};
     m_PreviousPosition = m_Position;
     m_YVelocity = 0;
     m_Rotation = 0;
@@ -44,8 +44,8 @@ void Player::reset() {
     m_SolidHitbox = {
         m_Position.x + m_Game->TILE_SIZE / 3, 
         m_Position.y + m_Game->TILE_SIZE / 3, 
-        m_Game->TILE_SIZE / 3, 
-        m_Game->TILE_SIZE / 3
+        static_cast<float>(m_Game->TILE_SIZE / 3), 
+        static_cast<float>(m_Game->TILE_SIZE / 3)
     };
     m_IsGrounded = true;
     m_IsMouseHeld = false;
@@ -105,7 +105,7 @@ void Player::update(float deltaTime) {
         break;
     }
     
-    scrollCamera(deltaTime);
+    scrollCamera();
 
     if (m_Position.y < PlayingState::get()->getMinY()) {
         die();
@@ -155,7 +155,7 @@ void Player::respawn() {
     Ground &ground = m_Game->getGround();
     if (!PlayingState::get()->isInPractice() || m_Checkpoints.empty()) {
         m_HazardHitbox.x = -m_Game->TILE_SIZE;
-        m_HazardHitbox.y = m_Game->getHeight() - 4 * m_Game->TILE_SIZE;
+        m_HazardHitbox.y = static_cast<float>(m_Game->getHeight() - 4 * m_Game->TILE_SIZE);
         m_Game->setCameraPosition({0, 0});
         m_Rotation = 0;
         m_TargetRotation = 0;
@@ -209,28 +209,28 @@ void Player::updatePhysics(float deltaTime, bool mouseClicked, bool mouseRelease
             m_IsGrounded = false;
         }
         m_YVelocity += m_Gravity * m_GravityMultiplier * deltaTime;
-        m_YVelocity = std::clamp(m_YVelocity, static_cast<double>(-m_Game->TILE_SIZE/2), static_cast<double>(m_Game->TILE_SIZE/2));
+        m_YVelocity = std::clamp(m_YVelocity, static_cast<float>(-m_Game->TILE_SIZE/2), static_cast<float>(m_Game->TILE_SIZE/2));
         break;
     case Gamemode::SHIP: {
         // help from https://github.com/Open-GD/OpenGD
-        float shipAccel = m_Gravity * 0.32;
+        float shipAccel = m_Gravity * 0.32f;
         if (m_IsMouseHeld) {
-            shipAccel *= -1.25;
+            shipAccel *= -1.25f;
             if (m_YVelocity * m_GravityMultiplier > -5*m_Gravity) {
-                shipAccel *= 1.25;
+                shipAccel *= 1.25f;
             }
         } else if (m_YVelocity * m_GravityMultiplier <= -5*m_Gravity) {
-            shipAccel *= 1.5;
+            shipAccel *= 1.5f;
         }
         m_YVelocity += shipAccel * m_GravityMultiplier * deltaTime;
-        m_YVelocity = std::clamp(m_YVelocity / m_GravityMultiplier, -32.0, 25.6) * m_GravityMultiplier;
+        m_YVelocity = std::clamp(m_YVelocity / m_GravityMultiplier, -32.0f, 25.6f) * m_GravityMultiplier;
         break;
     }
     }
     m_HazardHitbox.x += m_XVelocity * deltaTime;
-    m_HazardHitbox.y += m_YVelocity * deltaTime * 0.9; // why the fuck does gd multiply by 0.9?
+    m_HazardHitbox.y += m_YVelocity * deltaTime * 0.9f; // why the fuck does gd multiply by 0.9?
     m_SolidHitbox.x += m_XVelocity * deltaTime;
-    m_SolidHitbox.y += m_YVelocity * deltaTime * 0.9;
+    m_SolidHitbox.y += m_YVelocity * deltaTime * 0.9f;
 }
 
 void Player::handleCollisions(std::vector<GameObject> &objects) {   
@@ -317,7 +317,7 @@ void Player::collideWithGround() {
     switch (m_Gamemode) {
     case Gamemode::CUBE:    
         if (m_HazardHitbox.y > m_Game->getHeight() - 4 * m_Game->TILE_SIZE) {
-            m_HazardHitbox.y = m_Game->getHeight() - 4 * m_Game->TILE_SIZE;
+            m_HazardHitbox.y = static_cast<float>(m_Game->getHeight() - 4 * m_Game->TILE_SIZE);
             m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
             m_IsGrounded = true;
             m_YVelocity = 0;
@@ -379,7 +379,7 @@ void Player::activateTriggers(std::vector<Trigger> &triggers) {
 
 void Player::updateCubeRotation(float deltaTime) {
     m_Rotation += m_GravityMultiplier == 1 ? m_RotationAdder * deltaTime : -m_RotationAdder * deltaTime;
-    m_Rotation = std::fmod(m_Rotation, 360.0);
+    m_Rotation = std::fmod(m_Rotation, 360.0f);
     if (m_GravityMultiplier == 1) {
         if (!m_IsGrounded && m_Rotation > m_TargetRotation) {
             m_TargetRotation = std::trunc(m_Rotation / 90) * 90 + 90;
@@ -394,21 +394,21 @@ void Player::updateCubeRotation(float deltaTime) {
             m_Rotation = m_TargetRotation;
         }
     }
-    m_TargetRotation = std::fmod(m_TargetRotation, 360.0);
+    m_TargetRotation = std::fmod(m_TargetRotation, 360.0f);
 }
 
 void Player::updateShipRotation(float deltaTime) {
     if (m_Gamemode == Gamemode::SHIP) {
         // special thanks to https://github.com/Open-GD/OpenGD for this
         if (std::pow(m_YVelocity, 2) + std::pow(m_XVelocity, 2) >= 1.2) {
-            double target = std::atan2(m_YVelocity, m_XVelocity) * 180.0 / M_PI;
+            float target = std::atan2(m_YVelocity, m_XVelocity) * 57.2957795131f;
             // exponential interpolation
-            m_Rotation += (target - m_Rotation) * (1.0 - std::pow(0.85, deltaTime));
+            m_Rotation += (target - m_Rotation) * (1.0f - std::pow(0.85f, deltaTime));
         }
     }
 }
 
-void Player::scrollCamera(float deltaTime) {
+void Player::scrollCamera() {
     const static int CAMERA_SCROLL = m_Game->TILE_SIZE * 6;
     const static int CAMERA_UP_SCROLL = m_Game->getHeight() / 4;
     const static int CAMERA_DOWN_SCROLL = m_Game->getHeight() - 4*m_Game->TILE_SIZE;
@@ -469,8 +469,8 @@ void Player::renderCube() {
     SDL_FRect dst = {
         m_Position.x - m_Game->getCameraPosition().x, 
         m_Position.y - m_Game->getCameraPosition().y,
-        m_Game->TILE_SIZE, 
-        m_Game->TILE_SIZE
+        static_cast<float>(m_Game->TILE_SIZE), 
+        static_cast<float>(m_Game->TILE_SIZE)
     };
     SDL_RenderCopyExF(m_Renderer, m_PlayerTexture, NULL, &dst, m_Rotation, NULL, SDL_FLIP_NONE);
 }
@@ -489,8 +489,8 @@ void Player::renderShip() {
     SDL_FRect cubeDST = {
         cubeX,
         cubeY, 
-        m_Game->TILE_SIZE*14/25, 
-        m_Game->TILE_SIZE*14/25
+        static_cast<float>(m_Game->TILE_SIZE*14/25), 
+        static_cast<float>(m_Game->TILE_SIZE*14/25)
     };
     SDL_FRect shipDST = {
         shipX, 

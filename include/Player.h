@@ -12,9 +12,9 @@ enum class Gamemode {
 struct Checkpoint {
     SDL_FPoint position;
     SDL_FPoint cameraPosition;
-    double yVelocity;
-    double rotation;
-    double targetRotation;
+    float yVelocity;
+    float rotation;
+    float targetRotation;
     int gravityMultiplier;
     Gamemode gamemode;
     std::array<float, 3> backgroundColor;
@@ -59,14 +59,14 @@ private:
     Mix_Chunk *m_DeathSound;
     SDL_FPoint m_Position;
     SDL_FPoint m_PreviousPosition;
-    double m_XVelocity = 20.772;
-    double m_YVelocity;
-    double m_JumpStrength = -44.72;
-    double m_PadStrength = -64;
-    double m_Gravity = 3.456;
-    double m_RotationAdder = 6.92308;
-    double m_Rotation;
-    double m_TargetRotation;
+    float m_XVelocity = 20.772f;
+    float m_YVelocity;
+    float m_JumpStrength = -44.72f;
+    float m_PadStrength = -64;
+    float m_Gravity = 3.456f;
+    float m_RotationAdder = 6.92308f;
+    float m_Rotation;
+    float m_TargetRotation;
     SDL_FRect m_HazardHitbox, m_SolidHitbox;
     std::vector<SDL_FRect *> m_PressedOrbs;
     std::vector<Checkpoint> m_Checkpoints;
@@ -92,7 +92,7 @@ private:
     void activateTriggers(std::vector<Trigger> &triggers);
     void updateCubeRotation(float deltaTime);
     void updateShipRotation(float deltaTime);
-    void scrollCamera(float deltaTime);
+    void scrollCamera();
     void renderCube();
     void renderShip();
 };

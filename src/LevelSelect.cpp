@@ -116,7 +116,7 @@ void LevelSelect::exit() {
 
 }
 
-void LevelSelect::update(float deltaTime) {
+void LevelSelect::update(float /*deltaTime*/) {
     const bool isEscapeHeld = m_Game->isEscapeHeld();
     const bool isEscapeReleased = m_IsEscapeHeld && !isEscapeHeld;
     m_IsEscapeHeld = isEscapeHeld;

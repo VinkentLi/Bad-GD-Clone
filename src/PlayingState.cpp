@@ -107,7 +107,7 @@ void PlayingState::enter() {
     m_IsSpaceHeld = false;
     m_IsPaused = false;
     m_ShouldEndLevel = false;
-    m_LevelEndBlocksX = m_LevelManager.getFurthestX() - 3.5*m_Game->TILE_SIZE + m_Game->getWidth();
+    m_LevelEndBlocksX = m_LevelManager.getFurthestX() - 7*m_Game->TILE_SIZE/2 + m_Game->getWidth();
     m_TimeEndingLevel = 0;
     m_IsLevelComplete = false;
     m_JustSetNewBest = false;
@@ -122,7 +122,7 @@ void PlayingState::exit() {
 }
 
 void PlayingState::update(float deltaTime) {
-    int newLevelPercent = 10000 * m_Player.getPosition().x / m_LevelEndBlocksX;
+    int newLevelPercent = static_cast<int>(10000 * m_Player.getPosition().x / m_LevelEndBlocksX);
     newLevelPercent = std::clamp(newLevelPercent, 0, 10000);
     // optimization so it doesn't recreate text texture every frame
     if (newLevelPercent != m_LevelPercent) {

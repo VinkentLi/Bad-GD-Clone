@@ -29,11 +29,11 @@ SDL_FPoint GameObject::getPos() const {
     return m_Position;
 }
 
-float GameObject::getWidth() const {
+int GameObject::getWidth() const {
     return m_Rect.w;
 }
 
-float GameObject::getHeight() const {
+int GameObject::getHeight() const {
     return m_Rect.h;
 }
 
@@ -47,8 +47,8 @@ void GameObject::render() {
         return;
     }
 
-    m_Rect.x = static_cast<int>(m_Position.x) - m_Game->getCameraPosition().x;
-    m_Rect.y = static_cast<int>(m_Position.y) - m_Game->getCameraPosition().y;
+    m_Rect.x = static_cast<int>(m_Position.x - m_Game->getCameraPosition().x);
+    m_Rect.y = static_cast<int>(m_Position.y - m_Game->getCameraPosition().y);
 
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     if (m_FlipX) {

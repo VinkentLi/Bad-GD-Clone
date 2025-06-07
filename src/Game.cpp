@@ -48,7 +48,7 @@ int Game::init() {
     );
 
     m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED);
-    m_Width = (static_cast<float>(m_ScreenWidth) / static_cast<float>(m_ScreenHeight)) * m_Height;
+    m_Width = static_cast<int>((static_cast<float>(m_ScreenWidth) / static_cast<float>(m_ScreenHeight)) * m_Height);
     SDL_RenderSetLogicalSize(m_Renderer, m_Width, m_Height); // render a WIDTHx1296 screen and scale it for the actual window
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");   // anti-aliasing
 
@@ -94,7 +94,7 @@ void Game::quit() {
 void Game::update(float deltaTime) {
     m_GameStates.top()->update(deltaTime);
     // exponentially interpolate to target
-    m_CameraPosition.y += (m_TargetY - m_CameraPosition.y) * (1.0 - std::pow(0.85, deltaTime));
+    m_CameraPosition.y += (m_TargetY - m_CameraPosition.y) * (1.0f - std::pow(0.85f, deltaTime));
 }
 
 void Game::render() {

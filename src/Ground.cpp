@@ -66,7 +66,7 @@ void Ground::update(float delta) {
             m_FadeTime = 0;
             m_IsFading = false;
         }
-        SDL_SetTextureColorMod(m_GroundTexture, m_Red, m_Green, m_Blue);
+        SDL_SetTextureColorMod(m_GroundTexture, static_cast<uint8_t>(m_Red), static_cast<uint8_t>(m_Green), static_cast<uint8_t>(m_Blue));
     }
 }
 
@@ -103,7 +103,7 @@ void Ground::setColor(std::array<float, 3> color) {
     m_Red = color[0];
     m_Green = color[1];
     m_Blue = color[2];
-    SDL_SetTextureColorMod(m_GroundTexture, m_Red, m_Green, m_Blue);
+    SDL_SetTextureColorMod(m_GroundTexture, static_cast<uint8_t>(m_Red), static_cast<uint8_t>(m_Green), static_cast<uint8_t>(m_Blue));
 }
 
 SDL_Color Ground::getTargetColor() {
