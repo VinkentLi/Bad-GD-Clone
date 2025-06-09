@@ -49,8 +49,6 @@ void Player::reset() {
     };
     m_IsGrounded = true;
     m_IsMouseHeld = false;
-    m_IsZHeld = false;
-    m_IsXHeld = false;
     m_HasBufferedOrb = false;
     m_IsDead = false;
     m_DeadTimer = 0;
@@ -70,18 +68,20 @@ Player::~Player() {
 }
 
 void Player::update(float deltaTime) {
-    bool mouseClicked = (!m_IsMouseHeld && m_Game->isMouseHeld()) ||
-                        (!m_IsMouseHeld && m_Game->isSpaceHeld()) || 
+    bool mouseClicked = (!m_IsMouseHeld && m_Game->isSpaceHeld()) || 
                         (!m_IsMouseHeld && m_Game->isUpHeld());
 
+                        
     bool mouseReleased = (m_IsMouseHeld && !m_Game->isMouseHeld()) && 
                          (m_IsMouseHeld && !m_Game->isSpaceHeld()) && 
                          (m_IsMouseHeld && !m_Game->isUpHeld());
-                         
-    m_IsMouseHeld = m_Game->isMouseHeld() || m_Game->isSpaceHeld() || m_Game->isUpHeld();
-
-    if (PlayingState::get()->isInPractice()) {
-        updatePractice();
+    
+    m_IsMouseHeld = m_Game->isSpaceHeld() || m_Game->isUpHeld();
+    
+    // if it shouldn't ignore mouse clicks, it won't
+    if (!PlayingState::get()->playerShouldIgnoreMouseClicks()) {
+        mouseClicked = mouseClicked || (!m_IsMouseHeld && m_Game->isMouseHeld());
+        m_IsMouseHeld = m_IsMouseHeld || m_Game->isMouseHeld();
     }
 
     if (m_IsDead) {
@@ -116,32 +116,28 @@ void Player::update(float deltaTime) {
     m_PreviousPosition = m_Position;
 }
 
-void Player::updatePractice() {
-    bool zReleased = m_IsZHeld && !m_Game->isZHeld();
-    bool xReleased = m_IsXHeld && !m_Game->isXHeld();
-    m_IsZHeld = m_Game->isZHeld();
-    m_IsXHeld = m_Game->isXHeld();
+void Player::placeCheckpoint() {
+    Background &background = m_Game->getBackground();
+    Ground &ground = m_Game->getGround();
+    m_Checkpoints.push_back(Checkpoint {
+        m_Position,
+        m_Game->getCameraPosition(),
+        m_YVelocity,
+        m_Rotation,
+        m_TargetRotation,
+        m_GravityMultiplier,
+        m_Gamemode,
+        background.getColor(),
+        ground.getColor(),
+        background.getTargetColor(),
+        ground.getTargetColor(),
+        background.getFadeTime(),
+        ground.getFadeTime()
+    });
+}
 
-    if (zReleased) {
-        Background &background = m_Game->getBackground();
-        Ground &ground = m_Game->getGround();
-        m_Checkpoints.push_back(Checkpoint {
-            m_Position,
-            m_Game->getCameraPosition(),
-            m_YVelocity,
-            m_Rotation,
-            m_TargetRotation,
-            m_GravityMultiplier,
-            m_Gamemode,
-            background.getColor(),
-            ground.getColor(),
-            background.getTargetColor(),
-            ground.getTargetColor(),
-            background.getFadeTime(),
-            ground.getFadeTime()
-        });
-    }
-    if (xReleased && !m_Checkpoints.empty()) {
+void Player::removeCheckpoint() {
+    if (!m_Checkpoints.empty()) {
         m_Checkpoints.pop_back();
     }
 }
@@ -316,8 +312,8 @@ void Player::collideWithObject(GameObject &object) {
 void Player::collideWithGround() {
     switch (m_Gamemode) {
     case Gamemode::CUBE:    
-        if (m_HazardHitbox.y > m_Game->getHeight() - 4 * m_Game->TILE_SIZE) {
-            m_HazardHitbox.y = static_cast<float>(m_Game->getHeight() - 4 * m_Game->TILE_SIZE);
+        if (m_HazardHitbox.y + m_HazardHitbox.h > m_Game->getGround().getPosition().y) {
+            m_HazardHitbox.y = -m_HazardHitbox.h + m_Game->getGround().getPosition().y;
             m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
             m_IsGrounded = true;
             m_YVelocity = 0;
@@ -356,15 +352,14 @@ void Player::snapToObject(GameObject &object) {
 
 void Player::setShipBounds(GameObject &shipPortal) {
     const int BOUNDS_HEIGHT = (m_Game->getHeight() - 10*m_Game->TILE_SIZE)/2;
-    m_Game->smoothCameraYScroll(
-        // why does gd do this lmao
-        std::clamp(
-            (std::round(shipPortal.getPos().y/m_Game->TILE_SIZE)-3)*m_Game->TILE_SIZE - BOUNDS_HEIGHT, 
-            -10000.0f, 
-            static_cast<float>(-3*m_Game->TILE_SIZE + BOUNDS_HEIGHT)
-        )
+    // why does gd do this lmao
+    const float newCameraY = std::clamp(
+        (std::round(shipPortal.getPos().y/m_Game->TILE_SIZE)-3)*m_Game->TILE_SIZE - BOUNDS_HEIGHT, 
+        -10000.0f, 
+        static_cast<float>(-3*m_Game->TILE_SIZE + BOUNDS_HEIGHT)
     );
-    m_Bounds.first = m_Game->getCameraPosition().y + BOUNDS_HEIGHT;
+    m_Game->smoothCameraYScroll(newCameraY);
+    m_Bounds.first = newCameraY + BOUNDS_HEIGHT;
     m_Bounds.second = m_Bounds.first + 10 * m_Game->TILE_SIZE;
 }
 

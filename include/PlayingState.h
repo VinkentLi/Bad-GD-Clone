@@ -19,6 +19,8 @@ public:
     void render() override;
     inline int getMinY() { return m_MinY; }
     inline bool isInPractice() { return m_IsInPractice; }
+    // we don't want the player to jump when the player tries to pause
+    bool playerShouldIgnoreMouseClicks();
     inline std::vector<GameObject> &getObjects() { return m_LevelManager.getObjects(); }
     inline std::vector<Trigger> &getTriggers() { return m_LevelManager.getTriggers(); }
     inline SDL_Color getInitialBackground() { return m_InitialBackground; }
@@ -34,6 +36,9 @@ private:
     SDL_Texture *m_ExitTexture;
     SDL_Texture *m_EnterPracticeTexture;
     SDL_Texture *m_ExitPracticeTexture;
+    SDL_Texture *m_PauseTexture;
+    SDL_Texture *m_PlaceCheckpointTexture;
+    SDL_Texture *m_RemoveCheckpointTexture;
     SDL_Texture *m_NewBestTexture;
     SDL_Texture *m_LevelPercentTexture;
     SDL_Texture *m_LevelCompleteTextTexture;
@@ -45,12 +50,17 @@ private:
     Button m_ExitButton;
     Button m_EnterPracticeButton;
     Button m_ExitPracticeButton;
+    Button m_PauseButton;
+    Button m_PlaceCheckpointButton;
+    Button m_RemoveCheckpointButton;
     float m_LevelBeginTimer;
     bool m_IsTimerFinished;
     bool m_IsSongPlaying;
     bool m_IsPlayerDead;
     bool m_IsEscapeHeld;
     bool m_IsSpaceHeld;
+    bool m_IsZHeld;
+    bool m_IsXHeld;
     bool m_IsPaused;
     bool m_ShouldEndLevel;
     bool m_JustSetNewBest;

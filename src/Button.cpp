@@ -1,5 +1,6 @@
 #include "Button.h"
 #include "Game.h"
+#include <iostream>
 
 void Button::init(
     Game *game,
@@ -56,17 +57,7 @@ void Button::update() {
     const bool isMouseHeld = m_Game->isMouseHeld();
     const bool isMouseReleased = m_IsMouseHeld && !isMouseHeld;
     m_IsMouseHeld = isMouseHeld;
-    if (isMouseReleased) {
-        SDL_Point mousePosition = m_Game->getMousePosition();
-        float wScale = m_Game->getScreenWidth() / static_cast<float>(m_Game->getWidth());
-        float hScale = m_Game->getScreenHeight() / static_cast<float>(m_Game->getHeight());
-        SDL_Point scaledMousePosition;
-        scaledMousePosition.x = static_cast<int>(mousePosition.x / wScale);
-        scaledMousePosition.y = static_cast<int>(mousePosition.y / hScale);
-        if (SDL_PointInRect(&scaledMousePosition, &m_Rect)) {
-            m_IsPressed = true;
-        }
-    }
+    m_IsPressed = isMouseReleased && mouseIntersects();
 }
 
 void Button::render() {
@@ -77,6 +68,16 @@ void Button::render() {
         SDL_SetRenderDrawBlendMode(m_Renderer, SDL_BLENDMODE_BLEND);
         SDL_RenderFillRect(m_Renderer, &m_Rect);
     }
+}
+
+bool Button::mouseIntersects() {
+    SDL_Point mousePosition = m_Game->getMousePosition();
+    float wScale = m_Game->getScreenWidth() / static_cast<float>(m_Game->getWidth());
+    float hScale = m_Game->getScreenHeight() / static_cast<float>(m_Game->getHeight());
+    SDL_Point scaledMousePosition;
+    scaledMousePosition.x = static_cast<int>(mousePosition.x / wScale);
+    scaledMousePosition.y = static_cast<int>(mousePosition.y / hScale);
+    return SDL_PointInRect(&scaledMousePosition, &m_Rect);
 }
 
 void Button::setPosition(int x, int y, bool xCentered, bool yCentered) {

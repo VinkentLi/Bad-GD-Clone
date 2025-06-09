@@ -16,7 +16,6 @@ void Ground::init(Game *game, uint8_t r, uint8_t g, uint8_t b) {
     SDL_SetTextureColorMod(m_GroundTexture, r, g, b);
     SDL_QueryTexture(m_GroundTexture, NULL, NULL, &m_GroundSize, NULL);
     m_SquareCount = m_Game->getWidth() / m_GroundSize + 2;
-    m_Source = {0, 0, m_GroundSize, m_GroundSize};
     m_Position = {0, static_cast<float>(m_Game->getHeight() - 3*m_Game->TILE_SIZE)};
     m_ShouldRenderOnTop = false;
 }
@@ -82,11 +81,15 @@ void Ground::render() {
         while (dst.x + m_GroundSize < 0) {
             dst.x += m_SquareCount * m_GroundSize;
         }
-        SDL_RenderCopyF(m_Renderer, m_GroundTexture, &m_Source, &dst);
         if (m_ShouldRenderOnTop) {
+            const int BOUNDS_HEIGHT = (m_Game->getHeight() - 10*m_Game->TILE_SIZE)/2;
+            dst.y = static_cast<float>(m_Game->getHeight() - BOUNDS_HEIGHT);
+            SDL_RenderCopyF(m_Renderer, m_GroundTexture, NULL, &dst);
             SDL_FRect newDST = dst;
             newDST.y = m_Game->getHeight() - dst.y - dst.h;
-            SDL_RenderCopyExF(m_Renderer, m_GroundTexture, &m_Source, &newDST, 0.0, NULL, SDL_FLIP_VERTICAL);
+            SDL_RenderCopyExF(m_Renderer, m_GroundTexture, NULL, &newDST, 0.0, NULL, SDL_FLIP_VERTICAL);
+        } else {
+            SDL_RenderCopyF(m_Renderer, m_GroundTexture, NULL, &dst);
         }
     }
 }

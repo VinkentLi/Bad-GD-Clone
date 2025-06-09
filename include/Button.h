@@ -31,6 +31,7 @@ public:
     );
     void update();
     void render();
+    bool mouseIntersects();
     inline bool isPressed() { return m_IsPressed; }
     inline int getX() { return m_Rect.x; }
     inline int getY() { return m_Rect.y; }

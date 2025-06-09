@@ -36,7 +36,6 @@ private:
     uint8_t m_TargetGreen;
     uint8_t m_TargetBlue;
     SDL_Texture *m_GroundTexture;
-    SDL_Rect m_Source;
     SDL_FPoint m_Position;
     SDL_Renderer *m_Renderer;
     bool m_IsFading;

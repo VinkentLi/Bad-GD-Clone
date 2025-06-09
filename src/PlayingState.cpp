@@ -38,7 +38,19 @@ void PlayingState::init(Game *game) {
     m_ExitPracticeTexture = IMG_LoadTexture(m_Renderer, "res/gfx/exitPractice.png");
     if (m_ExitPracticeTexture == nullptr) {
         std::cerr << "Failed to load exitPractice.png! " << SDL_GetError() << std::endl;
-    } 
+    }
+    m_PauseTexture = IMG_LoadTexture(m_Renderer, "res/gfx/pause.png");
+    if (m_PauseTexture == nullptr) {
+        std::cerr << "Failed to load pause.png! " << SDL_GetError() << std::endl;
+    }
+    m_PlaceCheckpointTexture = IMG_LoadTexture(m_Renderer, "res/gfx/placeCheckpoint.png");
+    if (m_PlaceCheckpointTexture == nullptr) {
+        std::cerr << "Failed to load placeCheckpoint.png! " << SDL_GetError() << std::endl;
+    }
+    m_RemoveCheckpointTexture = IMG_LoadTexture(m_Renderer, "res/gfx/removeCheckpoint.png");
+    if (m_RemoveCheckpointTexture == nullptr) {
+        std::cerr << "Failed to load removeCheckpoint.png! " << SDL_GetError() << std::endl;
+    }
     m_NewBestTexture = Text::createTexture(m_Renderer, "New Best! 0%");
     m_LevelPercentTexture = Text::createTexture(m_Renderer, "0.00%");
     m_LevelCompleteTextTexture = Text::createTexture(m_Renderer, "Your did it!");
@@ -56,19 +68,46 @@ void PlayingState::init(Game *game) {
     int exitHeight = 0;
     int practiceWidth = 0;
     int practiceHeight = 0;
+    int pauseWidth = 0;
+    int pauseHeight = 0;
+    int placeCheckpointWidth = 0;
+    int placeCheckpointHeight = 0;
+    int removeCheckpointWidth = 0;
+    int removeCheckpointHeight = 0;
     SDL_QueryTexture(m_ResumeTexture, NULL, NULL, &resumeWidth, &resumeHeight);
     SDL_QueryTexture(m_ExitTexture, NULL, NULL, &exitWidth, &exitHeight);
     SDL_QueryTexture(m_EnterPracticeTexture, NULL, NULL, &practiceWidth, &practiceHeight);
+    SDL_QueryTexture(m_PauseTexture, NULL, NULL, &pauseWidth, &pauseHeight);
+    SDL_QueryTexture(m_PlaceCheckpointTexture, NULL, NULL, &placeCheckpointWidth, &placeCheckpointHeight);
+    SDL_QueryTexture(m_RemoveCheckpointTexture, NULL, NULL, &removeCheckpointWidth, &removeCheckpointHeight);
     const int width = m_Game->getWidth();
     const int height = m_Game->getHeight();
     int xButtons = width/2 - (practiceWidth + MARGIN + resumeWidth + MARGIN + exitWidth)/2;
     int practiceX = xButtons;
     int resumeX = xButtons + practiceWidth + MARGIN;
     int exitX = resumeX + resumeWidth + MARGIN;
+    int checkpointButtonsX = width/2 - (placeCheckpointWidth + MARGIN + removeCheckpointWidth) / 2;
     m_EnterPracticeButton.init(m_Game, m_EnterPracticeTexture, practiceX, height/2, practiceWidth, practiceHeight, false, true);
     m_ExitPracticeButton.init(m_Game, m_ExitPracticeTexture, practiceX, height/2, practiceWidth, practiceHeight, false, true);
     m_ResumeButton.init(m_Game, m_ResumeTexture, resumeX, height/2, resumeWidth, resumeHeight, false, true);
     m_ExitButton.init(m_Game, m_ExitTexture, exitX, height/2, exitWidth, exitHeight, false, true);
+    m_PauseButton.init(m_Game, m_PauseTexture, width - pauseWidth, 0, pauseWidth, pauseHeight);
+    m_PlaceCheckpointButton.init(
+        m_Game, 
+        m_PlaceCheckpointTexture, 
+        checkpointButtonsX, 
+        height - MARGIN - placeCheckpointHeight, 
+        placeCheckpointWidth, 
+        placeCheckpointHeight
+    );
+    m_RemoveCheckpointButton.init(
+        m_Game,
+        m_RemoveCheckpointTexture,
+        checkpointButtonsX + MARGIN + placeCheckpointWidth,
+        height - MARGIN - removeCheckpointHeight,
+        removeCheckpointWidth,
+        removeCheckpointHeight  
+    );
     m_MinY = m_Game->getHeight() - 50*m_Game->TILE_SIZE; // no idea what the actual game value is lmao
 }
 
@@ -81,6 +120,7 @@ void PlayingState::destroy() {
     SDL_DestroyTexture(m_ExitTexture);
     SDL_DestroyTexture(m_EnterPracticeTexture);
     SDL_DestroyTexture(m_ExitPracticeTexture);
+    SDL_DestroyTexture(m_PauseTexture);
     SDL_DestroyTexture(m_NewBestTexture);
     SDL_DestroyTexture(m_LevelPercentTexture);
     SDL_DestroyTexture(m_LevelCompleteTextTexture);
@@ -105,6 +145,8 @@ void PlayingState::enter() {
     m_IsPlayerDead = false;
     m_IsEscapeHeld = false;
     m_IsSpaceHeld = false;
+    m_IsZHeld = false;
+    m_IsXHeld = false;
     m_IsPaused = false;
     m_ShouldEndLevel = false;
     m_LevelEndBlocksX = m_LevelManager.getFurthestX() - 7*m_Game->TILE_SIZE/2 + m_Game->getWidth();
@@ -142,12 +184,12 @@ void PlayingState::update(float deltaTime) {
         updateEndLevel(deltaTime);
         return;
     }
-
     if (m_IsPaused) {
         updatePause(isEscapeReleased);
         return;
     }
-    if (isEscapeReleased) {
+    m_PauseButton.update();
+    if (isEscapeReleased || m_PauseButton.isPressed()) {
         pause();
         return;
     }
@@ -158,6 +200,21 @@ void PlayingState::update(float deltaTime) {
     ground.setPosition({ground.getPosition().x, static_cast<float>(m_Game->getHeight() - 3*m_Game->TILE_SIZE)});
     background.update(deltaTime);
     ground.update(deltaTime);
+
+    if (m_IsInPractice) {
+        bool zReleased = m_IsZHeld && !m_Game->isZHeld();
+        bool xReleased = m_IsXHeld && !m_Game->isXHeld();
+        m_IsZHeld = m_Game->isZHeld();
+        m_IsXHeld = m_Game->isXHeld();
+        m_PlaceCheckpointButton.update();
+        if (zReleased || m_PlaceCheckpointButton.isPressed()) {
+            m_Player.placeCheckpoint();
+        }
+        m_RemoveCheckpointButton.update();
+        if (xReleased || m_RemoveCheckpointButton.isPressed()) {
+            m_Player.removeCheckpoint();
+        }
+    }
 
     if (m_Game->getCameraPosition().x != 0) {
         background.setMoving(true);
@@ -290,10 +347,15 @@ void PlayingState::render() {
     renderEndBlocks();
     // render ground so it appears above blocks but below text
     m_Game->getGround().render();
+    m_PauseButton.render();
     if (m_JustSetNewBest && !m_IsInPractice) {
         Text::renderTexture(m_Renderer, m_NewBestTexture, m_Game->getWidth()/2, m_Game->getHeight()/2, true, true);
     }
     Text::renderTexture(m_Renderer, m_LevelPercentTexture, m_Game->getWidth()/2, 10, true, false, 0.5f);
+    if (m_IsInPractice) {
+        m_PlaceCheckpointButton.render();
+        m_RemoveCheckpointButton.render();
+    }
     if (m_IsPaused) {
         renderPause();
     }
@@ -377,4 +439,8 @@ void PlayingState::updateLevelCompleteTextTexture() {
     } else {
         m_LevelCompleteTextTexture = Text::createTexture(m_Renderer, "Your did it!");
     }
+}
+
+bool PlayingState::playerShouldIgnoreMouseClicks() {
+    return m_PauseButton.mouseIntersects() || m_PlaceCheckpointButton.mouseIntersects() || m_RemoveCheckpointButton.mouseIntersects();
 }

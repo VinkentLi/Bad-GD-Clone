@@ -40,6 +40,8 @@ public:
     void update(float deltaTime);
     inline void moveX(float dist) { m_Position.x += dist; }
     inline void moveY(float dist) { m_Position.y += dist; }
+    void placeCheckpoint();
+    void removeCheckpoint();
     void die();
     bool isDead();
     // SDL_FRect getHazardHitbox();
@@ -72,8 +74,6 @@ private:
     std::vector<Checkpoint> m_Checkpoints;
     bool m_IsGrounded;
     bool m_IsMouseHeld;
-    bool m_IsZHeld;
-    bool m_IsXHeld;
     bool m_IsDead;
     bool m_HasBufferedOrb;
     float m_DeadTimer;
@@ -81,7 +81,6 @@ private:
     Gamemode m_Gamemode;
     std::pair<float, float> m_Bounds;
 
-    void updatePractice();
     void respawn();
     void updatePhysics(float deltaTime, bool mouseClicked, bool mouseReleased);
     void handleCollisions(std::vector<GameObject> &objects);
