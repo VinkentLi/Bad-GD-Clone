@@ -15,7 +15,7 @@ public:
         SDL_Color color, 
         bool xCentered = false,
         bool yCentered = false,
-        SDL_RendererFlip flip=SDL_FLIP_NONE
+        SDL_RendererFlip flip = SDL_FLIP_NONE
     );
     // Button does not own texture!
     void init(
@@ -27,16 +27,16 @@ public:
         int h,
         bool xCentered = false, 
         bool yCentered = false, 
-        SDL_RendererFlip flip=SDL_FLIP_NONE
+        SDL_RendererFlip flip = SDL_FLIP_NONE
     );
     void update();
-    void render();
-    bool mouseIntersects();
-    inline bool isPressed() { return m_IsPressed; }
-    inline int getX() { return m_Rect.x; }
-    inline int getY() { return m_Rect.y; }
-    inline int getW() { return m_Rect.w; }
-    inline int getH() { return m_Rect.h; }
+    void render() const;
+    bool mouseIntersects() const;
+    inline bool isPressed() const { return m_IsPressed; }
+    inline int getX() const { return m_Rect.x; }
+    inline int getY() const { return m_Rect.y; }
+    inline int getW() const { return m_Rect.w; }
+    inline int getH() const { return m_Rect.h; }
     void setPosition(int x, int y, bool xCentered = false, bool yCentered = false);
 
 private:

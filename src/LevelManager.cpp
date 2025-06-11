@@ -17,8 +17,10 @@ void LevelManager::initBlocks() {
     // i found hitbox values in the gd programming discord
     for (int i = 1; i <= 7; i++) {
         if (i == 5) continue;
-        m_IDToObjectData[i].type = ObjectType::BLOCK;
-        m_IDToObjectData[i].hitbox = SDL_FRect { 0, 0, static_cast<float>(m_Game->TILE_SIZE), static_cast<float>(m_Game->TILE_SIZE) };
+        m_IDToObjectData[i] = {
+            .type = ObjectType::BLOCK,
+            .hitbox = SDL_FRect { 0, 0, static_cast<float>(Config::TILE_SIZE), static_cast<float>(Config::TILE_SIZE) }
+        };
     }
     m_IDToObjectData[5].type = ObjectType::DECO;
     m_IDToObjectData[8] = {
@@ -78,7 +80,7 @@ LevelManager::~LevelManager() {
     }
 }
 
-std::vector<GameObject> &LevelManager::getObjects() {
+const std::vector<Object> &LevelManager::getObjects() const {
     return m_Objects;
 }
 
@@ -86,11 +88,11 @@ std::vector<Trigger> &LevelManager::getTriggers() {
     return m_Triggers;
 }
 
-SDL_Color LevelManager::getInitialBackground() {
+SDL_Color LevelManager::getInitialBackground() const {
     return m_InitialBackgroundColor;
 }
 
-SDL_Color LevelManager::getInitialGround() {
+SDL_Color LevelManager::getInitialGround() const {
     return m_InitialGroundColor;
 }
 
@@ -139,11 +141,10 @@ void LevelManager::loadTextures() {
 void LevelManager::loadLevelData() {
     m_FurthestX = 0;
     std::ifstream in;
-    in.open("res/leveldata/" + std::to_string(LevelSelect::get()->getLevelSelected()) + ".level");
+    in.open("res/leveldata/" + std::to_string(LevelSelect::get().getLevelSelected()) + ".level");
     std::stringstream buffer;
-    // read entire file
     buffer << in.rdbuf();
-    std::string levelData = buffer.str();
+    const std::string levelData = buffer.str();
     in.close();
     std::vector<std::string> objectProperties = Util::splitString(levelData, ';');
     
@@ -152,13 +153,13 @@ void LevelManager::loadLevelData() {
     setInitialProperties(initialProperties);
     objectProperties.erase(objectProperties.begin());
 
-    for (std::string &properties : objectProperties) {
+    for (const std::string &properties : objectProperties) {
         addObject(properties);
     }
 }
 
 void LevelManager::addObject(const std::string &properties) {
-    std::vector<std::string> splitProperties = Util::splitString(properties, ',');
+    const std::vector<std::string> splitProperties = Util::splitString(properties, ',');
     int objectID = 1;
     SDL_FPoint objectPos = { 0, 0 };
     ObjectData data = m_IDToObjectData[objectID];
@@ -170,8 +171,8 @@ void LevelManager::addObject(const std::string &properties) {
     // i'm just gonna assume id is always listed first cuz otherwise there's gonna be some issues
     // also i love gd cologne https://github.com/GDColon/GDBrowser/blob/master/misc/analysis/objectProperties.json
     for (std::size_t i = 0; i+1 < splitProperties.size(); i += 2) {
-        int propertyID = std::stoi(splitProperties[i]);
-        std::string propertyValue = splitProperties[i+1];
+        const int propertyID = std::stoi(splitProperties[i]);
+        const std::string propertyValue = splitProperties[i+1];
         switch (propertyID) {
         case 1: // ID
             objectID = std::stoi(propertyValue);
@@ -186,7 +187,7 @@ void LevelManager::addObject(const std::string &properties) {
             objectPos.x = std::stof(propertyValue)*4 - data.width/2;
             break;
         case 3: // y
-            objectPos.y = m_Game->getHeight() - 3*m_Game->TILE_SIZE - (std::stof(propertyValue)*4 + data.height/2) + data.offset.y;
+            objectPos.y = Config::HEIGHT - 3*Config::TILE_SIZE - (std::stof(propertyValue)*4 + data.height/2) + data.offset.y;
             break;
         case 4: // flipX
             flipX = std::stoi(propertyValue) == 1;
@@ -240,8 +241,8 @@ void LevelManager::addObject(const std::string &properties) {
 void LevelManager::setInitialProperties(const std::string &initialProperties) {
     const std::vector<std::string> splitInitialProperties = Util::splitString(initialProperties, ',');
     for (std::size_t i = 0; i+1 < splitInitialProperties.size(); i += 2) {
-        std::string property = splitInitialProperties[i];
-        std::string propertyValue = splitInitialProperties[i+1];
+        const std::string property = splitInitialProperties[i];
+        const std::string propertyValue = splitInitialProperties[i+1];
         // i love gd cologne https://github.com/GDColon/GDBrowser/blob/master/misc/analysis/initialProperties.json
         if (property == "kS29") {
             std::vector<std::string> splitPropertyValue = Util::splitString(propertyValue, '_');
@@ -260,8 +261,8 @@ void LevelManager::setInitialProperties(const std::string &initialProperties) {
     }
 }
 
-void LevelManager::render() {
-    for (GameObject &gameObject : m_Objects) {
+void LevelManager::render() const {
+    for (const Object &gameObject : m_Objects) {
         // don't render stuff you don't see
         if (gameObject.getPos().x + gameObject.getWidth() < m_Game->getCameraPosition().x ||
             gameObject.getPos().x > m_Game->getCameraPosition().x + m_Game->getWidth() ||

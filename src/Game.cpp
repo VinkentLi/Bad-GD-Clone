@@ -59,9 +59,9 @@ int Game::init() {
     m_Background.setMoving(true);
     m_Ground.init(this, 0, 0, 255);
 
-    TitleScreen::get()->init(this);
-    LevelSelect::get()->init(this);
-    PlayingState::get()->init(this);
+    TitleScreen::get().init(this);
+    LevelSelect::get().init(this);
+    PlayingState::get().init(this);
 
     pushState(TitleScreen::get());
 
@@ -77,9 +77,9 @@ int Game::init() {
 void Game::quit() {
     m_Background.destroy();
     m_Ground.destroy();
-    TitleScreen::get()->destroy();
-    LevelSelect::get()->destroy();
-    PlayingState::get()->destroy();
+    TitleScreen::get().destroy();
+    LevelSelect::get().destroy();
+    PlayingState::get().destroy();
     SDL_DestroyRenderer(m_Renderer);
     SDL_DestroyWindow(m_Window);
     SDL_DestroyTexture(m_FPSTexture);
@@ -177,9 +177,9 @@ void Game::updateFPS() {
     m_Frames = 0;
 }
 
-void Game::pushState(GameState *state) {
-    m_GameStates.push(state);
-    state->enter();
+void Game::pushState(GameState &state) {
+    m_GameStates.push(&state);
+    state.enter();
 }
 
 void Game::popState() {
@@ -191,7 +191,7 @@ void Game::popState() {
     m_GameStates.pop();
 }
 
-void Game::changeState(GameState *state) {
+void Game::changeState(GameState &state) {
     popState();
     pushState(state);
 }

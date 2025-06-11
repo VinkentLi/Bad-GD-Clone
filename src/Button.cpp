@@ -60,7 +60,7 @@ void Button::update() {
     m_IsPressed = isMouseReleased && mouseIntersects();
 }
 
-void Button::render() {
+void Button::render() const {
     if (m_IsTextured) {
         SDL_RenderCopyEx(m_Renderer, m_Texture, NULL, &m_Rect, 0, NULL, m_Flip);
     } else {
@@ -70,10 +70,10 @@ void Button::render() {
     }
 }
 
-bool Button::mouseIntersects() {
-    SDL_Point mousePosition = m_Game->getMousePosition();
-    float wScale = m_Game->getScreenWidth() / static_cast<float>(m_Game->getWidth());
-    float hScale = m_Game->getScreenHeight() / static_cast<float>(m_Game->getHeight());
+bool Button::mouseIntersects() const {
+    const SDL_Point mousePosition = m_Game->getMousePosition();
+    const float wScale = m_Game->getScreenWidth() / static_cast<float>(m_Game->getWidth());
+    const float hScale = m_Game->getScreenHeight() / static_cast<float>(m_Game->getHeight());
     SDL_Point scaledMousePosition;
     scaledMousePosition.x = static_cast<int>(mousePosition.x / wScale);
     scaledMousePosition.y = static_cast<int>(mousePosition.y / hScale);

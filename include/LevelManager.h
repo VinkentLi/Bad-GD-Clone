@@ -24,17 +24,17 @@ public:
     LevelManager &operator=(const LevelManager &) = delete;
     void init(Game *game);
     void reset();
-    std::vector<GameObject> &getObjects();
+    const std::vector<Object> &getObjects() const;
     std::vector<Trigger> &getTriggers();
-    SDL_Color getInitialBackground();
-    SDL_Color getInitialGround();
+    SDL_Color getInitialBackground() const;
+    SDL_Color getInitialGround() const;
     SDL_FRect rotateHitbox(SDL_FRect hitbox, int rotations);
-    void render();
-    inline int getFurthestX() { return m_FurthestX; }
+    void render() const;
+    inline int getFurthestX() const { return m_FurthestX; }
 
 private:
     Game *m_Game;
-    std::vector<GameObject> m_Objects;
+    std::vector<Object> m_Objects;
     std::vector<Trigger> m_Triggers;
     std::map<int, ObjectData> m_IDToObjectData;
     SDL_Color m_InitialBackgroundColor;

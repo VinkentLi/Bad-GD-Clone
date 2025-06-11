@@ -16,7 +16,7 @@ void Ground::init(Game *game, uint8_t r, uint8_t g, uint8_t b) {
     SDL_SetTextureColorMod(m_GroundTexture, r, g, b);
     SDL_QueryTexture(m_GroundTexture, NULL, NULL, &m_GroundSize, NULL);
     m_SquareCount = m_Game->getWidth() / m_GroundSize + 2;
-    m_Position = {0, static_cast<float>(m_Game->getHeight() - 3*m_Game->TILE_SIZE)};
+    m_Position = {0, static_cast<float>(Config::HEIGHT - DEFAULT_HEIGHT)};
     m_ShouldRenderOnTop = false;
 }
 
@@ -33,10 +33,10 @@ void Ground::destroy() {
 }
 
 void Ground::setPosition(SDL_FPoint pos) {
-    this->m_Position = pos;
+    m_Position = pos;
 }
 
-SDL_FPoint Ground::getPosition() {
+SDL_FPoint Ground::getPosition() const {
     return m_Position;
 }
 
@@ -69,7 +69,7 @@ void Ground::update(float delta) {
     }
 }
 
-void Ground::render() {
+void Ground::render() const {
     for (int i = 0; i < m_SquareCount; i++) {
         const SDL_FPoint cameraPosition = m_Game->getCameraPosition();
         SDL_FRect dst = {
@@ -82,11 +82,11 @@ void Ground::render() {
             dst.x += m_SquareCount * m_GroundSize;
         }
         if (m_ShouldRenderOnTop) {
-            const int BOUNDS_HEIGHT = (m_Game->getHeight() - 10*m_Game->TILE_SIZE)/2;
-            dst.y = static_cast<float>(m_Game->getHeight() - BOUNDS_HEIGHT);
+            const int BOUNDS_HEIGHT = (Config::HEIGHT - 10*Config::TILE_SIZE)/2;
+            dst.y = static_cast<float>(Config::HEIGHT - BOUNDS_HEIGHT);
             SDL_RenderCopyF(m_Renderer, m_GroundTexture, NULL, &dst);
             SDL_FRect newDST = dst;
-            newDST.y = m_Game->getHeight() - dst.y - dst.h;
+            newDST.y = Config::HEIGHT - dst.y - dst.h;
             SDL_RenderCopyExF(m_Renderer, m_GroundTexture, NULL, &newDST, 0.0, NULL, SDL_FLIP_VERTICAL);
         } else {
             SDL_RenderCopyF(m_Renderer, m_GroundTexture, NULL, &dst);
@@ -98,7 +98,7 @@ void Ground::setOnTop(bool value) {
     m_ShouldRenderOnTop = value;
 }
 
-std::array<float, 3> Ground::getColor() {
+std::array<float, 3> Ground::getColor() const {
     return { m_Red, m_Green, m_Blue };
 }
 
@@ -109,7 +109,7 @@ void Ground::setColor(std::array<float, 3> color) {
     SDL_SetTextureColorMod(m_GroundTexture, static_cast<uint8_t>(m_Red), static_cast<uint8_t>(m_Green), static_cast<uint8_t>(m_Blue));
 }
 
-SDL_Color Ground::getTargetColor() {
+SDL_Color Ground::getTargetColor() const {
     return { m_TargetRed, m_TargetGreen, m_TargetBlue };
 }
 
@@ -119,7 +119,7 @@ void Ground::setTargetColor(SDL_Color color) {
     m_TargetBlue = color.b;
 }
 
-float Ground::getFadeTime() {
+float Ground::getFadeTime() const {
     return m_FadeTime;
 }
 

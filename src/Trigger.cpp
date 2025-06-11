@@ -3,7 +3,7 @@
 #include <iostream>
 
 Trigger::Trigger(Game *game, ObjectType type, SDL_FPoint pos, SDL_Color color, float duration) 
-    : GameObject(game, type, 0, pos, {}, false, false, nullptr), m_Color(color), m_Duration(duration) {
+    : Object(game, type, 0, pos, {}, false, false, nullptr), m_Color(color), m_Duration(duration) {
     
     if (m_Type != ObjectType::BG_TRIGGER && m_Type != ObjectType::G_TRIGGER) {
         std::cerr << "WTF! Trigger is not a trigger!\n";

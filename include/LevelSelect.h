@@ -1,11 +1,12 @@
 #pragma once
 #include "GameState.h"
 #include "Button.h"
-#include <vector>
+#include <array>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-#include <string>
+#include <string_view>
+#include "Config.h"
 
 class Game;
 
@@ -16,20 +17,21 @@ public:
     void enter() override;
     void exit() override;
     void update(float deltaTime) override;
-    void render() override;
-    inline std::string getLevelName() { return m_LevelStrings[m_LevelSelected]; }
-    inline int getLevelSelected() { return m_LevelSelected; }
-    int getBestPercentage();
+    void render() const override;
+    inline int getLevelSelected() const { return m_LevelSelected; }
+    int getBestPercentage() const;
     void setBestPercentage(int value);
-    int getBestPracticePercentage();
+    int getBestPracticePercentage() const;
     void setBestPracticePercentage(int value);
-    inline SDL_Texture *getLevelNameTexture() { return m_LevelNameTexture; }
-    inline static LevelSelect *get() { return &m_LevelSelect; }
+    inline SDL_Texture *getLevelNameTexture() const { return m_LevelNameTexture; }
+    inline static LevelSelect &get() { return m_LevelSelect; }
 
 private:
     static LevelSelect m_LevelSelect;
     int m_LevelSelected = 0;
-    std::vector<std::string> m_LevelStrings;
+    constexpr static std::array<std::string_view, Config::LEVEL_COUNT> m_LevelStrings = {
+        "Stereo Madness", "Back on Track", "Polargeist", "Dry Out", "Base After Base", "Cant Let Go", "Jumper"
+    };
     Button m_LeftLevelArrow;
     Button m_RightLevelArrow;
     Button m_TitleScreenArrow;
@@ -45,8 +47,8 @@ private:
     SDL_Texture *m_BestPercentTexture;
     SDL_Texture *m_BestPracticePercentTexture;
     Mix_Chunk *m_PlaySound;
-    std::vector<int> m_BestLevelPercentages;
-    std::vector<int> m_BestPracticePercentages;
+    std::array<int, Config::LEVEL_COUNT> m_BestLevelPercentages;
+    std::array<int, Config::LEVEL_COUNT> m_BestPracticePercentages;
     bool m_IsMouseHeld;
     bool m_IsEscapeHeld;
     bool m_IsSpaceHeld;

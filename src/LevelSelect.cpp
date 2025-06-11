@@ -27,8 +27,7 @@ void LevelSelect::init(Game *game) {
     if (m_TitleArrowTexture == nullptr) {
         std::cerr << "Failed to load toTitleScreen.png!" << SDL_GetError() << std::endl;
     }
-    m_LevelStrings = { "Stereo Madness", "Back on Track", "Polargeist", "Dry Out", "Base After Base", "Cant Let Go", "Jumper" };
-    m_LevelNameTexture = Text::createTexture(m_Renderer, m_LevelStrings[0]);
+    m_LevelNameTexture = Text::createTexture(m_Renderer, std::string(m_LevelStrings[0]));
     m_BestPercentTexture = Text::createTexture(m_Renderer, "Normal: 0%");
     m_BestPracticePercentTexture = Text::createTexture(m_Renderer, "Practice: 0%");
     int cornerWidth = 0;
@@ -47,9 +46,9 @@ void LevelSelect::init(Game *game) {
     const int height = m_Game->getHeight();
     const int xMargin = 40;
     const int yMargin = 20;
-    m_LeftCornerRect = {0, height - cornerHeight, cornerWidth, cornerHeight};
-    m_RightCornerRect = {width - cornerWidth, height - cornerHeight, cornerWidth, cornerHeight};
-    m_TopRect = {width/2 - topWidth/2, 0, topWidth, topHeight};
+    m_LeftCornerRect = { 0, height - cornerHeight, cornerWidth, cornerHeight };
+    m_RightCornerRect = { width - cornerWidth, height - cornerHeight, cornerWidth, cornerHeight };
+    m_TopRect = { width/2 - topWidth/2, 0, topWidth, topHeight };
     m_LeftLevelArrow.init(
         m_Game, 
         m_LevelArrowTexture, 
@@ -88,8 +87,6 @@ void LevelSelect::init(Game *game) {
         {.r=0, .g=0, .b=0, .a=100},
         true
     );
-    m_BestLevelPercentages.resize(m_Game->LEVEL_COUNT);
-    m_BestPracticePercentages.resize(m_Game->LEVEL_COUNT);
     std::fill(m_BestLevelPercentages.begin(), m_BestLevelPercentages.end(), 0);
     std::fill(m_BestPracticePercentages.begin(), m_BestPracticePercentages.end(), 0);
     m_PlaySound = Mix_LoadWAV("res/sfx/playSound.ogg");
@@ -125,7 +122,7 @@ void LevelSelect::update(float /*deltaTime*/) {
     }
     Background &background = m_Game->getBackground();
     Ground &ground = m_Game->getGround();
-    ground.setPosition({0, static_cast<float>(m_Game->getHeight() - 2*m_Game->TILE_SIZE)});
+    ground.setPosition({0, static_cast<float>(Config::HEIGHT - 2*Config::TILE_SIZE)});
     ground.setOnTop(false);
     background.setMoving(false);
 
@@ -141,7 +138,7 @@ void LevelSelect::update(float /*deltaTime*/) {
     if (m_LeftLevelArrow.isPressed()) {
         m_LevelSelected--;
         if (m_LevelSelected < 0) {
-            m_LevelSelected = m_Game->LEVEL_COUNT - 1;
+            m_LevelSelected = Config::LEVEL_COUNT - 1;
         }
         updateLevelNameTexture();
         updateBestPercentTexture();
@@ -150,7 +147,7 @@ void LevelSelect::update(float /*deltaTime*/) {
     m_RightLevelArrow.update();
     if (m_RightLevelArrow.isPressed()) {
         m_LevelSelected++;
-        if (m_LevelSelected == m_Game->LEVEL_COUNT) {
+        if (m_LevelSelected == Config::LEVEL_COUNT) {
             m_LevelSelected = 0;
         }
         updateLevelNameTexture();
@@ -164,7 +161,7 @@ void LevelSelect::update(float /*deltaTime*/) {
     }
 }
 
-void LevelSelect::render() {
+void LevelSelect::render() const {
     // render textures
     SDL_RenderCopyEx(m_Renderer, m_CornerTexture, NULL, &m_LeftCornerRect, 0, NULL, SDL_FLIP_NONE);
     SDL_RenderCopyEx(m_Renderer, m_CornerTexture, NULL, &m_RightCornerRect, 0, NULL, SDL_FLIP_HORIZONTAL);
@@ -181,7 +178,7 @@ void LevelSelect::render() {
     Text::renderTexture(m_Renderer, m_BestPracticePercentTexture, m_Game->getWidth()/2, bestPercentY + 2*MARGIN, true, false, 0.5f);
 }
 
-int LevelSelect::getBestPercentage() {
+int LevelSelect::getBestPercentage() const {
     return m_BestLevelPercentages[m_LevelSelected];
 }
 
@@ -190,7 +187,7 @@ void LevelSelect::setBestPercentage(int value) {
     updateBestPercentTexture();
 }
 
-int LevelSelect::getBestPracticePercentage() {
+int LevelSelect::getBestPracticePercentage() const {
     return m_BestPracticePercentages[m_LevelSelected];
 }
 
@@ -201,7 +198,7 @@ void LevelSelect::setBestPracticePercentage(int value) {
 
 void LevelSelect::updateLevelNameTexture() {
     SDL_DestroyTexture(m_LevelNameTexture);
-    m_LevelNameTexture = Text::createTexture(m_Renderer, m_LevelStrings[m_LevelSelected]);
+    m_LevelNameTexture = Text::createTexture(m_Renderer, std::string(m_LevelStrings[m_LevelSelected]));
 }
 
 void LevelSelect::updateBestPercentTexture() {

@@ -11,16 +11,16 @@ public:
     void init(Game *game, uint8_t r, uint8_t g, uint8_t b);
     void destroy();
     void fade(uint8_t r, uint8_t g, uint8_t b, float time);
-    SDL_FPoint getPosition();
+    SDL_FPoint getPosition() const;
     void resetPosition();
     void setMoving(bool value);
     void update(float delta);
-    void render();
-    std::array<float, 3> getColor();
+    void render() const;
+    std::array<float, 3> getColor() const;
     void setColor(std::array<float, 3> color);
-    SDL_Color getTargetColor();
+    SDL_Color getTargetColor() const;
     void setTargetColor(SDL_Color color);
-    float getFadeTime();
+    float getFadeTime() const;
     void setFadeTime(float fadeTime);
 
 private:

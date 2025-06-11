@@ -18,23 +18,24 @@ enum class ObjectType {
     G_TRIGGER
 };
 
-class GameObject {
+class Object {
 public:
-    GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, std::optional<SDL_FRect> hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture);
-    std::optional<SDL_FRect> &getHitbox();
+    Object(Game *game, ObjectType type, int rotation, SDL_FPoint pos, std::optional<SDL_FRect> hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture);
+    std::optional<SDL_FRect> getHitbox() const;
     SDL_FPoint getPos() const;
     int getWidth() const;
     int getHeight() const;
     ObjectType getType() const;
-    void render();
+    void render() const;
 
 protected:
     Game *m_Game;
     SDL_Renderer *m_Renderer;
     ObjectType m_Type;
+    int m_Width;
+    int m_Height;
     int m_Rotation;
     SDL_FPoint m_Position;
-    SDL_Rect m_Rect;
     std::optional<SDL_FRect> m_Hitbox;
     bool m_FlipX;
     bool m_FlipY;

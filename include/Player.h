@@ -3,6 +3,7 @@
 #include <SDL_mixer.h>
 #include <vector>
 #include <array>
+#include <set>
 
 enum class Gamemode {
     CUBE,
@@ -26,11 +27,13 @@ struct Checkpoint {
 };
 
 class Game;
-class GameObject;
+class Object;
 class Trigger;
 
 class Player {
 public:
+    static constexpr float DEFAULT_X_VELOCITY = 20.772f;
+
     Player() = default;
     ~Player();
     Player(const Player &) = delete;
@@ -43,12 +46,10 @@ public:
     void placeCheckpoint();
     void removeCheckpoint();
     void die();
-    bool isDead();
-    // SDL_FRect getHazardHitbox();
-    // SDL_FRect getSolidHitbox();
-    void render();
-    Gamemode getGamemode();
-    inline SDL_FPoint getPosition() { return m_Position; }
+    bool isDead() const;
+    void render() const;
+    Gamemode getGamemode() const;
+    inline SDL_FPoint getPosition() const { return m_Position; }
 
 private:
     Game *m_Game;
@@ -61,7 +62,7 @@ private:
     Mix_Chunk *m_DeathSound;
     SDL_FPoint m_Position;
     SDL_FPoint m_PreviousPosition;
-    float m_XVelocity = 20.772f;
+    float m_XVelocity = DEFAULT_X_VELOCITY;
     float m_YVelocity;
     float m_JumpStrength = -44.72f;
     float m_PadStrength = -64;
@@ -69,8 +70,10 @@ private:
     float m_RotationAdder = 6.92308f;
     float m_Rotation;
     float m_TargetRotation;
-    SDL_FRect m_HazardHitbox, m_SolidHitbox;
-    std::vector<SDL_FRect *> m_PressedOrbs;
+    SDL_FRect m_HazardHitbox;
+    SDL_FRect m_SolidHitbox;
+    // the size of the objects vector won't change so it should be safe to store pointers to the objects
+    std::set<const Object *> m_PressedOrbs;
     std::vector<Checkpoint> m_Checkpoints;
     bool m_IsGrounded;
     bool m_IsMouseHeld;
@@ -83,15 +86,15 @@ private:
 
     void respawn();
     void updatePhysics(float deltaTime, bool mouseClicked, bool mouseReleased);
-    void handleCollisions(std::vector<GameObject> &objects);
+    void handleCollisions(const std::vector<Object> &objects);
     void collideWithGround();
-    void collideWithObject(GameObject &object);
-    void snapToObject(GameObject &object);
-    void setShipBounds(GameObject &shipPortal);
+    void collideWithObject(const Object &object);
+    void snapToObject(const Object &object);
+    void setShipBounds(const Object &shipPortal);
     void activateTriggers(std::vector<Trigger> &triggers);
     void updateCubeRotation(float deltaTime);
     void updateShipRotation(float deltaTime);
     void scrollCamera();
-    void renderCube();
-    void renderShip();
+    void renderCube() const;
+    void renderShip() const;
 };

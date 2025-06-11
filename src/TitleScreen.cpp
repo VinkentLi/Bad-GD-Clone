@@ -3,6 +3,7 @@
 #include <SDL_image.h>
 #include <iostream>
 #include "Game.h"
+#include "Player.h"
 
 TitleScreen TitleScreen::m_TitleScreen;
 
@@ -64,11 +65,11 @@ void TitleScreen::update(float deltaTime) {
     }
     Ground &ground = m_Game->getGround();
     Background &background = m_Game->getBackground();
-    ground.setPosition({ground.getPosition().x, static_cast<float>(m_Game->getHeight() - 3*m_Game->TILE_SIZE)});
+    ground.setPosition({ground.getPosition().x, static_cast<float>(m_Game->getHeight() - Ground::DEFAULT_HEIGHT)});
     background.setMoving(true);
     background.update(deltaTime);
     ground.update(deltaTime);
-    ground.move(-20.772f, deltaTime);
+    ground.move(-Player::DEFAULT_X_VELOCITY, deltaTime);
 
     const bool isSpaceHeld = m_Game->isSpaceHeld();
     const bool spaceReleased = m_IsSpaceHeld && !isSpaceHeld;
@@ -80,7 +81,7 @@ void TitleScreen::update(float deltaTime) {
     }
 }
 
-void TitleScreen::render() {
+void TitleScreen::render() const {
     SDL_RenderCopy(m_Renderer, m_TitleTexture, NULL, &m_TitleRect);
     m_TitlePlay.render();
 }

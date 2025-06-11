@@ -12,7 +12,7 @@ public:
     virtual void enter() = 0;
     virtual void exit() = 0;
     virtual void update(float deltaTime) = 0;
-    virtual void render() = 0;
+    virtual void render() const = 0;
     inline std::string getName() { return m_Name; } 
 
 protected:

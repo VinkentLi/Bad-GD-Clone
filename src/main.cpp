@@ -3,10 +3,10 @@
 #include <emscripten.h>
 #endif
 
-Game game;
-uint64_t currentTime = 0;
-uint64_t newTime = 0;
-uint64_t timer = 0;
+static Game game;
+static uint64_t currentTime = 0;
+static uint64_t newTime = 0;
+static uint64_t timer = 0;
 
 void mainLoop() {
     if (!game.isGameRunning()) {

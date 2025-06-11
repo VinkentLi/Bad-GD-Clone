@@ -46,7 +46,3 @@ cmake --build . --parallel
 </body>
 </html>
 ```
-
-## TODO
-- Add more buttons to make it more mobile friendly
-- A lot of other things, none of which are worth doing

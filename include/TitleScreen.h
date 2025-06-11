@@ -12,8 +12,8 @@ public:
     void enter() override;
     void exit() override;
     void update(float deltaTime) override;
-    void render() override;
-    inline static TitleScreen *get() { return &m_TitleScreen; }
+    void render() const override;
+    inline static TitleScreen &get() { return m_TitleScreen; }
 
 private:
     static TitleScreen m_TitleScreen;

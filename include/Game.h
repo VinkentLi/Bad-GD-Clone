@@ -11,8 +11,6 @@
 
 class Game {
 public:
-    constexpr static int LEVEL_COUNT = 7;
-    constexpr static int TILE_SIZE = 120;
     Game() {}
     ~Game() = default;
     Game(const Game &) = delete;
@@ -26,28 +24,29 @@ public:
     void incrementFrames();
     void updateFPS();
 
-    void pushState(GameState *state);
+    void pushState(GameState &state);
     void popState();
-    void changeState(GameState *state);
-    inline GameState *getState() { return m_GameStates.top(); }
-    inline bool isGameRunning() { return m_IsGameRunning; }
-    inline bool isMouseHeld() { return m_IsMouseHeld; }
-    inline bool isEscapeHeld() { return m_IsEscapeHeld; }
-    inline bool isSpaceHeld() { return m_IsSpaceHeld; }
-    inline bool isUpHeld() { return m_IsUpHeld; }
-    inline bool isZHeld() { return m_IsZHeld; }
-    inline bool isXHeld() { return m_IsXHeld; }
-    inline SDL_Renderer *getRenderer() { return m_Renderer; }
-    inline int getWidth() { return m_Width; }
-    inline int getHeight() { return m_Height; }
-    inline int getScreenWidth() { return m_ScreenWidth; }
-    inline int getScreenHeight() { return m_ScreenHeight; }
-    inline SDL_FPoint getCameraPosition() { return m_CameraPosition; }
+    void changeState(GameState &state);
+    inline GameState *getState() const { return m_GameStates.top(); }
+
+    inline SDL_Renderer *getRenderer() const { return m_Renderer; }
+    inline bool isGameRunning() const { return m_IsGameRunning; }
+    inline bool isMouseHeld() const { return m_IsMouseHeld; }
+    inline bool isEscapeHeld() const { return m_IsEscapeHeld; }
+    inline bool isSpaceHeld() const { return m_IsSpaceHeld; }
+    inline bool isUpHeld() const { return m_IsUpHeld; }
+    inline bool isZHeld() const { return m_IsZHeld; }
+    inline bool isXHeld() const { return m_IsXHeld; }
+    inline int getWidth() const { return m_Width; }
+    inline int getHeight() const { return m_Height; }
+    inline int getScreenWidth() const { return m_ScreenWidth; }
+    inline int getScreenHeight() const { return m_ScreenHeight; }
+    inline SDL_FPoint getCameraPosition() const { return m_CameraPosition; }
     inline void setCameraPosition(SDL_FPoint newPosition) { m_CameraPosition = newPosition; m_TargetY = newPosition.y; } 
     inline void setCameraX(float x) { m_CameraPosition.x = x; }
     inline void setCameraY(float y) { m_CameraPosition.y = y; m_TargetY = y; }
     inline void smoothCameraYScroll(float targetY) { m_TargetY = targetY; }  
-    inline SDL_Point getMousePosition() { return m_MousePosition; }
+    inline SDL_Point getMousePosition() const { return m_MousePosition; }
     inline Ground &getGround() { return m_Ground; }
     inline Background &getBackground() { return m_Background; }
     inline void restartMenuLoop() { Mix_PlayMusic(m_MenuLoop, -1); }
@@ -71,7 +70,7 @@ private:
     bool m_IsZHeld = false;
     bool m_IsXHeld = false;
     int m_Width;
-    int m_Height = 1296;
+    int m_Height = Config::HEIGHT;
     int m_ScreenWidth;
     int m_ScreenHeight;
     int m_Frames = 0;

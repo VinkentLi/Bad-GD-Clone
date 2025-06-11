@@ -11,11 +11,11 @@ void Background::init(Game* game, uint8_t r, uint8_t g, uint8_t b) {
     m_Renderer = m_Game->getRenderer();
     m_BGTexture = IMG_LoadTexture(m_Renderer, "res/gfx/background.png");
     if (m_BGTexture == nullptr) {
-        std::cerr << "Failed to load background.png! " << SDL_GetError() << std::endl;
+        std::cerr << "Failed to load background.png! " << SDL_GetError() << '\n';
     }
     m_EmptyBG = IMG_LoadTexture(m_Renderer, "res/gfx/emptyBG.png");
     if (m_EmptyBG == nullptr) {
-        std::cerr << "Failed to load emptyBG.png! " << SDL_GetError() << std::endl;
+        std::cerr << "Failed to load emptyBG.png! " << SDL_GetError() << '\n';
     }
     SDL_QueryTexture(m_BGTexture, NULL, NULL, &m_BackgroundSize, NULL);
     SDL_SetTextureColorMod(m_BGTexture, r, g, b);
@@ -42,7 +42,7 @@ void Background::fade(uint8_t r, uint8_t g, uint8_t b, float time) {
     m_IsFading = true;
 }
 
-SDL_FPoint Background::getPosition() {
+SDL_FPoint Background::getPosition() const {
     return m_Position;
 }
 
@@ -79,7 +79,7 @@ void Background::update(float delta) {
     }
 }
 
-void Background::render() {
+void Background::render() const {
     for (int i = 0; i < m_BGCount; i++) {
         const int height = m_Game->getHeight();
         const SDL_FPoint cameraPosition = m_Game->getCameraPosition();
@@ -94,13 +94,11 @@ void Background::render() {
             SDL_RenderCopyExF(m_Renderer, m_EmptyBG, NULL, &dst, 0, NULL, SDL_FLIP_VERTICAL);
             continue;
         }
-        if (SDL_RenderCopyF(m_Renderer, m_BGTexture, NULL, &dst) != 0) {
-            std::cerr << "Failed to render background! " << SDL_GetError() << std::endl;
-        }
+        SDL_RenderCopyF(m_Renderer, m_BGTexture, NULL, &dst);
     }
 }
 
-std::array<float, 3> Background::getColor() {
+std::array<float, 3> Background::getColor() const {
     return { m_Red, m_Green, m_Blue };
 }
 
@@ -112,7 +110,7 @@ void Background::setColor(std::array<float, 3> color) {
     SDL_SetTextureColorMod(m_EmptyBG, static_cast<uint8_t>(m_Red), static_cast<uint8_t>(m_Green), static_cast<uint8_t>(m_Blue));
 }
 
-SDL_Color Background::getTargetColor() {
+SDL_Color Background::getTargetColor() const {
     return { m_TargetRed, m_TargetGreen, m_TargetBlue };
 }
 
@@ -122,7 +120,7 @@ void Background::setTargetColor(SDL_Color color) {
     m_TargetBlue = color.b;
 }
 
-float Background::getFadeTime() {
+float Background::getFadeTime() const {
     return m_FadeTime;
 }
 

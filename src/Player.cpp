@@ -2,10 +2,9 @@
 #include <SDL_image.h>
 #include <cmath>
 #include <iostream>
-#include "Player.h"
 #include "PlayingState.h"
 #include "Game.h"
-#include "GameObject.h"
+#include "Object.h"
 
 void Player::init(Game *game) {
     m_Game = game;
@@ -30,7 +29,7 @@ void Player::init(Game *game) {
 }
 
 void Player::reset() {
-    m_Position = {-static_cast<float>(m_Game->TILE_SIZE), static_cast<float>(m_Game->getHeight() - 4*m_Game->TILE_SIZE)};
+    m_Position = { -static_cast<float>(Config::TILE_SIZE), static_cast<float>(m_Game->getGround().getPosition().y - Config::TILE_SIZE) };
     m_PreviousPosition = m_Position;
     m_YVelocity = 0;
     m_Rotation = 0;
@@ -38,14 +37,14 @@ void Player::reset() {
     m_HazardHitbox = {
         m_Position.x, 
         m_Position.y, 
-        static_cast<float>(m_Game->TILE_SIZE), 
-        static_cast<float>(m_Game->TILE_SIZE)
+        static_cast<float>(Config::TILE_SIZE), 
+        static_cast<float>(Config::TILE_SIZE)
     };
     m_SolidHitbox = {
-        m_Position.x + m_Game->TILE_SIZE / 3, 
-        m_Position.y + m_Game->TILE_SIZE / 3, 
-        static_cast<float>(m_Game->TILE_SIZE / 3), 
-        static_cast<float>(m_Game->TILE_SIZE / 3)
+        m_Position.x + Config::TILE_SIZE / 3, 
+        m_Position.y + Config::TILE_SIZE / 3, 
+        static_cast<float>(Config::TILE_SIZE / 3), 
+        static_cast<float>(Config::TILE_SIZE / 3)
     };
     m_IsGrounded = true;
     m_IsMouseHeld = false;
@@ -55,7 +54,7 @@ void Player::reset() {
     m_GravityMultiplier = 1;
     m_Gamemode = Gamemode::CUBE;
     m_Checkpoints.clear();
-    for (Trigger &trigger : PlayingState::get()->getTriggers()) {
+    for (Trigger &trigger : PlayingState::get().getTriggers()) {
         trigger.reset();
     }
 }
@@ -79,7 +78,7 @@ void Player::update(float deltaTime) {
     m_IsMouseHeld = m_Game->isSpaceHeld() || m_Game->isUpHeld();
     
     // if it shouldn't ignore mouse clicks, it won't
-    if (!PlayingState::get()->playerShouldIgnoreMouseClicks()) {
+    if (!PlayingState::get().playerShouldIgnoreMouseClicks()) {
         mouseClicked = mouseClicked || (!m_IsMouseHeld && m_Game->isMouseHeld());
         m_IsMouseHeld = m_IsMouseHeld || m_Game->isMouseHeld();
     }
@@ -93,8 +92,8 @@ void Player::update(float deltaTime) {
     }
 
     updatePhysics(deltaTime, mouseClicked, mouseReleased);
-    handleCollisions(PlayingState::get()->getObjects());
-    activateTriggers(PlayingState::get()->getTriggers());
+    handleCollisions(PlayingState::get().getObjects());
+    activateTriggers(PlayingState::get().getTriggers());
 
     switch (m_Gamemode) {
     case Gamemode::CUBE:
@@ -107,7 +106,7 @@ void Player::update(float deltaTime) {
     
     scrollCamera();
 
-    if (m_Position.y < PlayingState::get()->getMinY()) {
+    if (m_Position.y < PlayingState::get().getMinY()) {
         die();
     }
     if (m_IsGrounded) {
@@ -149,19 +148,19 @@ void Player::respawn() {
     m_IsGrounded = false;
     Background &background = m_Game->getBackground();
     Ground &ground = m_Game->getGround();
-    if (!PlayingState::get()->isInPractice() || m_Checkpoints.empty()) {
-        m_HazardHitbox.x = -m_Game->TILE_SIZE;
-        m_HazardHitbox.y = static_cast<float>(m_Game->getHeight() - 4 * m_Game->TILE_SIZE);
+    if (!PlayingState::get().isInPractice() || m_Checkpoints.empty()) {
+        m_HazardHitbox.x = -Config::TILE_SIZE;
+        m_HazardHitbox.y = static_cast<float>(m_Game->getGround().getPosition().y - Config::TILE_SIZE);
         m_Game->setCameraPosition({0, 0});
         m_Rotation = 0;
         m_TargetRotation = 0;
         m_GravityMultiplier = 1;
         m_YVelocity = 0;
-        for (Trigger &trigger : PlayingState::get()->getTriggers()) {
+        for (Trigger &trigger : PlayingState::get().getTriggers()) {
             trigger.reset();
         }
-        SDL_Color initialBackground = PlayingState::get()->getInitialBackground();
-        SDL_Color initialGround = PlayingState::get()->getInitialGround();
+        SDL_Color initialBackground = PlayingState::get().getInitialBackground();
+        SDL_Color initialGround = PlayingState::get().getInitialGround();
         background.fade(initialBackground.r, initialBackground.g, initialBackground.b, 0);
         ground.fade(initialGround.r, initialGround.g, initialGround.b, 0);
     } else {
@@ -180,15 +179,15 @@ void Player::respawn() {
         ground.setTargetColor(latestCheckpoint.groundTargetColor);
         background.setFadeTime(latestCheckpoint.backgroundFadeTime);
         ground.setFadeTime(latestCheckpoint.groundFadeTime);
-        for (Trigger &trigger : PlayingState::get()->getTriggers()) {
-            bool passedBeforeCheckpoint = m_HazardHitbox.x > trigger.getPos().x + m_Game->TILE_SIZE/2;
+        for (Trigger &trigger : PlayingState::get().getTriggers()) {
+            bool passedBeforeCheckpoint = m_HazardHitbox.x > trigger.getPos().x + Config::TILE_SIZE/2;
             if (!passedBeforeCheckpoint) {
                 trigger.reset();
             }
         }
     }
-    m_SolidHitbox.x = m_HazardHitbox.x + m_Game->TILE_SIZE / 3;
-    m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
+    m_SolidHitbox.x = m_HazardHitbox.x + Config::TILE_SIZE / 3;
+    m_SolidHitbox.y = m_HazardHitbox.y + Config::TILE_SIZE / 3;
     m_Position = { m_HazardHitbox.x, m_HazardHitbox.y };
 }
 
@@ -205,7 +204,7 @@ void Player::updatePhysics(float deltaTime, bool mouseClicked, bool mouseRelease
             m_IsGrounded = false;
         }
         m_YVelocity += m_Gravity * m_GravityMultiplier * deltaTime;
-        m_YVelocity = std::clamp(m_YVelocity, static_cast<float>(-m_Game->TILE_SIZE/2), static_cast<float>(m_Game->TILE_SIZE/2));
+        m_YVelocity = std::clamp(m_YVelocity, static_cast<float>(-Config::TILE_SIZE/2), static_cast<float>(Config::TILE_SIZE/2));
         break;
     case Gamemode::SHIP: {
         // help from https://github.com/Open-GD/OpenGD
@@ -229,11 +228,11 @@ void Player::updatePhysics(float deltaTime, bool mouseClicked, bool mouseRelease
     m_SolidHitbox.y += m_YVelocity * deltaTime * 0.9f;
 }
 
-void Player::handleCollisions(std::vector<GameObject> &objects) {   
+void Player::handleCollisions(const std::vector<Object> &objects) {   
     collideWithGround();
 
-    for (GameObject &object : objects) {
-        const std::optional<SDL_FRect> &hitbox = object.getHitbox();
+    for (const Object &object : objects) {
+        const std::optional<SDL_FRect> hitbox = object.getHitbox();
         if (!hitbox.has_value()) {
             continue;
         }
@@ -244,34 +243,35 @@ void Player::handleCollisions(std::vector<GameObject> &objects) {
     }
     // update some stuff
     m_IsGrounded = m_YVelocity == 0 && (!m_IsMouseHeld || m_Gamemode != Gamemode::SHIP);
-    m_SolidHitbox.x = m_HazardHitbox.x + m_Game->TILE_SIZE / 3;
-    m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
+    m_SolidHitbox.x = m_HazardHitbox.x + Config::TILE_SIZE / 3;
+    m_SolidHitbox.y = m_HazardHitbox.y + Config::TILE_SIZE / 3;
     m_Position.x = m_HazardHitbox.x;
     m_Position.y = m_HazardHitbox.y;
 }
 
-void Player::collideWithObject(GameObject &object) {
+void Player::collideWithObject(const Object &object) {
     switch (object.getType()) {
     case ObjectType::HAZARD:
         die();
         break;
-    case ObjectType::BLOCK:
+    case ObjectType::BLOCK: {
+        const SDL_FRect hitbox = object.getHitbox().value();
         // checking inner hitbox cuz if inner hitbox collides, player dies
-        if (SDL_HasIntersectionF(&m_SolidHitbox, &object.getHitbox().value())) {
+        if (SDL_HasIntersectionF(&m_SolidHitbox, &hitbox)) {
             die();
         } else {
             snapToObject(object);
         }
         break;
+    }
     case ObjectType::PAD:
         m_YVelocity = m_PadStrength * m_GravityMultiplier;
         break;
     case ObjectType::ORB: {
-        const bool orbNotInPressedOrbs = std::find(m_PressedOrbs.begin(), m_PressedOrbs.end(), &object.getHitbox().value()) == m_PressedOrbs.end();
-        const bool orbHasNotBeenPressed = m_PressedOrbs.empty() || orbNotInPressedOrbs;
+        const bool orbHasNotBeenPressed = m_PressedOrbs.count(&object) == 0;
         if (m_HasBufferedOrb && orbHasNotBeenPressed) {
             m_YVelocity = m_JumpStrength * m_GravityMultiplier;
-            m_PressedOrbs.push_back(&object.getHitbox().value());
+            m_PressedOrbs.insert(&object);
         }
         break;
     }
@@ -314,7 +314,7 @@ void Player::collideWithGround() {
     case Gamemode::CUBE:    
         if (m_HazardHitbox.y + m_HazardHitbox.h > m_Game->getGround().getPosition().y) {
             m_HazardHitbox.y = -m_HazardHitbox.h + m_Game->getGround().getPosition().y;
-            m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
+            m_SolidHitbox.y = m_HazardHitbox.y + Config::TILE_SIZE / 3;
             m_IsGrounded = true;
             m_YVelocity = 0;
         }
@@ -322,12 +322,12 @@ void Player::collideWithGround() {
     case Gamemode::SHIP:
         if (m_HazardHitbox.y < m_Bounds.first) {
             m_HazardHitbox.y = m_Bounds.first;
-            m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
+            m_SolidHitbox.y = m_HazardHitbox.y + Config::TILE_SIZE / 3;
             m_YVelocity = 0;
         }
         if (m_HazardHitbox.y + m_HazardHitbox.h > m_Bounds.second) {
             m_HazardHitbox.y = m_Bounds.second - m_HazardHitbox.h;
-            m_SolidHitbox.y = m_HazardHitbox.y + m_Game->TILE_SIZE / 3;
+            m_SolidHitbox.y = m_HazardHitbox.y + Config::TILE_SIZE / 3;
             m_IsGrounded = true;
             m_YVelocity = 0;
         }
@@ -335,10 +335,10 @@ void Player::collideWithGround() {
     }
 }
 
-void Player::snapToObject(GameObject &object) {
+void Player::snapToObject(const Object &object) {
     if (m_GravityMultiplier == 1 || m_Gamemode == Gamemode::SHIP) {
         if (m_YVelocity > 0 && m_SolidHitbox.y + m_SolidHitbox.h < object.getHitbox()->y) {
-            m_HazardHitbox.y = object.getPos().y - m_Game->TILE_SIZE;
+            m_HazardHitbox.y = object.getPos().y - m_HazardHitbox.h;
             m_YVelocity = 0;
         }
     }
@@ -350,22 +350,22 @@ void Player::snapToObject(GameObject &object) {
     }
 }
 
-void Player::setShipBounds(GameObject &shipPortal) {
-    const int BOUNDS_HEIGHT = (m_Game->getHeight() - 10*m_Game->TILE_SIZE)/2;
+void Player::setShipBounds(const Object &shipPortal) {
+    static constexpr int BOUNDS_HEIGHT = (Config::HEIGHT - 10*Config::TILE_SIZE)/2;
     // why does gd do this lmao
     const float newCameraY = std::clamp(
-        (std::round(shipPortal.getPos().y/m_Game->TILE_SIZE)-3)*m_Game->TILE_SIZE - BOUNDS_HEIGHT, 
+        (std::round(shipPortal.getPos().y/Config::TILE_SIZE)-3)*Config::TILE_SIZE - BOUNDS_HEIGHT, 
         -10000.0f, 
-        static_cast<float>(-3*m_Game->TILE_SIZE + BOUNDS_HEIGHT)
+        static_cast<float>(-3*Config::TILE_SIZE + BOUNDS_HEIGHT)
     );
     m_Game->smoothCameraYScroll(newCameraY);
     m_Bounds.first = newCameraY + BOUNDS_HEIGHT;
-    m_Bounds.second = m_Bounds.first + 10 * m_Game->TILE_SIZE;
+    m_Bounds.second = m_Bounds.first + 10 * Config::TILE_SIZE;
 }
 
 void Player::activateTriggers(std::vector<Trigger> &triggers) {
     for (Trigger &trigger : triggers) {
-        bool passedTrigger = m_Position.x > trigger.getPos().x + m_Game->TILE_SIZE/2;
+        bool passedTrigger = m_Position.x > trigger.getPos().x + Config::TILE_SIZE/2;
         if (passedTrigger) {
             trigger.activate();
         }
@@ -404,9 +404,9 @@ void Player::updateShipRotation(float deltaTime) {
 }
 
 void Player::scrollCamera() {
-    const static int CAMERA_SCROLL = m_Game->TILE_SIZE * 6;
-    const static int CAMERA_UP_SCROLL = m_Game->getHeight() / 4;
-    const static int CAMERA_DOWN_SCROLL = m_Game->getHeight() - 4*m_Game->TILE_SIZE;
+    const static int CAMERA_SCROLL = Config::TILE_SIZE * 6;
+    const static int CAMERA_UP_SCROLL = Config::HEIGHT / 4;
+    const static int CAMERA_DOWN_SCROLL = Config::HEIGHT - 4*Config::TILE_SIZE;
 
     const SDL_FPoint cameraPosition = m_Game->getCameraPosition();
     
@@ -426,13 +426,13 @@ void Player::scrollCamera() {
     }
 }
 
-void Player::render() {
-    for (Checkpoint &checkpoint : m_Checkpoints) {
+void Player::render() const {
+    for (const Checkpoint &checkpoint : m_Checkpoints) {
         SDL_Rect rect = { 
             static_cast<int>(checkpoint.position.x - m_Game->getCameraPosition().x), 
             static_cast<int>(checkpoint.position.y - m_Game->getCameraPosition().y),
-            m_Game->TILE_SIZE, 
-            m_Game->TILE_SIZE 
+            Config::TILE_SIZE, 
+            Config::TILE_SIZE 
         };
         SDL_RenderCopy(m_Renderer, m_CheckpointTexture, NULL, &rect);
     }
@@ -460,32 +460,32 @@ void Player::render() {
     // SDL_RenderFillRectF(m_Renderer, &temp2);
 }
 
-void Player::renderCube() {
+void Player::renderCube() const {
     SDL_FRect dst = {
         m_Position.x - m_Game->getCameraPosition().x, 
         m_Position.y - m_Game->getCameraPosition().y,
-        static_cast<float>(m_Game->TILE_SIZE), 
-        static_cast<float>(m_Game->TILE_SIZE)
+        static_cast<float>(Config::TILE_SIZE), 
+        static_cast<float>(Config::TILE_SIZE)
     };
     SDL_RenderCopyExF(m_Renderer, m_PlayerTexture, NULL, &dst, m_Rotation, NULL, SDL_FLIP_NONE);
 }
 
-void Player::renderShip() {
-    int xDisplacement = (m_ShipWidth - m_Game->TILE_SIZE)/2;
+void Player::renderShip() const {
+    int xDisplacement = (m_ShipWidth - Config::TILE_SIZE)/2;
     SDL_FPoint cameraPosition = m_Game->getCameraPosition();
-    float cubeX = m_Position.x - cameraPosition.x + m_Game->TILE_SIZE*6/25;
-    float cubeY = m_Position.y - cameraPosition.y + m_Game->TILE_SIZE/20;
+    float cubeX = m_Position.x - cameraPosition.x + Config::TILE_SIZE*6/25;
+    float cubeY = m_Position.y - cameraPosition.y + Config::TILE_SIZE/20;
     float shipX = m_Position.x - cameraPosition.x - xDisplacement;
-    float shipY = m_Position.y - cameraPosition.y + m_Game->TILE_SIZE - m_ShipHeight;
+    float shipY = m_Position.y - cameraPosition.y + Config::TILE_SIZE - m_ShipHeight;
     if (m_GravityMultiplier == -1) {
-        cubeY = m_Position.y - cameraPosition.y + m_Game->TILE_SIZE*2/5;
+        cubeY = m_Position.y - cameraPosition.y + Config::TILE_SIZE*2/5;
         shipY = m_Position.y - cameraPosition.y;
     }
     SDL_FRect cubeDST = {
         cubeX,
         cubeY, 
-        static_cast<float>(m_Game->TILE_SIZE*14/25), 
-        static_cast<float>(m_Game->TILE_SIZE*14/25)
+        static_cast<float>(Config::TILE_SIZE*14/25), 
+        static_cast<float>(Config::TILE_SIZE*14/25)
     };
     SDL_FRect shipDST = {
         shipX, 
@@ -506,17 +506,17 @@ void Player::renderShip() {
 void Player::die() {
     m_IsDead = true;
     m_DeadTimer = 90;
-    if (!PlayingState::get()->isInPractice()) {
+    if (!PlayingState::get().isInPractice()) {
         Mix_HaltMusic();
     }
     Mix_PlayChannel(-1, m_DeathSound, 0);
     m_YVelocity = 0;
 }
 
-bool Player::isDead() {
+bool Player::isDead() const {
     return m_IsDead;
 }
 
-Gamemode Player::getGamemode() {
+Gamemode Player::getGamemode() const {
     return m_Gamemode;
 }

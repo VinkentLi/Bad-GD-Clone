@@ -1,17 +1,17 @@
 #include <SDL_image.h>
 #include <iostream>
 #include "Game.h"
-#include "GameObject.h"
+#include "Object.h"
 
-GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos, std::optional<SDL_FRect> hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture)
+Object::Object(Game *game, ObjectType type, int rotation, SDL_FPoint pos, std::optional<SDL_FRect> hitbox, bool xFlip, bool yFlip, SDL_Texture *objectTexture)
     : m_Game(game), m_Type(type), m_Rotation(rotation), m_Position(pos), m_Hitbox(hitbox), m_FlipX(xFlip), m_FlipY(yFlip), m_ObjectTexture(objectTexture) {
     
     m_Renderer = m_Game->getRenderer();
     if (m_ObjectTexture != nullptr) {
-        SDL_QueryTexture(m_ObjectTexture, NULL, NULL, &m_Rect.w, &m_Rect.h);
+        SDL_QueryTexture(m_ObjectTexture, NULL, NULL, &m_Width, &m_Height);
     } else {
-        m_Rect.w = 0;
-        m_Rect.h = 0;
+        m_Width = 0;
+        m_Height = 0;
     }
     // in sdl you can't do both flips at the same time ¯\_(ツ)_/¯
     if (m_FlipX && m_FlipY) {
@@ -21,34 +21,37 @@ GameObject::GameObject(Game *game, ObjectType type, int rotation, SDL_FPoint pos
     }
 }
 
-std::optional<SDL_FRect> &GameObject::getHitbox() {
+std::optional<SDL_FRect> Object::getHitbox() const {
     return m_Hitbox;
 }
 
-SDL_FPoint GameObject::getPos() const {
+SDL_FPoint Object::getPos() const {
     return m_Position;
 }
 
-int GameObject::getWidth() const {
-    return m_Rect.w;
+int Object::getWidth() const {
+    return m_Width;
 }
 
-int GameObject::getHeight() const {
-    return m_Rect.h;
+int Object::getHeight() const {
+    return m_Height;
 }
 
-ObjectType GameObject::getType() const {
+ObjectType Object::getType() const {
     return m_Type;
 }
 
-void GameObject::render() {
+void Object::render() const {
     // some objects don't have textures
     if (m_ObjectTexture == nullptr) {
         return;
     }
-
-    m_Rect.x = static_cast<int>(m_Position.x - m_Game->getCameraPosition().x);
-    m_Rect.y = static_cast<int>(m_Position.y - m_Game->getCameraPosition().y);
+    SDL_Rect dst = {
+        .x = static_cast<int>(m_Position.x - m_Game->getCameraPosition().x),
+        .y = static_cast<int>(m_Position.y - m_Game->getCameraPosition().y),
+        .w = m_Width,
+        .h = m_Height
+    };
 
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     if (m_FlipX) {
@@ -56,7 +59,7 @@ void GameObject::render() {
     } else if (m_FlipY) {
         flip = SDL_FLIP_VERTICAL;
     }
-    SDL_RenderCopyEx(m_Renderer, m_ObjectTexture, NULL, &m_Rect, m_Rotation * 90.0, NULL, flip);
+    SDL_RenderCopyEx(m_Renderer, m_ObjectTexture, NULL, &dst, m_Rotation * 90.0, NULL, flip);
     
     // this just draws hitboxes for debugging
     // SDL_FRect temp = m_Hitbox;

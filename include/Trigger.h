@@ -1,9 +1,9 @@
 #pragma once
-#include "GameObject.h"
+#include "Object.h"
 
 class Game;
 
-class Trigger : public GameObject {
+class Trigger : public Object {
 public:
     Trigger(Game *game, ObjectType type, SDL_FPoint pos, SDL_Color color, float duration);
     void activate();
