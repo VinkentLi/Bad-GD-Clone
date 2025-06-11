@@ -9,7 +9,7 @@ LevelSelect LevelSelect::m_LevelSelect;
 
 void LevelSelect::init(Game *game) {
     GameState::init(game);
-    m_Name = "LevelSelect";
+    m_Type = StateType::LEVEL_SELECT;
     m_Renderer = m_Game->getRenderer();
     m_CornerTexture = IMG_LoadTexture(m_Renderer, "res/gfx/selectCorner.png");
     if (m_CornerTexture == nullptr) {

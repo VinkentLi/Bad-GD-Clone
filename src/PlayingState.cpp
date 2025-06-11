@@ -13,7 +13,7 @@ PlayingState PlayingState::m_PlayingState;
 
 void PlayingState::init(Game *game) {
     GameState::init(game);
-    m_Name = "PlayingState";
+    m_Type = StateType::PLAYING_STATE;
     m_Player.init(m_Game);
     m_LevelManager.init(m_Game);
     for (int i = 0; i < Config::LEVEL_COUNT; i++) {

@@ -89,7 +89,7 @@ void Background::render() const {
             static_cast<float>(m_BackgroundSize),
             static_cast<float>(m_BackgroundSize)
         };
-        if (m_Game->getState()->getName() == "LevelSelect") {
+        if (m_Game->getState()->getType() == StateType::LEVEL_SELECT) {
             dst.y += (m_BackgroundSize - height);
             SDL_RenderCopyExF(m_Renderer, m_EmptyBG, NULL, &dst, 0, NULL, SDL_FLIP_VERTICAL);
             continue;

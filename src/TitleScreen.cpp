@@ -9,7 +9,7 @@ TitleScreen TitleScreen::m_TitleScreen;
 
 void TitleScreen::init(Game *game) {
     GameState::init(game);
-    m_Name = "TitleScreen";
+    m_Type = StateType::TITLE_SCREEN;
     m_TitleTexture = IMG_LoadTexture(m_Renderer, "res/gfx/title.png");
     if (m_TitleTexture == NULL) {
         std::cerr << "Failed to load title.png! " << SDL_GetError() << std::endl;

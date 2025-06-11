@@ -101,7 +101,7 @@ void Game::render() {
     SDL_RenderClear(m_Renderer);
     m_Background.render();
     // PlayingState will render ground itself to fix layering issues
-    if (m_GameStates.top()->getName() != "PlayingState") {
+    if (m_GameStates.top()->getType() != StateType::PLAYING_STATE) {
         m_Ground.render();
     }
     m_GameStates.top()->render();

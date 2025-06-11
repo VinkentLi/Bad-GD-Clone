@@ -236,7 +236,7 @@ void Player::handleCollisions(const std::vector<Object> &objects) {
         if (!hitbox.has_value()) {
             continue;
         }
-        SDL_FRect intersect; // this is useless but im too lazy to remove it lmfao
+        SDL_FRect intersect;
         if (SDL_IntersectFRect(&m_HazardHitbox, &hitbox.value(), &intersect)) {
             collideWithObject(object);
         }
@@ -404,9 +404,9 @@ void Player::updateShipRotation(float deltaTime) {
 }
 
 void Player::scrollCamera() {
-    const static int CAMERA_SCROLL = Config::TILE_SIZE * 6;
-    const static int CAMERA_UP_SCROLL = Config::HEIGHT / 4;
-    const static int CAMERA_DOWN_SCROLL = Config::HEIGHT - 4*Config::TILE_SIZE;
+    static constexpr int CAMERA_SCROLL = Config::TILE_SIZE * 6;
+    static constexpr int CAMERA_UP_SCROLL = Config::HEIGHT / 4;
+    static constexpr int CAMERA_DOWN_SCROLL = Config::HEIGHT - 4*Config::TILE_SIZE;
 
     const SDL_FPoint cameraPosition = m_Game->getCameraPosition();
     
@@ -428,7 +428,7 @@ void Player::scrollCamera() {
 
 void Player::render() const {
     for (const Checkpoint &checkpoint : m_Checkpoints) {
-        SDL_Rect rect = { 
+        const SDL_Rect rect = { 
             static_cast<int>(checkpoint.position.x - m_Game->getCameraPosition().x), 
             static_cast<int>(checkpoint.position.y - m_Game->getCameraPosition().y),
             Config::TILE_SIZE, 
@@ -461,7 +461,7 @@ void Player::render() const {
 }
 
 void Player::renderCube() const {
-    SDL_FRect dst = {
+    const SDL_FRect dst = {
         m_Position.x - m_Game->getCameraPosition().x, 
         m_Position.y - m_Game->getCameraPosition().y,
         static_cast<float>(Config::TILE_SIZE), 
@@ -471,29 +471,29 @@ void Player::renderCube() const {
 }
 
 void Player::renderShip() const {
-    int xDisplacement = (m_ShipWidth - Config::TILE_SIZE)/2;
+    const int xDisplacement = (m_ShipWidth - m_HazardHitbox.w)/2;
     SDL_FPoint cameraPosition = m_Game->getCameraPosition();
-    float cubeX = m_Position.x - cameraPosition.x + Config::TILE_SIZE*6/25;
-    float cubeY = m_Position.y - cameraPosition.y + Config::TILE_SIZE/20;
+    float cubeX = m_Position.x - cameraPosition.x + m_HazardHitbox.w*6/25;
+    float cubeY = m_Position.y - cameraPosition.y + m_HazardHitbox.w/20;
     float shipX = m_Position.x - cameraPosition.x - xDisplacement;
-    float shipY = m_Position.y - cameraPosition.y + Config::TILE_SIZE - m_ShipHeight;
+    float shipY = m_Position.y - cameraPosition.y + m_HazardHitbox.w - m_ShipHeight;
     if (m_GravityMultiplier == -1) {
-        cubeY = m_Position.y - cameraPosition.y + Config::TILE_SIZE*2/5;
+        cubeY = m_Position.y - cameraPosition.y + m_HazardHitbox.w*2/5;
         shipY = m_Position.y - cameraPosition.y;
     }
-    SDL_FRect cubeDST = {
+    const SDL_FRect cubeDST = {
         cubeX,
         cubeY, 
-        static_cast<float>(Config::TILE_SIZE*14/25), 
-        static_cast<float>(Config::TILE_SIZE*14/25)
+        static_cast<float>(m_HazardHitbox.w*14/25), 
+        static_cast<float>(m_HazardHitbox.w*14/25)
     };
-    SDL_FRect shipDST = {
+    const SDL_FRect shipDST = {
         shipX, 
         shipY, 
         static_cast<float>(m_ShipWidth), 
         static_cast<float>(m_ShipHeight)
     };
-    SDL_FPoint cubeCenter = {shipDST.x + shipDST.w / 2 - cubeDST.x, shipDST.y + shipDST.h / 2 - cubeDST.y};
+    const SDL_FPoint cubeCenter = {shipDST.x + shipDST.w / 2 - cubeDST.x, shipDST.y + shipDST.h / 2 - cubeDST.y};
     if (m_GravityMultiplier == 1) {
         SDL_RenderCopyExF(m_Renderer, m_PlayerTexture, NULL, &cubeDST, m_Rotation, &cubeCenter, SDL_FLIP_NONE);
         SDL_RenderCopyExF(m_Renderer, m_ShipTexture, NULL, &shipDST, m_Rotation, NULL, SDL_FLIP_NONE);
