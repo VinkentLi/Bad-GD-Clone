@@ -2,7 +2,7 @@
 
 Clone of Geometry Dash 1.0
 
-Play a webport here at [https://vinkent.li/gd/](https://vinkent.li/gd/)
+Play a webport here at [https://vinkentli.github.io/gdclone](https://vinkentli.github.io/gdclone)
 
 ## How to build
 
