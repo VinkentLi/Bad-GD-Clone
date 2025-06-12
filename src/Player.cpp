@@ -207,14 +207,15 @@ void Player::updatePhysics(float deltaTime, bool mouseClicked, bool mouseRelease
         m_YVelocity = std::clamp(m_YVelocity, static_cast<float>(-Config::TILE_SIZE/2), static_cast<float>(Config::TILE_SIZE/2));
         break;
     case Gamemode::SHIP: {
-        // help from https://github.com/Open-GD/OpenGD
+        // https://github.com/camila314/gdp/blob/cfde712de31d3fd57e5fe6f49e54db34890e98ee/finished_works/PlayerObject/updateJump.cpp#L18
         float shipAccel = m_Gravity * 0.32f;
         if (m_IsMouseHeld) {
             shipAccel *= -1.25f;
-            if (m_YVelocity * m_GravityMultiplier > -5*m_Gravity) {
+            // give boost
+            if (m_YVelocity * m_GravityMultiplier > -8*m_Gravity) {
                 shipAccel *= 1.25f;
             }
-        } else if (m_YVelocity * m_GravityMultiplier <= -5*m_Gravity) {
+        } else if (m_YVelocity * m_GravityMultiplier <= -8*m_Gravity) {
             shipAccel *= 1.5f;
         }
         m_YVelocity += shipAccel * m_GravityMultiplier * deltaTime;
@@ -373,7 +374,7 @@ void Player::activateTriggers(std::vector<Trigger> &triggers) {
 }
 
 void Player::updateCubeRotation(float deltaTime) {
-    m_Rotation += m_GravityMultiplier == 1 ? m_RotationAdder * deltaTime : -m_RotationAdder * deltaTime;
+    m_Rotation += m_GravityMultiplier * m_RotationAdder * deltaTime;
     m_Rotation = std::fmod(m_Rotation, 360.0f);
     if (m_GravityMultiplier == 1) {
         if (!m_IsGrounded && m_Rotation > m_TargetRotation) {
@@ -394,7 +395,7 @@ void Player::updateCubeRotation(float deltaTime) {
 
 void Player::updateShipRotation(float deltaTime) {
     if (m_Gamemode == Gamemode::SHIP) {
-        // special thanks to https://github.com/Open-GD/OpenGD for this
+        // thanks to https://github.com/Open-GD/OpenGD/blob/32b60243749c1619b5814e87c0ec2e4b36f019bd/Source/GameToolbox/math.cpp#L47
         if (std::pow(m_YVelocity, 2) + std::pow(m_XVelocity, 2) >= 1.2) {
             float target = std::atan2(m_YVelocity, m_XVelocity) * 57.2957795131f;
             // exponential interpolation
